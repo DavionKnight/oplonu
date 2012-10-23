@@ -1,0 +1,2275 @@
+#shint 0|2|3|32+x, x=0..31
+# 0: all of interrupts
+# 2: interrupts which has level 2 interrupts 
+# 3: interrupts which occuried during last interval
+# 32+x: level2 interrupts, x can be seen from command "shint 0" 
+
+#show counters
+#p nHostRxCounter
+#p nHostTxCounter
+
+# clear counters
+#set variable nHostRxCounter=0
+#set variable nHostTxCounter=0
+
+#call ipmuxInterruptCounterClear(0|1|2|3)
+# 0: help
+# 1: clear level 1 interrupt counters
+# 2: clear level 2 interrupt counters
+# 3: clear both level 1&2 interrupt counters
+
+#configure from file, by default, the file lies in 192.168.1.168:/opt/mnt/
+#cfgf filename 
+
+#ipreg -w 0xbf000008 1 1
+#ipreg -w 0xbf00000c 2 1,1010
+#ipreg -w 0xbf008200 2 3f,7127
+#ipreg -w 0xbf00a200 2 3f,7127
+#ipreg -w 0xbf010020 1 80088008
+#ipreg -w 0xbf00c00c 1 0
+#ipreg -w 0xbf000004 1 1
+#ipreg -w 0xbf013c68 1 1
+
+
+
+proc initRS {} {
+	word 0xbf00400c 0x80
+	word 0xbf004000 0x2e
+	word 0xbf004004 0x03
+	word 0xbf00400c 0x03
+}
+
+proc sendbyte { tbyte } {
+	word 0xbf004000 $tbyte
+} 
+
+proc mtest {badr eadr } {
+	set space [expr $eadr - $badr];
+	if { $space > 100 } { set resolution [expr $space/100];
+	} else { set resolution 1; }	
+	for {set i $badr} {$i<=$eadr} {set i [expr $i+4] } {
+#		set process [expr $i - $badr];
+#		if { [expr $process % $resolution ] == 0 } {
+#			set percent [expr $i - $badr]; 
+#			set ratio [expr $percent*100/$space]; 
+#			puts "$ratio%";			
+#		}		
+		word $i $i
+		set val [word $i];
+		while { $val != $i } {
+			word $i $i
+			set val [word $i];
+		}
+		set val1 [word 0];
+		puts [format "0x%08x\t0x%08x\t0x%08x" $i $val $val1];		 
+	} 
+	puts "write completed!!!    read begin...";	
+	
+	for {set j $badr} {$j<=$eadr} {set j [expr $j+4]} {
+		set val1 [word $j];
+		set val2 [word $j];
+		while { $val1 != $val2 } {
+			set val1 [word $j];
+			set val2 [word $j];
+		}
+		set val $val1;
+#		set process [expr $j - $badr];
+#		if { [expr $process % $resolution ] == 0 } {
+#			set percent [expr $j - $badr]; 
+#			set ratio [expr $percent*100/$space]; 
+#			puts "$ratio%"; 			
+#		}
+		puts [format "0x%08x\t0x%08x" $j $val];		 
+		if {$val != $j } {
+		 	puts "memory addr $j read/write error!!!";
+		 	break;
+		 }		
+	}
+	puts "test completed!!!";
+}
+
+
+proc mtestb {badr eadr } {
+	set space [expr $eadr - $badr];
+	if { $space > 100 } { set resolution [expr $space/100];
+	} else { set resolution 1; }	
+	for {set i $badr} {$i<=$eadr} {incr i } {
+#		set process [expr $i - $badr];
+#		if { [expr $process % $resolution ] == 0 } {
+#			set percent [expr $i - $badr]; 
+#			set ratio [expr $percent*100/$space]; 
+#			puts "$ratio%";			
+#		}
+		byte $i $i
+		set val [byte $i];
+		while { $val != $i } {
+			byte $i $i
+			set val [byte $i];
+		}
+		set val1 [byte 0];
+		puts [format "0x%08x\t0x%08x\t0x%08x" $i $val $val1];                         
+	}                                                                                 
+	puts "write completed!!!    read begin...";	                                      
+	                                                                                  
+	for {set j $badr} {$j<=$eadr} {incr j} {                                          
+		set val1 [byte $j];                                                           
+		set val2 [byte $j];                                                           
+		puts "$val1 $val2" ;                                                          
+		while { $val1 != $val2 } {                                                    
+			set val1 [byte $j];                                                       
+			set val2 [byte $j];                                                       
+		}                                                                             
+		set val $val1;                                                                
+#		set process [expr $j - $badr];                                                
+#		if { [expr $process % $resolution ] == 0 } {                                  
+#			set percent [expr $j - $badr];                                            
+#			set ratio [expr $percent*100/$space];                                     
+#			puts "$ratio%"; 			                                              
+#		}                                                                             
+		puts [format "0x%08x\t0x%08x" $j $val];			                              
+		if {$val != $j } {
+		 	puts "memory addr $j read/write error!!!";
+		 	break;
+		 }		
+	}
+	puts "test completed!!!";
+}
+
+
+proc regtest {badr eadr} {
+	set space [expr $eadr - $badr];
+	set recf [open d:/reg w+];	
+	for {set i $badr} {$i<=$eadr} { set i [expr $i+4] } {
+		set val [word $i];		
+		puts $recf [format "0x%08x\t0x%08x" $i $val]		
+	} 	
+	puts "test completed!!!";
+	close $recf;
+}
+
+proc regtest {badr eadr} {
+	set space [expr $eadr - $badr];
+	set recf [open d:/reg w+];	
+	for {set i $badr} {$i<=$eadr} { incr i +4 } {
+		set val [word $i];		
+		puts $recf [format "0x%08x\t0x%08x" $i $val]		
+	} 	
+	puts "test completed!!!";
+	close $recf;
+}
+
+proc regtest {badr eadr} {
+	set space [expr $eadr - $badr];
+	set recf [open d:/reg w+];
+	set i $badr;
+	while { $i>=$badr && $i<=$eadr} { 
+		set val [word $i];		
+		puts $recf [format "0x%08x\t0x%08x" $i $val]
+		incr i +4;		
+	} 	
+	puts "test completed!!!";
+	close $recf;
+}
+
+proc rdall { } {
+	set recf [open d:/rreg w+];
+	set badr 0xbf000000;
+
+	puts $recf "---- global registers: ----";
+	set bladr 0x0;
+	for { set i 0 } { $i<=4 } { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	} 
+	puts "%10";
+
+	puts $recf "---- host registers: ----";
+	set bladr 0x1000;
+	for { set i 0 } { $i<=17} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%15";
+	
+	puts $recf "---- watchdog registers: ----";
+	set bladr 0x2800;
+	for { set i 0 } { $i<=3} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%20";
+	
+	puts $recf "---- GPIO registers: ----";
+	set bladr 0x2880;
+	for { set i 0 } { $i<=6} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%25";
+	
+	puts $recf "---- Timer registers: ----";
+	set bladr [expr 0xa40*4];
+	for { set i 0 } { $i<=11} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%30";
+	
+	puts $recf "---- RTC registers: ----";
+	set bladr [expr 0xa60*4];
+	for { set i 0 } { $i<=0} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%35";
+	
+	puts $recf "---- INTC registers: ----";
+	set bladr [expr 0xa80*4];
+	for { set i 0 } { $i<=21} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%40";
+	
+#	puts $recf "---- HDLC registers: ----";
+#	set bladr [expr 0xab0*4];
+#	for { set i 0 } { $i<=0} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+	puts "%45";
+	
+	puts $recf "---- DMA0 registers: ----";
+	set bladr [expr 0xad0*4];
+	for { set i 0 } { $i<=5} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%50";
+	
+	puts $recf "---- DMA1 registers: ----";
+	set bladr [expr 0xaf0*4];
+	for { set i 0 } { $i<=6} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%51";
+	
+	puts $recf "---- UART registers: ----";
+	set bladr [expr 0x1000*4];
+	for { set i 0 } { $i<=7} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%53";
+	
+#	puts $recf "---- I2C registers: ----";
+#	set bladr [expr 0x1100*4];
+#	for { set i 0 } { $i<=5} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+	puts "%55";
+	
+#	puts $recf "---- DDR registers: ----";
+#	set bladr [expr 0x1200*4];
+#	for { set i 0 } { $i<=21} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+#	puts "%60";
+	
+	puts $recf "---- GE0 registers: ----";
+	set bladr [expr 0x2000*4];
+	for { set i 0 } { $i<=2} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%63";
+	
+	puts $recf "---- GE1 registers: ----";
+	set bladr [expr 0x2800*4];
+	for { set i 0 } { $i<=2} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%64";
+	
+	puts $recf "---- FE registers: ----";
+	set bladr [expr 0x3000*4];
+	for { set i 0 } { $i<=7} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%65";
+	
+	puts $recf "---- POS/UTP registers: ----";
+	set bladr [expr 0x4000*4];
+	for { set i 0 } { $i<=64} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%70";
+	
+	puts $recf "---- ASSEMBLE registers: ----";
+	set bladr [expr 0x4f00*4];
+	for { set i 0 } { $i<=12} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%75";
+	
+	puts $recf "---- QOS upstrema registers: ----";
+	set bladr [expr 0x5000*4];
+	for { set i 0 } { $i<=74} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%80";
+	
+	puts $recf "---- QOS downstream registers: ----";
+	set bladr [expr 0x5300*4];
+	for { set i 0 } { $i<=137} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%85";
+	
+	puts $recf "---- Bridge registers: ----";
+	set bladr [expr 0x8000*4];
+	for { set i 0 } { $i<=45} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%90";
+	
+	puts $recf "---- CLE registers: ----";
+	set bladr [expr 0x6000*4];
+	for { set i 0 } { $i<=52} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%95";
+	
+#	puts $recf "---- PPE registers: ----";
+#	set bladr [expr 0x7000*4];
+#	for { set i 0 } { $i<=52} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+#	
+	puts "%100";
+	puts "test completed!!!";
+	close $recf;
+}	
+
+proc wrall { value } {
+	set recf [open d:/wreg w+];
+	set badr 0xbf000000;
+
+	puts $recf "---- global registers: ----";
+	set bladr 0x0;
+	for { set i 0 } { $i<=4 } { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	} 
+	puts "%10";
+
+	puts $recf "---- host registers: ----";
+	set bladr 0x1000;
+	for { set i 0 } { $i<=17} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%15";
+	
+	puts $recf "---- watchdog registers: ----";
+	set bladr 0x2800;
+	for { set i 0 } { $i<=3} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%20";
+	
+	puts $recf "---- GPIO registers: ----";
+	set bladr 0x2880;
+	for { set i 0 } { $i<=6} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%25";
+	
+	puts $recf "---- Timer registers: ----";
+	set bladr [expr 0xa40*4];
+	for { set i 0 } { $i<=11} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%30";
+	
+	puts $recf "---- RTC registers: ----";
+	set bladr [expr 0xa60*4];
+	for { set i 0 } { $i<=0} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%35";
+	
+	puts $recf "---- INTC registers: ----";
+	set bladr [expr 0xa80*4];
+	for { set i 0 } { $i<=21} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%40";
+	
+#	puts $recf "---- HDLC registers: ----";
+#	set bladr [expr 0xab0*4];
+#	for { set i 0 } { $i<=0} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		word $addr $value;
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+	puts "%45";
+	
+	puts $recf "---- DMA0 registers: ----";
+	set bladr [expr 0xad0*4];
+	for { set i 0 } { $i<=5} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%50";
+	
+	puts $recf "---- DMA1 registers: ----";
+	set bladr [expr 0xaf0*4];
+	for { set i 0 } { $i<=6} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%51";
+	
+	puts $recf "---- UART registers: ----";
+	set bladr [expr 0x1000*4];
+	for { set i 0 } { $i<=7} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%53";
+	
+#	puts $recf "---- I2C registers: ----";
+#	set bladr [expr 0x1100*4];
+#	for { set i 0 } { $i<=5} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		word $addr $value;
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+	puts "%55";
+	
+#	puts $recf "---- DDR registers: ----";
+#	set bladr [expr 0x1200*4];
+#	for { set i 0 } { $i<=21} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		word $addr $value;
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+#	puts "%60";
+	
+	puts $recf "---- GE0 registers: ----";
+	set bladr [expr 0x2000*4];
+	for { set i 0 } { $i<=2} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%63";
+	
+	puts $recf "---- GE1 registers: ----";
+	set bladr [expr 0x2800*4];
+	for { set i 0 } { $i<=2} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%64";
+	
+	puts $recf "---- FE registers: ----";
+	set bladr [expr 0x3000*4];
+	for { set i 0 } { $i<=7} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%65";
+	
+	puts $recf "---- POS/UTP registers: ----";
+	set bladr [expr 0x4000*4];
+	for { set i 0 } { $i<=64} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%70";
+	
+	puts $recf "---- ASSEMBLE registers: ----";
+	set bladr [expr 0x4f00*4];
+	for { set i 0 } { $i<=12} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%75";
+	
+	puts $recf "---- QOS upstrema registers: ----";
+	set bladr [expr 0x5000*4];
+	for { set i 0 } { $i<=74} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%80";
+	
+	puts $recf "---- QOS downstream registers: ----";
+	set bladr [expr 0x5300*4];
+	for { set i 0 } { $i<=137} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%85";
+	
+	puts $recf "---- Bridge registers: ----";
+	set bladr [expr 0x8000*4];
+	for { set i 0 } { $i<=45} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%90";
+	
+	puts $recf "---- CLE registers: ----";
+	set bladr [expr 0x6000*4];
+	for { set i 0 } { $i<=52} { incr i} {
+		set addr [expr $i*4+$badr+$bladr];
+		word $addr $value;
+		set val [word $addr];		
+		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+	}
+	puts "%95";
+	
+#	puts $recf "---- PPE registers: ----";
+#	set bladr [expr 0x7000*4];
+#	for { set i 0 } { $i<=52} { incr i} {
+#		set addr [expr $i*4+$badr+$bladr];
+#		word $addr $value;
+#		set val [word $addr];		
+#		puts $recf [format "0x%08x\t0x%08x" $addr $val]		
+#	}
+#	
+	puts "%100";
+	puts "test completed!!!";
+	close $recf;
+}	
+
+proc gettid { } {
+	puts " 0 : Bridge Port table (PTable)                 		srs = 0      width=3W   ";
+	puts " 1 : Bridge Address Resolution logic table      		srs = 0      width=3W   ";
+	puts " 2 : Bridge Vlan Pointer Table                  		srs = 0      width=1W   ";
+    puts " 3 : Bridge Vlan Hash Table A                   		srs = 0      width=2W   ";
+    puts " 4 : Bridge Vlan Hash Table B                   		srs = 0      width=2W   ";
+    puts " 5 : Bridge VLAN table (VTable)                 		srs = 0      width=1W   ";
+    puts " 6 : Bridge CTAG Replacement table              		srs = 0      width=1W   ";
+    puts " 7 : Bridge VLAN Cross Connection Enable Table  		srs = 0      width=2W   ";
+    puts " 8 : Bridge MAC Filter Table                    		srs = 0      width=2W   ";
+    puts " 9 : Bridge Remark Table                        		srs = 0      width=1W   ";
+    puts " 10: Bridge Multicast Group Table               		srs = 0      width=1W   ";
+    puts " 11: Bridge Multicast Entry Table               		srs = 0      width=1W   ";
+    puts " 12: Bridge Port Egress Control Table           		srs = 0      width=1W   ";
+    puts " 13: Bridge MAC Address Limitation Table        		srs = 0      width=1W   ";
+    puts " 14: Bridge MAC Address Limitation Counter Table		srs = 0      width=1W   ";
+    puts " 16: Classify Field Mask table                    	srs = 1      width=19W  ";
+    puts " 17: Classify Rule hash Table                     	srs = 1      width=1W   ";
+    puts " 18: Classify rule table                          	srs = 1      width=18W  ";
+    puts " 20: Classify Flow ID mask table                  	srs = 1      width=2W   ";
+    puts " 21: Classify Flow Hash table                     	srs = 1      width=1W   ";
+    puts " 22: Classify Flow Table                          	srs = 1      width=2W   ";
+    puts " 23: Classify Flow Remark Table                   	srs = 1      width=1W   ";
+    puts " 32: Upstream Flow Shaper ID table              		srs = 3      width=1W   ";
+    puts " 34: Upstream Flow WRED ID table                		srs = 3      width=1W   ";
+    puts " 36: Upstream Flow ID table  R           				srs = 3      width=1W   ";
+    puts " 38: Upstream Flow ID table  W           				srs = 3      width=1W   ";
+    puts " 49: Dowstream Flow Shaper ID table             		srs = 3      width=1W   ";        
+    puts " 51: Dowstream Flow WRED ID table               		srs = 3      width=1W   ";
+    puts " 53: Dowstream Flow Port Sequence table R       		srs = 3      width=1W   ";
+    puts " 55: Dowstream Flow Port Weight and Priority table R	srs = 3      width=10W  ";
+    puts " 57: Downstram Port Weight Sum Table	    			srs = 3      width=4W   ";       
+    puts " 59: Downstram flow Table W		    				srs = 3      width=1W   ";
+    puts " 64: SAR UPPT                                   		srs = 4      width=1W   ";
+    puts " 65: SAR EPPT                                   		srs = 4      width=4W   ";
+    puts " 80: Host Rx Buffer Descriptor Table (DMA0 Rx)  		srs = 5      width=1W   ";
+    puts " 81: Host Tx Buffer Descriptor Table (DMA0 Tx)  		srs = 5      width=1W   ";
+    puts " 96: FE Rx Buffer Descriptor Table (DMA1 Rx)    		srs = 6      width=1W   ";
+    puts " 97: FE Tx Buffer Descriptor Table (DMA1 Tx)    		srs = 6      width=1W   ";
+}                                                                                            
+                                                                                     
+proc rdtable { tid item } {                                                          
+	switch $tid {                                                                
+		0   {                                                                
+			puts "read Bridge Port table"                                
+			puts "table record $item"
+			set x [expr $item + 0x80000000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<=11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		1   {
+			puts "read Bridge Address Resolution table"
+			puts "table record $item"
+			set x [expr $item + 0x80010000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<=11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		2   {
+			puts "read Bridge Vlan Pointer table"
+			puts "table record $item"
+			set x [expr $item + 0x80020000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		3   {
+			puts "read Bridge Vlan Hash Table A"
+			puts "table record $item"
+			set x [expr $item + 0x80030000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		4   {
+			puts "read Bridge Vlan Hash Table B"
+			puts "table record $item"
+			set x [expr $item + 0x80040000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		5   {
+			puts "read Bridge Vlan Table "
+			puts "table record $item"
+			set x [expr $item + 0x80050000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		6   {
+			puts "read Bridge CTAG Replacement Table "
+			puts "table record $item"
+			set x [expr $item + 0x80060000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		7   {
+			puts "read Bridge VLAN Cross Connection Enable Table "
+			puts "table record $item"
+			set x [expr $item + 0x80070000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		8   {
+			puts "read Bridge MAC Filter Table "
+			puts "table record $item"
+			set x [expr $item + 0x80080000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		9   {
+			puts "read Bridge Remark Table "
+			puts "table record $item"
+			set x [expr $item + 0x80090000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		10  {
+			puts "read Bridge Multicast Group Table "
+			puts "table record $item"
+			set x [expr $item + 0x800a0000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		11  {
+			puts "read Bridge Multicast Entry Table "
+			puts "table record $item"
+			set x [expr $item + 0x800b0000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		12  {
+			puts "read Bridge Port Egress Control Table "
+			puts "table record $item"
+			set x [expr $item + 0x800c0000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		13  {
+			puts "read Bridge MAC Address Limitation Table "
+			puts "table record $item"
+			set x [expr $item + 0x800d0000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		14  {
+			puts "read Bridge MAC Address Limitation Counter Table "
+			puts "table record $item"
+			set x [expr $item + 0x800e0000]
+			word 0xbf020008 $x;
+			for { set i 0 } { $i<= 11} { incr i} {
+				set val [word [expr 0xbf02000c +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		16  {
+			puts "read Classify Field Mask Table "
+			puts "table record $item"
+			set x [expr $item + 0x80100000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		17  {
+			puts "read Classify Rule hash Table "
+			puts "table record $item"
+			set x [expr $item + 0x80110000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		18  {
+			puts "read Classify Rule Table "
+			puts "table record $item"
+			set x [expr $item + 0x80120000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		20  {
+			puts "read Classify Flow ID mask Table "
+			puts "table record $item"
+			set x [expr $item + 0x80140000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		21  {
+			puts "read Classify Flow Hash Table "
+			puts "table record $item"
+			set x [expr $item + 0x80150000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		22  {
+			puts "read Classify Flow Table "
+			puts "table record $item"
+			set x [expr $item + 0x80160000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}
+		23  {
+			puts "read Classify Flow Remark Table "
+			puts "table record $item"
+			set x [expr $item + 0x80170000]
+			word 0xbf0180FC $x;
+			for { set i 0 } { $i<= 18} { incr i} {
+				set val [word [expr 0xbf018100 +$i *4]];
+				puts [format "0x%08x" $val];
+			}
+		}		        
+		32  {
+			puts "read Upstream Flow Shaper ID Table "
+			puts "table record $item"
+			set x [expr $item + 0x80200000]
+			word 0xbf014124 $x;			
+			set val [word 0xbf014128];
+			puts [format "0x%08x" $val];			
+		}
+		34  {
+			puts "read Upstream Flow WRED ID Table "
+			puts "table record $item"
+			set x [expr $item + 0x80220000]
+			word 0xbf014124 $x;			
+			set val [word 0xbf014128];
+			puts [format "0x%08x" $val];			
+		}
+		36  {
+			puts "read Upstream Flow ID table  R "
+			puts "table record $item"
+			set x [expr $item + 0x80240000]
+			word 0xbf014124 $x;			
+			set val [word 0xbf014128];
+			puts [format "0x%08x" $val];			
+		}
+		38  {
+			puts "read Upstream Flow ID table W, but this is a write only table "						
+		}
+		40 {
+			puts "read queue counter "
+			puts "table record $item"
+			set x [expr $item + 0x80280000]
+			word 0xbf014124 $x;			
+			set val [word 0xbf014128];
+			puts [format "0x%08x" $val];	
+		}
+		42 {
+			puts "read queue status "
+			puts "table record $item"
+			set x [expr $item + 0x802a0000]
+			word 0xbf014124 $x;			
+			set val [word 0xbf014128];
+			puts [format "0x%08x" $val];	
+		}
+		49  {
+			puts "read Dowstream Flow Shaper ID Table "
+			puts "table record $item"
+			set x [expr $item + 0x80310000]
+			word 0xbf014e08 $x;
+			for { set i 0 } { $i<= 9} { incr i} {
+				set val [word [expr 0xbf018e0c +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}		
+		51  {
+			puts "read Dowstream Flow WRED ID Table "
+			puts "table record $item"
+			set x [expr $item + 0x80330000]
+			word 0xbf014e08 $x;
+			for { set i 0 } { $i<= 9} { incr i} {
+				set val [word [expr 0xbf018e0c +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		53  {
+			puts "read Dowstream Flow Port Sequence table R "
+			puts "table record $item"
+			set x [expr $item + 0x80350000]
+			word 0xbf014e08 $x;
+			for { set i 0 } { $i<= 9} { incr i} {
+				set val [word [expr 0xbf018e0c +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		} 
+		55  {
+			puts "read Dowstream Flow Port Weight and Priority table R "
+			puts "table record $item"
+			set x [expr $item + 0x80370000]
+			word 0xbf014e08 $x;
+			for { set i 0 } { $i<= 9} { incr i} {
+				set val [word [expr 0xbf018e0c +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		57  {
+			puts "read Downstram Port Weight Sum Table R "
+			puts "table record $item"
+			set x [expr $item + 0x80390000]
+			word 0xbf014e08 $x;
+			for { set i 0 } { $i<= 9} { incr i} {
+				set val [word [expr 0xbf018e0c +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		59  {
+			puts "read Downstram flow Table W, but this is a write only table "						
+		}
+		64  {
+			puts "read SAR UPPT Table "
+			puts "table record $item"
+			set x [expr $item + 0x80400000]
+			word 0xbf013C04 $x;
+			for { set i 0 } { $i<= 3} { incr i} {
+				set val [word [expr 0xbf013C08 +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		65  {
+			puts "read SAR EPPT Table "
+			puts "table record $item"
+			set x [expr $item + 0x80410000]
+			word 0xbf013C04 $x;
+			for { set i 0 } { $i<= 3} { incr i} {
+				set val [word [expr 0xbf013C08 +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		80  {
+			puts "read DMA0 RxBD table"
+			set x [expr $item + 0x80500000]
+			word 0xbf002b44 $x;
+			set val [word 0xbf002b40];
+			puts [format "0x%08x\t0x%08x" $item $val];
+		}
+		81  {
+			puts "read DMA0 TxBD table"
+			set x [expr $item + 0x80510000]
+			word 0xbf002b44 $x;
+			set val [word 0xbf002b40];
+			puts [format "0x%08x\t0x%08x" $item $val];
+		}
+		96  {
+			puts "read DMA1 RxBD table"
+			set x [expr $item + 0x80600000]
+			word 0xbf002bc4 $x;
+			set val [word 0xbf002bc0];
+			puts [format "0x%08x\t0x%08x" $item $val];
+		}
+		97  {
+			puts "read DMA1 TxBD table"
+			set x [expr $item + 0x80610000]
+			word 0xbf002bc4 $x;
+			set val [word 0xbf002bc0];
+			puts [format "0x%08x\t0x%08x" $item $val];
+		}
+		default { puts " wrong table id ";}
+	}       
+}               
+
+proc wrtval {tid numth val} {
+	switch $tid {
+		0 {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		1  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		2  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		3  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		4  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		5  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		6  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		7  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		8  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		9  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		10  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		11  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		12  {
+			word [expr 0xbf02000c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		16 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		17 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		18 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		20 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		21 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		22 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		23 {
+			word [expr 0xbf018100 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		
+		32 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		34 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		36 {
+			puts "this is a read only table, NOT wrtable"
+		}
+		38 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		49 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		51 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		53 {
+			puts "this is a read only table, NOT wrtable"
+		}
+		55 {
+			puts "this is a read only table, NOT wrtable"
+		}
+		57 {
+			word [expr 0xbf014e0c +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		64 {
+			word [expr 0xbf013c08 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		65  {
+			word [expr 0xbf013c08 +$numth *4] $val;
+			puts [format "0x%08x" $val];
+		}
+		80 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		81 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		96 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		97 {
+			puts "this is a single word table, pls call wrtable directly"
+		}
+		default {
+			puts "select wrong table ID"
+		}
+	}
+}
+
+proc wrtable { tid item val} {
+	switch $tid {
+		0  {
+			puts "write Bridge Port table"
+			puts "table record $item"
+			set x [expr $item + 0xc0000000]	
+			word 0xbf020008 $x;
+		}   		
+		1   {
+			puts "write Bridge Address Resolution table"
+			puts "table record $item"
+			set x [expr $item + 0xc0010000]	
+			word 0xbf020008 $x;
+		}
+		2   {
+			puts "write Bridge Vlan Pointer table"
+			puts "table record $item"
+			set x [expr $item + 0xc0020000]
+			word 0xbf020008 $x;
+		}
+		3   {
+			puts "write Bridge Vlan Hash Table A"
+			puts "table record $item"
+			set x [expr $item + 0xc0030000]
+			word 0xbf020008 $x;
+		}
+		4   {
+			puts "write Bridge Vlan Hash Table B"
+			puts "table record $item"
+			set x [expr $item + 0xc0040000]
+			word 0xbf020008 $x;
+		}
+		5   {
+			puts "write Bridge Vlan Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0050000]
+			word 0xbf020008 $x;
+		}
+		6   {
+			puts "write Bridge CTAG Replacement Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0060000]
+			word 0xbf020008 $x;
+		}
+		7   {
+			puts "write Bridge VLAN Cross Connection Enable Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0070000]
+			word 0xbf020008 $x;
+		}
+		8   {
+			puts "write Bridge MAC Filter Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0080000]
+			word 0xbf020008 $x;
+		}
+		9   {
+			puts "write Bridge Remark Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0090000]
+			word 0xbf020008 $x;
+		}
+		10  {
+			puts "write Bridge Multicast Group Table "
+			puts "table record $item"
+			set x [expr $item + 0xc00a0000]
+			word 0xbf020008 $x;
+		}
+		11  {
+			puts "write Bridge Multicast Entry Table "
+			puts "table record $item"
+			set x [expr $item + 0xc00b0000]
+			word 0xbf020008 $x;
+		}
+		12  {
+			puts "write Bridge Port Egress Control Table "
+			puts "table record $item"
+			set x [expr $item + 0xc00c0000]
+			word 0xbf020008 $x;
+		}
+		16  {
+			puts "write Classify Field Mask Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0100000]	
+			word 0xbf0180FC $x;
+		}
+		17  {
+			puts "write Classify Rule hash Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0110000]
+			word 0xbf0180FC $x;
+		}
+		18  {
+			puts "write Classify Rule Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0120000]
+			word 0xbf0180FC $x;
+		}
+		20  {
+			puts "write Classify Flow ID mask Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0140000]	
+			word 0xbf0180FC $x;
+		}
+		21  {
+			puts "write Classify Flow Hash Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0150000]
+			word 0xbf0180FC $x;
+		}
+		22  {
+			puts "write Classify Flow Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0160000]
+			word 0xbf0180FC $x;
+		}
+		23  {
+			puts "write Classify Flow Remark Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0170000]
+			word 0xbf0180FC $x;
+		}
+		32  {
+			puts "write Upstream Flow Shaper ID Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0200000]						
+			word 0xbf014130 $val;
+			word 0xbf01412c $x;
+			puts [format "0x%08x" $val];			
+		}
+		34  {
+			puts "write Upstream Flow WRED ID Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0220000]						
+			word 0xbf014130 $val;
+			word 0xbf01412c $x;
+			puts [format "0x%08x" $val];			
+		}
+		36  {
+			puts "this is a read only table, NOT writable"			
+		}
+		38  {
+			puts "write Upstream Flow Table W "
+			puts "table record $item"
+			set x [expr $item + 0xc0260000];	
+			word 0xbf014130 $val;
+			word 0xbf01412c $x;
+			puts [format "0x%08x" $val];						
+		}
+		49  {
+			puts "read Dowstream Flow Shaper ID Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0310000]		
+			word 0xbf018e0c $val;
+			puts [format "0x%08x" $val];
+			word 0xbf014e08 $x;			
+		}		
+		51  {
+			puts "read Dowstream Flow WRED ID Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0330000]
+			word 0xbf018e0c $val;
+			puts [format "0x%08x" $val];
+			word 0xbf014e08 $x;		
+		}
+		53  {
+			puts "this is a read only table,NOT writable "			
+		} 
+		55  {
+			puts "this is a read only table,NOT writable "			
+		}
+		57  {
+			puts "write Downstram Port Weight Sum Table w "
+			puts "table record $item"
+			set x [expr $item + 0xc0390000]
+			word 0xbf014e08 $x;					
+		}
+		59  {
+			puts "read Downstram flow Table W, but this is a write only table "						
+		}		
+		64  {
+			puts "write SAR UPPT Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0400000]
+			word 0xbf013C04 $x;
+		}
+		65  {
+			puts "write SAR EPPT Table "
+			puts "table record $item"
+			set x [expr $item + 0xc0410000]	
+			word 0xbf013C04 $x;			
+		}
+		80  {
+			puts "write DMA0 RxBD table"
+			set x [expr $item + 0xc0500000]			
+			word 0xbf002b40 $val;	
+			word 0xbf002b44 $x;		
+		}
+		81  {
+			puts "write DMA0 TxBD table"
+			set x [expr $item + 0xc0510000]
+			word 0xbf002b40 $val;
+			word 0xbf002b44 $x;
+		}
+		96  {
+			puts "write DMA1 RxBD table"
+			set x [expr $item + 0xc0600000]
+			word 0xbf002bc0 $val;
+			word 0xbf002bc4 $x;			
+		}
+		97 {
+			puts "write DMA1 TxBD table"
+			set x [expr $item + 0xc0610000]
+			word 0xbf002bc0 $val;
+			word 0xbf002bc4 $x;			
+		}
+		default { puts " wrong table id ";}
+	}       
+}
+
+proc zteio {} {
+	# configure CS1-5 timing
+	for { set i 1 } { $i<=5} { incr i} {
+		word [expr 0xbf001000 +$i*4] 0x800c7fff
+	}
+	#configure CS1-5 space size:8K, base addr:BE010000
+	for { set i 1 } { $i<=5} { incr i} {
+		word [expr 0xbf001020 +$i*4] [expr 0x7fe1e000 + $i *0x10]
+	}
+}
+
+proc utpinit { mode } {
+	#dual latency
+	word 0xbf000008 0x4	
+	#phy 0-17 enable
+	word 0xbf010000 0x3ffff	
+	#select single group mode
+	word 0xbf010030 0
+	#enable utp0
+	if { $mode == 0 } {
+		puts "utopia 16bit mode:"
+		word 0xbf010020 0x80088008
+	} else {
+		puts "utopia 8bit mode:"
+		word 0xbf010020 0x800e800e
+	}	
+	puts "utp configure completed"
+}
+
+proc utploop { mode } {
+	if { $mode == 0 } {
+		puts "utopia normal mode:"
+		word 0xbf010024 0x0
+	} else {
+		puts "utopia loopback mode:"
+		word 0xbf010024 0x1
+	}	
+}
+
+proc iwfinit { } {	
+	#phy 0 enable
+	word 0xbf013000 0x800d0000
+	puts "iwf configure completed"
+}
+
+proc geinit { port } {
+	switch $port {
+		0 {
+			set badr 0xbf008000;
+			puts "GE0 selected";
+		}
+		1 {
+			set badr 0xbf00a000;
+			puts "GE1 selected";
+		}
+		2 {
+			set badr 0xbf00c000;
+			puts "GEL selected";
+		}
+		default { 
+			puts "wrong port selected!!!";
+			return; 
+		}
+	}
+	#ge loopback
+	#word $badr 0x1;
+	#config 1000M/100M
+	#word [expr $badr +8] 0x1
+	word [expr $badr +8] 0x0
+	#enable tx rx
+	word [expr $badr +0x200] 0x3f;
+	#full-duplex crc/pad enable 	
+	word [expr $badr +0x204] 0x7127;
+	puts "ethernet interface configure completed"	 
+}
+
+proc qosinit {} {
+	# upstream shaper template
+	for { set i 1 } { $i<=15} { incr i} {
+		word [expr 0xbf014000 +$i*8] 0x18fffd0
+		word [expr 0xbf014004 +$i*8] 0xfffd0
+	}
+	# Upstream Shaper Enable
+	for { set i 1 } { $i<=15} { incr i} {
+		word [expr 0xbf014080 +$i*4] 0xffffffff
+	}
+	# upstream shaper queue length
+	word 0xbf0140c0 0x3ff3ff
+	
+	# upstream qos control
+	word 0xbf014128 0xc
+	
+	# downstream shaper template
+	for { set i 1 } { $i<=31} { incr i} {
+		word [expr 0xbf014000 +$i*8] 0x1cfffd0
+		word [expr 0xbf014004 +$i*8] 0xfffd0
+	}
+	
+	# downstream Shaper Enable
+	for { set i 1 } { $i<=31} { incr i} {
+		word [expr 0xbf014D80 +$i*4] 0xffffffff
+	}
+	
+	# downstream shaper queue length
+	word 0xbf0140c0 0x3ff3ff
+	
+	# downstream qos control
+	word 0xbf014e04 0xc
+	
+	puts "qos configure completed"
+}
+
+proc sarinit {} {
+	# sar memory base address
+	#word 0xbf013c00 0x0
+	#queue length
+	word 0xbf013c18 0x40
+	word 0xbf013c1c 0x40
+	puts "sar configure completed"
+}
+
+proc bdginit {} {
+	# enable bridge
+	word 0xbf020000 0x1
+	 
+	puts "bridge configure completed"
+}
+
+proc cfyinit {} {
+	# classify initial
+	#word 0xbf018000 0x3
+	# classify initial
+	word 0xbf018004 0x7df 
+	
+	puts "classify configure completed"
+}
+
+proc  init {} {
+	# dual latency
+	word 0xbf000008 4
+	# table initial
+	#word 0xbf000008 0x1
+	# LL enable
+	word 0xbf00000c 0x1
+	# DRAM size: 16M
+	word 0xbf000010 0x1010
+	# utp initialize
+	utpinit
+	# iwf initialize
+	iwfinit
+	# ge initialize
+	geinit 0
+	geinit 1
+	# sar initialize
+	sarinit
+	# qos initialize
+	qosinit
+	# bridge initialize
+	bdginit
+	# classify initialize
+	cfyinit	
+	# tag register
+	word 0xbf020048 0x8200
+	word 0xbf02004C 0x9200
+	#link control
+	word 0xbf00C00C 0x3
+	word 0xbf014128 0xa
+	
+	puts "IPMux initialization complete"
+}
+
+
+proc rdasmqcnt { item  }  {
+			puts "read asm counter Table "
+			puts "table record $item"
+			set x [expr $item + 0x80030000]
+			word 0xbf013C04 $x;
+			for { set i 0 } { $i<= 3} { incr i} {
+				set val [word [expr 0xbf013C08 +$i *4]];
+				puts [format "0x%08x" $val];
+			}			
+		}
+		
+########### one packet ##############
+
+proc tconf { } {
+		#### iwf uppt(64)         entry = 4    value = 005de2d2
+		wrtval 64 0 0x005de2d2
+		wrtval 64 1 0x00000000
+		wrtval 64 2 0x00000000
+		wrtval 64 3 0x00000000
+		wrtable 64 4 0 
+		#### bridge ingress(0)    port  = 4    value = 00000001 f8d5b79d c012bcff
+		wrtval 0 0 0xc012bcff
+		wrtval 0 1 0xf8d5b79d
+		wrtval 0 2 0x00000001
+		wrtable 0 4 0
+		#### classify mask(16)    entry = 0    value = 00000010 00000000 00000000 00000000 00000000 00000000 00000000
+		####                                          00000000 00000000 00000000 00000000 00000000 00000000 000000ff
+		####                                          00000000 00000000 00000000 0000ff00
+		wrtval 16 0 0x0000ff00
+		wrtval 16 1 0x00000000
+		wrtval 16 2 0x00000000
+		wrtval 16 3 0x00000000
+		wrtval 16 4 0x000000ff
+		wrtval 16 5 0x00000000
+		wrtval 16 6 0x00000000
+		wrtval 16 7 0x00000000
+		wrtval 16 8 0x00000000
+		wrtval 16 9 0x00000000
+		wrtval 16 10 0x00000000
+		wrtval 16 11 0x00000000
+		wrtval 16 12 0x00000000
+		wrtval 16 13 0x00000000
+		wrtval 16 14 0x00000000
+		wrtval 16 15 0x00000000
+		wrtval 16 16 0x00000000
+		wrtval 16 17 0x00000010
+		wrtval 16 18 0x00000000
+		wrtable 16  0 0
+		
+		#### classify pointer(17) entry = 177  value = 00000000 00010000
+		wrtval 17 0 0x00010000 
+		wrtval 17 1 0x00000000 
+		wrtval 17 2 0x00000000 
+		wrtval 17 3 0x00000000 
+		wrtval 17 4 0x00000000 
+		wrtval 17 5 0x00000000 
+		wrtval 17 6 0x00000000 
+		wrtval 17 7 0x00000000 
+		wrtval 17 8 0x00000000                           
+		wrtval 17 9 0x00000000                           
+		wrtval 17 10 0x00000000                          
+		wrtval 17 11 0x00000000                          
+		wrtval 17 12 0x00000000                          
+		wrtval 17 13 0x00000000                          
+		wrtval 17 14 0x00000000                          
+		wrtval 17 15 0x00000000                          
+		wrtval 17 16 0x00000000                          
+		wrtval 17 17 0x00000000                          
+		wrtval 17 18 0x00000000                          
+		wrtable 17 177 0      
+		                      
+		#### classify rule(18)  entry = 144  value = 00069471 00000000 00000000 00000000 00000000 000000b6 00000000
+		####                                        00000000 00000000 0000e600 00000000 00000000 00000000 00000000
+		####                                        00000000 00000000 00000000 00000000
+		wrtval 18 0 0x00000000
+		wrtval 18 1 0x00000000
+		wrtval 18 2 0x00000000
+		wrtval 18 3 0x00000000
+		wrtval 18 4 0x00000000
+		wrtval 18 5 0x00000000
+		wrtval 18 6 0x00000000
+		wrtval 18 7 0x00000000
+		wrtval 18 8 0x0000e600
+		wrtval 18 9 0x00000000
+		wrtval 18 10 0x00000000
+		wrtval 18 11 0x00000000
+		wrtval 18 12 0x000000b6
+		wrtval 18 13 0x00000000
+		wrtval 18 14 0x00000000
+		wrtval 18 15 0x00000000
+		wrtval 18 16 0x00000000 
+		wrtval 18 17 0x00069471
+		wrtable 18 144 0
+		                                          
+		#### flow mask(20)        entry = 0    value = 00004000 00200000
+		wrtval 20 0 0x00200000
+		wrtval 20 1 0x00004000
+		wrtable 20 0 0
+		
+		#### flow pointer(21)     entry = 528  value = 00000085 
+		wrtval 21 0 0x00000085
+		wrtable 21 528 0
+		
+		#### flow rule  (22)      entry = 133  value = 00000000 00000000   
+		wrtval 22 0 0x00000000
+		wrtval 22 1 0x00000000
+		wrtable 22 133 0
+		
+		#### vlan pointer (2)     entry = 21   value = 00000200
+		wrtval 2 0 0x00000200
+		wrtable 2 21 0
+		
+		#### vlan hash A  (3)     entry = 1    value = 00000ab6 fff00000
+		wrtval 3 0 0xfff00000
+		wrtval 3 1 0x00000ab6
+		wrtable 3 1 0
+		
+		#### vlan member (5)      entry = 0    value = 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+		####                                          00000000 00000000 00000000 0000000f ff011fc5
+		wrtval 5 0 0xff011fc5
+		wrtval 5 1 0x0000000f
+		wrtval 5 2 0x00000000
+		wrtval 5 3 0x00000000
+		wrtval 5 4 0x00000000
+		wrtval 5 5 0x00000000
+		wrtval 5 6 0x00000000
+		wrtval 5 7 0x00000000
+		wrtval 5 8 0x00000000
+		wrtval 5 9 0x00000000
+		wrtval 5 10 0x00000000
+		wrtval 5 11 0x00000000
+		wrtable 5 0 0
+		
+		#### arl table   (1)      entry = 2192 value = 006ab6ff f50cc2e6 f2ab17f1
+		wrtval 1 0 0xf2ab17f1
+		wrtval 1 1 0xf50cc2e6
+		wrtval 1 2 0x006ab6ff 
+		wrtable 1 2192 0
+		
+		#### remark bri(9)        etnry = 48   vlaue =   00000006
+		####                             49   00000004
+		####                             50   00000002
+		####                             51   00000006
+		####                             52   00000000
+		####                             53   00000003
+		####                             54   00000006
+		####                             55   00000000
+		wrtval 9 0 0x00000006
+		wrtable 9 48 0
+		wrtval 9 0 0x00000004
+		wrtable 9 49 0
+		wrtval 9 0 0x00000002
+		wrtable 9 50 0
+		wrtval 9 0 0x00000006
+		wrtable 9 51 0
+		wrtval 9 0 0x00000000
+		wrtable 9 52 0
+		wrtval 9 0 0x00000003
+		wrtable 9 53 0
+		wrtval 9 0 0x00000006
+		wrtable 9 54 0
+		wrtval 9 0 0x00000000
+		wrtable 9 55 0
+		
+		#### upstream flow(38) entry = 0 value = 00117000
+		wrtable 38 0 0x00117000
+		
+}
+
+proc deluppt { item } {
+	wrtval 64 0 0
+	wrtable 64 $item 0
+}
+
+proc compt { } {
+	rdtable 64 4
+	rdtable 0 4
+	rdtable 16 0
+	rdtable 17 177
+	rdtable 18 144
+	rdtable 20 0
+	rdtable 21 528
+	rdtable 22 133
+	rdtable 2 21
+	rdtable 3 1
+	rdtable 5 0
+	rdtable 1 2192
+	rdtable 9 48  
+	rdtable 36 0  
+}
+
+proc shaperdis { } {
+	for { set i 0 } { $i<= 15} { incr i} {
+				word [expr 0xbf014080 +$i *4] 0;				
+	}
+}                   
+
+proc wdg { val } {
+	word 0xbf002800 0;
+	word 0xbf002808 0x10000
+	word 0xbf002800 [ expr 0x180001 + $val *2];
+	word 0xbf002804 0xaa
+	word 0xbf002804 0x55
+	puts " WDG configure complete"
+	for { set i 0 } { $i<= 15} { incr i} {
+		set x [ word 0xbf00280c ]
+		puts "  $x	"
+	}
+}
+proc wdf { val } {
+	word 0xbf002800 0;
+	word 0xbf002808 0x100000
+	word 0xbf002800 [ expr 0x180001 + $val *2];
+	word 0xbf002804 0xaa
+	word 0xbf002804 0x55
+	puts " WDG configure complete"
+	for { set i 0 } { $i<= 150000} { incr i} {
+		set x [ word 0xbf00280c ]
+		puts "  $x	"
+		{feedwdg}
+	}
+}
+
+proc wdi { val } {
+	dump 0xbf002800 word
+	word 0xbf002800 0;
+	word 0xbf002808 0x10000
+	word 0xbf002800 [ expr 0x180001 + $val *2];
+	word 0xbf002804 0xaa
+	word 0xbf002804 0x55
+	dump 0xbf002800 word
+}
+
+proc feedwdg { } {
+	#word 0xbf002800 0
+	#word 0xbf002800 0x180001
+	word 0xbf002804 0xaa
+	word 0xbf002804 0x55
+	#puts " WDG configure complete"
+	#for { set i 0 } { $i<= 15} { incr i} {
+	#	set x [ word 0xbf00280c ]
+	#	puts "  $x	"
+	#}
+}
+
+proc bustest {badr eadr times } {
+#	set space [expr $eadr - $badr];
+#	if { $space > 100 } { set resolution [expr $space/100];
+#	} else { set resolution 1; }	
+	for {set i $badr} {$i<=$eadr} {set i [expr $i+4] } {
+#		set process [expr $i - $badr];
+#		if { [expr $process % $resolution ] == 0 } {
+#			set percent [expr $i - $badr]; 
+#			set ratio [expr $percent*100/$space]; 
+#			puts "$ratio%";			
+#		}		
+		word $i $i
+		set val [word $i];
+		while { $val != $i } {
+			word $i $i
+			set val [word $i];
+		}
+		set val1 [word $badr];
+		puts [format "0x%08x\t0x%08x\t0x%08x" $i $val $val1];		 
+	} 
+	puts "write completed!!!    read begin...";	
+	
+	for {set i 0} {$i<=$times} {incr i} {
+		for {set j $badr} {$j<=$eadr} {set j [expr $j+4]} {
+			set val1 [word $j];
+			set val2 [word $j];
+			while { $val1 != $val2 } {
+				set val1 [word $j];
+				set val2 [word $j];
+			}
+			set val $val1;   
+				 
+			if {$val != $j } {
+				puts [format "0x%08x\t0x%08x" $j $val];	
+			 	puts "memory addr $j read/write error!!!";
+			 	break;
+			}
+		}	
+		puts "times = $i"	
+	}
+	puts "test completed!!!";
+}
+
+
+proc memt { badr eadr times } {
+	puts "begin clear the DRAM..."
+	set val [expr $eadr - $badr]
+	word $badr..+$val 0
+	puts "clear OK"
+	
+	puts "begin read..."
+	for {set i 0} {$i<=$times} {incr i} {
+		for {set j $badr} {$j< $eadr } {set j [expr $j+4]} {
+			set val [word $j];
+			if {$val != 0 } {
+				puts [format "0x%08x\t0x%08x" $j $val];	
+			 	puts "memory addr $j read/write error!!!";
+			 	break;
+			}
+			if { [expr $j % 1048576 ] == 0 } {
+				puts "$j..."
+			}
+		}			
+	}
+	puts "test complete!!!"	 
+}
+
+proc tbi { link  } {
+	if { $link == 0 } {
+		word 0xbf008004 1
+		word 0xbf008008 1
+		word 0xbf008200 0x3f
+		word 0xbf008204 0x7207 
+	} else {	
+		word 0xbf00a004 1     
+		word 0xbf00a008 1 
+		word 0xbf00a200 0x3f    
+		word 0xbf00a204 0x7207
+	}
+}
+
+proc geloop { link  } {
+	if { $link == 0 } {
+		word 0xbf008000 1		
+	} else {	
+		word 0xbf00a000 1 
+	}
+}
+
+proc lacp { link times } {
+	if { $link == 0 } {
+		set datareg 0xbf008020
+		set ctlreg 0xbf008024 
+	} else {	
+		set datareg 0xbf008028
+		set ctlreg 0xbf00802c
+	}
+	for {set j 0} {$j<= $times} {incr j} {	
+		# packet lengh = 128
+		word $ctlreg [expr 0x8+0x3]
+		word $datareg 0x89abcdef
+		for {set i 0} {$i<= 30} {incr i} {
+			word $ctlreg [expr 0x0+0x3] 
+			word $datareg $i
+		}
+		word $ctlreg [expr 0x4+0x3]
+		word $datareg 0x12345678
+		puts [format "0x%08x" $j]
+	}
+}
+
+proc i2c_init { } {
+	#master
+	word 0xbf004410 0x3
+	word 0xbf00440c 0x40 
+	set val [word 0xbf004400];
+	puts [format "init = 0x%08x" $val]  
+	#disable timeout
+	word 0xbf004400 0x7f       
+}       
+
+proc i2c_send { byte times num delay} {
+	for {set j 0} {$j<= $times} {incr j} {
+		# start 
+		for {set i 0} {$i<= 1} {incr i} {	
+			word 0xbf00440c	0x60		
+			set val [word 0xbf004400];
+			puts [format "start = 0x%08x" $val]
+			word 0xbf00440c
+		}		
+		# wr sla_w: addr = 0x11
+		word 0xbf004404 0x22				
+		# start write
+		word 0xbf004410 0x7
+		set val [word 0xbf00440c]
+		puts [format "int = 0x%08x" $val]
+#		while { [expr $val & 0x8] == 0x8 } {
+#			set val [word 0xbf00440c]
+#			puts [format "int1 = 0x%08x" $val]    
+#			set val [word 0xbf004400]; 
+#			puts [format "address = 0x%08x" $val]          
+#		}       
+		set val [word 0xbf00440c]
+		puts [format "int clear = 0x%08x" $val]
+		set val [word 0xbf004400];
+		puts [format "address = 0x%08x" $val]
+		set val [word 0xbf00441c];
+		puts [format "debugsta = 0x%08x" $val]
+#		#clear sta bit
+#		word 0xbf00440c 0x40
+#		word 0xbf004404
+#		puts [format "******the %d times begin to send data:" $j]
+		for {set i 0} {$i<= $num} {incr i} {
+			# write data0
+			word 0xbf004404 [expr $byte + $i] 
+			# start write		
+			word 0xbf004410 0x7
+			set val [word 0xbf00440c]
+			puts [format "int = 0x%08x" $val]
+			set val [word 0xbf00440c]
+#			while { [expr $val & 0x8] == 0x8 } {
+#				set val [word 0xbf00440c]
+#				puts [format "int1 = 0x%08x" $val]
+#			}
+			puts [format "int clear = 0x%08x" $val]
+			set val [word 0xbf004400];
+			puts [format "data %d = 0x%08x" $i $val]
+			set val [word 0xbf00441c];
+			puts [format "debugsta = 0x%08x" $val]
+			for {set k 0} {$k<= $delay} {incr k} { }
+		}
+		puts "*****data transfer ended "
+		# stop
+		word 0xbf00440c 0x50                    
+		set val [word 0xbf00440c]
+		puts [format "int = 0x%08x" $val] 
+		set val [word 0xbf00440c]
+		puts [format "int clear = 0x%08x" $val]                        
+		set val [word 0xbf004400];              
+		set count 0                             
+		while { $val != 0xf8 } {		
+			incr count                      
+			word 0xbf00440c 0x50            
+			if { $count > 256 } {           
+				break;                  
+			}                                         
+		}                                                 
+		puts [format "stop = 0x%08x" $val]		  
+	}                 
+}                         
+                          
+                          
+proc i2c_m_rec { num delay} {
+	#master
+	word 0xbf004410 0x3
+	word 0xbf00440c 0x40 
+	word 0xbf004408 0x32
+	set val [word 0xbf004400];
+	puts [format "init = 0x%08x" $val]	
+	# start 	
+	word 0xbf00440c	0xe7		
+	set val [word 0xbf004400]
+	puts [format "start = 0x%08x" $val]		
+	# wr sla_R: addr = 0x11
+	word 0xbf004404 0x23
+	word 0xbf004410 0x7
+	word 0xbf00440c	
+	set val [word 0xbf004400];
+	puts [format "sta = 0x%08x" $val]			
+	# start read
+	for {set i 0} {$i<= $num} {incr i} {
+		word 0xbf004410 0x9
+		word 0xbf00440c 
+		set val [word 0xbf004404]                                
+        	puts [format "rec_data = 0x%08x" $val]
+        	set val [word 0xbf004400];
+		puts [format "sta = 0x%08x" $val]
+		for {set j 0} {$j<= $delay} {incr j} { }
+	}
+        # stop
+	word 0xbf00440c 0xd7                    
+	word 0xbf00440c                         
+	set val [word 0xbf004400];              
+	set count 0                             
+	while { $val != 0xf8 } {		
+		incr count                      
+		word 0xbf00440c 0xd7            
+		if { $count > 256 } {           
+			break;                  
+		}                                         
+	}                                                 
+	puts [format "stop = 0x%08x" $val]   
+}  
+                          
+                          
+proc mii_read { port phy } {
+	switch $port {
+		0 {
+			set badr 0xbf008000;
+			puts "GE0 selected";
+		}
+		1 {
+			set badr 0xbf00a000;
+			puts "GE1 selected";
+		}
+		2 {
+			set badr 0xbf00c000;
+			puts "GEL selected";
+		}
+		default { 
+			puts "wrong port selected!!!";
+			return; 
+		}
+	}
+	#enable tx rx
+	word [expr $badr +0x200] 0x3f;
+	#full-duplex crc/pad enable 	
+	word [expr $badr +0x204] 0x7127;
+	puts "ethernet interface configure completed"	
+	for {set i 0} {$i<= 31} {incr i} {
+		# 32bit preamble, MDC = sysclk/28
+		word [expr $badr + 0x220] 0x17
+		# phy addr, register
+		word [expr $badr + 0x228] [expr [expr $phy << 8] + $i]
+		set val [word [expr $badr + 0x228]]
+		puts [format "phyaddr=0x%08x" $val]
+		# start read
+		word [expr $badr + 0x224] 0x1
+		# return the data
+		set val [word [expr $badr+0x230]]
+		puts [format "reg%d = 0x%08x" $i $val]
+		# end read
+		word [expr $badr + 0x224] 0x0
+	}
+}    
+
+proc mii_write { port phy reg valw} {
+	switch $port {
+		0 {
+			set badr 0xbf008000;
+			puts "GE0 selected";
+		}
+		1 {
+			set badr 0xbf00a000;
+			puts "GE1 selected";
+		}
+		2 {
+			set badr 0xbf00c000;
+			puts "GEL selected";
+		}
+		default { 
+			puts "wrong port selected!!!";
+			return; 
+		}
+	}
+	#enable tx rx
+	word [expr $badr +0x200] 0x3f;
+	#full-duplex crc/pad enable 	
+	word [expr $badr +0x204] 0x7127;
+	puts "ethernet interface configure completed"		
+	
+	# 32bit preamble, MDC = sysclk/28
+	word [expr $badr + 0x220] 0x17
+	# phy addr, register
+	word [expr $badr + 0x228] [expr [expr $phy << 8] + $reg]
+	
+	# start write 
+	word [expr $badr + 0x22c] $valw
+	
+	puts "------write ok------"	
+}    
+
+           
+proc mii_readr { port phy reg} {
+	switch $port {
+		0 {
+			set badr 0xbf008000;
+			puts "GE0 selected";
+		}
+		1 {
+			set badr 0xbf00a000;
+			puts "GE1 selected";
+		}
+		2 {
+			set badr 0xbf00c000;
+			puts "GEL selected";
+		}
+		default { 
+			puts "wrong port selected!!!";
+			return; 
+		}
+	}
+	#enable tx rx
+	word [expr $badr +0x200] 0x3f;
+	#full-duplex crc/pad enable 	
+	word [expr $badr +0x204] 0x7127;
+	#puts "ethernet interface configure completed"	
+	
+		# 32bit preamble, MDC = sysclk/28
+		#word [expr $badr + 0x220] 0x17
+		# phy addr, register
+		word [expr $badr + 0x228] [expr [expr $phy << 8] + $reg]
+		set val [word [expr $badr + 0x228]]
+		puts [format "phyaddr=0x%08x" $val]
+		# start read
+		word [expr $badr + 0x224] 0x1
+		# return the data
+		set val [word [expr $badr+0x230]]
+		puts [format "reg%d = 0x%08x" $reg $val]
+		# end read
+		word [expr $badr + 0x224] 0x0
+	
+}    
+
+proc mii_rst { port } {
+	switch $port {
+		0 {
+			set badr 0xbf008000;
+			puts "GE0 selected";
+		}
+		1 {
+			set badr 0xbf00a000;
+			puts "GE1 selected";
+		}
+		2 {
+			set badr 0xbf00c000;
+			puts "GEL selected";
+		}
+		default { 
+			puts "wrong port selected!!!";
+			return; 
+		}
+	}
+	#reset MII interface
+	word [expr $badr + 0x220] 0x80000000
+	for {set j 0} {$j<= 100} {incr j} { }
+	word [expr $badr + 0x220] 0x0	
+	puts [format "GE%d is reset" $port]
+}                      
+
+proc posphyinit { mode } {
+	#posphy mode select
+	word 0xbf000008 0x2
+	#enable 0~17
+	word 0xbf010000 0x3ffff
+	#posphy enable
+	switch $mode {  
+		0 {
+			puts "posphy whole packet mode:"
+			word 0xbf010020 0xe038e038
+		  }
+		1 {
+			puts "posphy packet mode:"
+			word 0xbf010020 0x80388038
+		  }
+		2 {
+			puts "posphy interleave packet mode::"
+			word 0xbf010020 0x80288028
+		  }
+		default { 
+			puts "wrong mode selected!!!";
+			return; 
+		}		
+	}	
+	#loopback
+	word 0xbf010024 0x1	
+	puts "posphy initial OK"	
+}                
+
+
+#wr 0x8 0x2      
+#wr 0x10000 0x3ffff
+#wr 0x10020 0x80308030
+#wr 0x10024 0x1
+
+
+proc daisychain { } {	
+	word 0xbf008200 0x3f
+	word 0xbf008204 0x7127
+	word 0xbf00a200 0x3f
+	word 0xbf00a204 0x7127
+	#GE daisychain mode
+	word 0xbf00800c 0x310
+}       
+
+
+proc disint { } {
+	puts "multicast interrupt"
+	set reg 0x21400
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "DN stream traffic"
+	set reg 0x14F00
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "UP stream traffic"
+	set reg 0x14400
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "PPE"
+	set reg 0x18184
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "Bridge"
+	set reg 0x21004
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "IWF"
+	set reg 0x13E04
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+	puts "UTP/POS"
+	set reg 0x10200
+	set val [word [expr 0xbf000000+$reg]]
+	puts [format "reg0x%08x = 0x%08x" $reg $val]
+	
+}
+	

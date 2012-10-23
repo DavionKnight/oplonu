@@ -1,0 +1,66 @@
+#connect to MDI
+#file u-boot
+
+shell printf "start debug ... \n "
+###for old fs2 tool###
+set mdi connectreset 0
+target mdi 0:1
+
+###for new fs2 tool###
+#set mdi target 1
+#target mdi
+
+shell printf "Loading ... "
+load
+shell printf " OK \n"
+shell printf "\a"
+
+shell printf "Running ... \n"
+delete breakpoints
+
+set $pc=0xa1e00000
+set $pc=0xa1e00000
+set $pc=0xa1e00000
+#b opipmux_gel_init
+#b eth_init
+#b *0xa1e06694
+#b flash_init
+#b do_saveenv
+#b saveenv
+#b memcheck32
+#b debug_halt 
+#b *0xa1e005e0
+#b board_init_f
+#b ipmux_ddr_tune
+#b relocate_code
+#b board_init_r
+#b getenv
+#b *0xa1e0042c
+#b *0xa1e0043c
+#b *0xa1e00448
+
+###for debug uboot in real mode###
+#b *0xa0f784c4
+#c
+#add-symbol-file u-boot 0x81f78000
+#si
+#si
+#b sdram_test_asm
+###for update uboot by fs2###
+#b testboard
+#b check_as1
+#b *0xa0f9d458
+#b *0xa0f9a444
+#b debug_halt
+#b main_loop
+#define sd
+#call ipmuxRtcDateSet(2006,3,4,5)
+#end
+
+#define sh
+#call ipmuxRtcTimePrint()
+#end
+stepi
+c 
+shell printf "Bye \a"
+shell printf "bye ... \n\a"

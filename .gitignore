@@ -1,0 +1,16 @@
+.*
+!.gitignore
+*.o
+*.bmp
+*.xpm
+*.ico
+*.gif
+*.htm
+*.m4
+*.png
+*.d
+*.sgml
+*.html
+.cvsignore
+CVS
+ChangeLog

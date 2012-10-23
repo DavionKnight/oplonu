@@ -1,0 +1,422 @@
+/*
+ * (C) Copyright 2003-2005
+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+
+/*
+ * This file contains the configuration parameters for the INCA-IP board.
+ */
+
+#ifndef _OPIPMUX_H_
+#define _OPIPMUX_H_ 1
+/*
+#define ET_DEBUG 1
+#define OPIPMUX_DEBUG(fmt,args...) printf(fmt,##args);
+#define OPIPMUX_DEBUG(fmt) puts(fmt)
+*/
+#define OPIPMUX_DEBUG(fmt)
+
+/* Use the HUSH parser */
+#if 0
+#define CFG_HUSH_PARSER
+#ifdef  CFG_HUSH_PARSER
+#define CFG_PROMPT_HUSH_PS2 "> "
+#endif
+#endif
+/*
+#define CFG_ALT_MEMTEST     1
+*/
+
+#define CONFIG_MIPS32       1   /* MIPS 4Kc CPU core    */
+#define CONFIG_OP_IPMUX 1   /* on a OPIPMUX Board   */
+
+
+#define CONFIG_IPADDR 192.168.1.98
+
+#define CONFIG_ETHADDR  00:00:98:ee:ee:ee
+#define CONFIG_OVERWRITE_ETHADDR_ONCE   1
+
+#define INFINEON_EBU_BOOTCFG    0x40C4  /* CMULT = 8 */
+
+#define CONFIG_BOOTDELAY    5   /* autoboot after 5 seconds */
+
+#define CONFIG_BAUDRATE 38400
+
+/* valid baudrates */
+#define CFG_BAUDRATE_TABLE  { 9600, 19200, 38400, 57600, 115200 }
+
+#define CONFIG_TIMESTAMP        /* Print image info with timestamp */
+
+/*
+#define CONFIG_PREBOOT  "echo;" \
+    "echo Type \"run flash_nfs\" to mount root filesystem over NFS;" \
+    "echo"
+*/
+
+#define CONFIG_PREBOOT  ""
+
+#undef  CONFIG_BOOTARGS
+
+#define CONFIG_EXTRA_ENV_SETTINGS                   \
+    "nfsargs=setenv bootargs root=/dev/nfs rw "         \
+        "nfsroot=$(serverip):$(rootpath)\0"         \
+    "ramargs=setenv bootargs root=/dev/ram rw\0"            \
+    "addip=setenv bootargs $(bootargs) "                \
+        "ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask)"  \
+        ":$(hostname):$(netdev):off\0"              \
+    "addmisc=setenv bootargs $(bootargs) "              \
+        "console=ttyS0,$(baudrate) "                \
+        "ethaddr=$(ethaddr) "                   \
+        "panic=1\0"                     \
+    "flash_nfs=run nfsargs addip addmisc;"              \
+        "bootm $(kernel_addr)\0"                \
+    "flash_self=run ramargs addip addmisc;"             \
+        "bootm $(kernel_addr) $(ramdisk_addr)\0"        \
+    "net_nfs=tftp 80500000 $(bootfile);"                \
+        "run nfsargs addip addmisc;bootm\0"         \
+    "rootpath=/opt/eldk/mips_4KC\0"                 \
+    "bootfile=/tftpboot/INCA/uImage\0"              \
+    "kernel_addr=B0040000\0"                    \
+    "ramdisk_addr=B0100000\0"                   \
+    "u-boot=/tftpboot/INCA/u-boot.bin\0"                \
+    "load=tftp 80500000 $(u-boot)\0"                \
+    "update=protect off 1:0-2;era 1:0-2;"               \
+        "cp.b 80500000 B0000000 $(filesize)\0"          \
+    ""
+#define CONFIG_NFSBOOTCOMMAND  "tftp 0x80a00000 uImage.a\\;bootm 0x80a00000"
+#define CONFIG_BOOTARGS  "root=/dev/nfs rw ip=192.168.1.98 mac=00:00:98:ee:ee:ee nfsroot=192.168.1.58:/home/ychen/workbench/mips_4KC_new mem=32M nof"
+#define CONFIG_SERVERIP  192.168.1.58
+#define CONFIG_ETHADDR 00:00:98:ee:ee:ee
+/* boot from flash
+#define CONFIG_BOOTCOMMAND  "run flash_self"
+*/
+#define CONFIG_BOOTCOMMAND  "run nfsboot"
+
+#if 0
+#define CONFIG_COMMANDS        (CONFIG_CMD_DFL  | \
+                CFG_CMD_ASKENV  | \
+                CFG_CMD_DHCP    | \
+                CFG_CMD_ELF | \
+                CFG_CMD_JFFS2   | \
+                CFG_CMD_NFS | \
+                CFG_CMD_PING    | \
+                CFG_CMD_SNTP    )
+#else
+#define CONFIG_COMMANDS        (CONFIG_CMD_DFL  | \
+                CFG_CMD_ASKENV  | \
+                CFG_CMD_ELF | \
+                CFG_CMD_PING    | \
+                CFG_CMD_SNTP    )
+#endif
+#include <cmd_confdefs.h>
+
+/*extra : for port linux code to uboot*/
+#define UINT32   unsigned int
+#define IPMUX_REG_BASE          0xBF000000
+#define OPL_OK              0
+#define OPL_ERROR           (-1)
+#define OPL_STATUS          int
+#define OPL_ZERO            0
+#define OPL_NULL            ((void *) 0)    /* a null pointer */
+#define REGID_INIT_VALUE 0xFFFFAAAA
+#define REG_ADDR_ALLIGNED       4
+#define IPMUX_REG_ID2ADDR(regId)    (IPMUX_REG_BASE + (regId))
+
+/*
+#define DBGREG printf("______DEBUG REG:");printf
+*/
+#define DBGREG printf
+/*
+#define ipMuxRegWrite(regId, val) DBGREG("write 0x%08x val=0x%08x\n",IPMUX_REG_ID2ADDR(regId),val);*((volatile UINT32 *)IPMUX_REG_ID2ADDR(regId)) = (UINT32)(val)
+#define ipMuxRegRead(regId, pval) DBGREG("read  0x%08x\n",IPMUX_REG_ID2ADDR(regId));*(UINT32*)(pval) = *(volatile UINT32 *)IPMUX_REG_ID2ADDR(regId)
+*/
+#define ipMuxRegWrite(regId, val)   *((volatile UINT32 *)IPMUX_REG_ID2ADDR(regId)) = (UINT32)(val)
+#define ipMuxRegRead(regId, pval)   *(volatile UINT32*)(pval) = *(volatile UINT32 *)IPMUX_REG_ID2ADDR(regId)
+
+#define strtoul simple_strtol
+#define strtol simple_strtol
+
+/*
+ * Miscellaneous configurable options
+ */
+#define CFG_LONGHELP                /* undef to save memory      */
+#define CFG_PROMPT      "Opulan > " /* Monitor Command Prompt    */
+#define CFG_CBSIZE      256     /* Console I/O Buffer Size   */
+#define CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)  /* Print Buffer Size */
+#define CFG_MAXARGS     16      /* max number of command args*/
+
+#define CFG_MALLOC_LEN      4*128*1024
+
+#define CFG_BOOTPARAMS_LEN  128*1024
+
+#define CFG_HZ          (opipmux_get_cpuclk()/2)
+
+#define CFG_SDRAM_BASE      0x80000000     /*change 0x80000000 to test relocate routine*/
+
+#define CFG_LOAD_ADDR       0x80100000  /* default load address */
+
+#define CFG_MEMTEST_START   0x80100000
+#define CFG_MEMTEST_END     0x81D00000
+
+/*-----------------------------------------------------------------------
+ * FLASH and environment organization
+ */
+#define CFG_MAX_FLASH_BANKS 1   /* max number of memory banks */
+#define CFG_MAX_FLASH_SECT  (130)    /* max number of sectors on one chip */
+
+#define PHYS_FLASH_1        0xbfc00000 /* Flash Bank #1 */
+/*#define PHYS_FLASH_2      0xb0800000*/ /* Flash Bank #2 */
+
+/* The following #defines are needed to get flash environment right */
+#define CFG_MONITOR_BASE    TEXT_BASE
+#define CFG_MONITOR_LEN     (192 << 10)
+
+#define OPIPMUX_MAX_DRAM_SZ              0x2000000
+
+/*
+#define CFG_INIT_SP_OFFSET    0x400000
+#define CFG_INIT_SP_OFFSET    OPIPMUX_MAX_DRAM_SZ-0x100000
+*/
+#define CFG_INIT_SP_OFFSET  OPIPMUX_MAX_DRAM_SZ-0x150000
+
+#define CFG_FLASH_BASE      PHYS_FLASH_1
+
+/* timeout values are in ticks */
+#define CFG_FLASH_ERASE_TOUT    (20 * CFG_HZ) /* Timeout for Flash Erase */
+#define CFG_FLASH_WRITE_TOUT    (2 * CFG_HZ) /* Timeout for Flash Write */
+
+#define CFG_ENV_IS_IN_FLASH 1
+
+/* Configure console */
+#define CFG_CONSOLE_IS_IN_ENV   1
+
+/* Address and size of Primary Environment Sector   */
+#define CFG_ENV_ADDR        0xBFC30000
+#define CFG_ENV_SIZE        0x10000
+
+#define CONFIG_FLASH_16BIT
+
+#define CONFIG_NR_DRAM_BANKS    1
+#define CONFIG_OP_IPMUX     1
+/*
+#define CONFIG_INCA_IP_SWITCH
+#define CONFIG_INCA_IP_SWITCH_AMDIX
+*/
+
+#define CONFIG_OPIPMUX_GMAC
+#define CONFIG_NET_MULTI
+
+/*
+ * JFFS2 partitions
+ */
+/* No command line, one static partition, use all space on the device */
+#undef CONFIG_JFFS2_CMDLINE
+#define CONFIG_JFFS2_DEV        "nor1"
+#define CONFIG_JFFS2_PART_SIZE      0xFFFFFFFF
+#define CONFIG_JFFS2_PART_OFFSET    0x00000000
+
+/**************************************************************
+*			common configuration                              *
+**************************************************************/ 
+/* Cache Configuration */
+/* old : 4096*/
+#define CFG_DCACHE_SIZE 8192
+#define CFG_ICACHE_SIZE 8192
+#define CFG_CACHELINE_SIZE 16
+
+/*env configuraton*/
+/*
+#define CONFIG_AUTOSCRIPT 1
+*/
+#define CONFIG_ENV_OVERWRITE 1
+#define CONFIG_RELEASE 1
+
+/**************************************************************
+*			Board selection                                   *
+**************************************************************/
+/*------choose the fpga board,just one,no multi select------*/
+#define FPGA_IPMUX_E_MPW
+/*
+#define FPGA_IPMUX
+#define FPGA_IPMUX_E
+#define FPGA_IPMUX_A
+#define FPGA_IPMUX_E_MPW
+*/
+
+/*------choose the code company------ */
+#define FPGA_IPMUX_OPULAN
+/*
+#define FPGA_IPMUX_OPULAN
+#define FPGA_IPMUX_H3C
+*/
+/*------board related config, don,t change------*/
+#if defined(FPGA_IPMUX_A) || defined(FPGA_IPMUX_E_MPW)
+	/*#define CONFIG_NO_FLASH 1*/
+	#define CONFIG_TUNE_DDR 1
+	/* allowed values: 100000000, 133000000, and 150000000 */
+	#define CPU_CLOCK_RATE  400000000    /* default: 150 MHz clock for the MIPS core */
+#else
+#if defined(FPGA_IPMUX_CLT) 
+	#define CPU_CLOCK_RATE  33000000    /* default: 50 MHz clock for the MIPS core */
+#else
+	#define CPU_CLOCK_RATE  50000000    /* default: 50 MHz clock for the MIPS core */
+#endif
+#endif
+
+/**************************************************************
+*			System working mode						 		  *
+**************************************************************/
+/*
+#define DEBUGMODE 1
+*/
+#define BIGENDIAN 1     /*BIG endian/little endian*/
+#define ENABLE_CACHE 1
+
+#if 0
+#define OPULAN_BOOT_MENU_MODE
+#endif
+/*#define CONFIG_OPIPMUX_SYNC*/
+#ifdef CONFIG_OPIPMUX_SYNC
+#define opipmux_sync() __asm__ __volatile__ ("sync");
+#else
+#define opipmux_sync()
+#endif
+
+/**************************************************************
+*			ulities                           				  *
+**************************************************************/
+#define record_time_def u32 opipmux_time_stamp=0;u32 opipmux_time_stamp_last=0
+#define record_time opipmux_time_stamp=get_timer(0);opipmux_time_stamp_last=opipmux_time_stamp
+#define print_record_time printf("  ~~~~~~TIME ELAPSE %d MS~~~~~~\n",get_timer_usec(opipmux_time_stamp)/1000)
+
+#define period(msec) (get_timer_usec(opipmux_time_stamp_last)/1000)>msec?(opipmux_time_stamp_last=get_timer(0)):0
+#define delay nop
+#define delay10 nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
+
+/**************************************************************
+*			debug switch                      				  *
+**************************************************************/
+/* debug early boot */
+/*#define DEBUG_HARDWARE 1*/
+/* debug board.c*/
+#define debug_boot_ram(x) /*serial_puts(x)*/
+
+/* for early debug of hardware, in asm level */
+#ifdef DEBUG_HARDWARE
+	/* direct put char to uart */	
+	#define inituart9600  la t5,0xBF00400c;  li t7,0x80;  sw t7,0(t5); delay;\
+					   la t5,0xBF004000;  li t7,0x2e;  sw t7,0(t5); delay;\
+					   la t5,0xBF004004;  li t7,0x03;  sw t7,0(t5); delay;\
+					   la t5,0xBF00400c;  li t7,0x03;  sw t7,0(t5); delay;
+	
+   #define inituart38400 la t5,0xBF00400c;  li t7,0x80;  sw t7,0(t5); delay;\
+					   la t5,0xBF004000;  li t7,0xcb;  sw t7,0(t5); delay;\
+					   la t5,0xBF004004;  li t7,0x00;  sw t7,0(t5); delay;\
+					   la t5,0xBF00400c;  li t7,0x03;  sw t7,0(t5); delay;
+
+	#define printa(x)  la t5,0xBF004000;  li t7,x;  sw t7,0(t5); \
+					   la t7,0; \
+					   or t7,ra; \
+					   bal delayasmshort; \
+					   nop;\
+					   la ra,0;\
+					   or ra,t7
+					   
+
+	#define printl(x)  printa(x)
+#else
+	#define inituart9600
+    #define inituart38400
+	 
+	#define printa(x)  
+	#define inituarta  
+	#define printl(x)  
+#endif
+
+/**************************************************************
+*			config if build the test modules 				  *
+**************************************************************/
+/*------early memory tst: just after cache inited------*/
+#define TEST_MEM_IN_EARLY_INIT 1
+#define OPIPMUX_DRAM_TEST_START          0xa1b00000
+#define OPIPMUX_DRAM_TEST_END            0xa1b10000
+
+#define OPIPMUX_DRAM_TEST_START_DOWN          0xa1b00000
+#define OPIPMUX_DRAM_TEST_END_DOWN            0xa1b10000
+
+#define OPIPMUX_DDRTUNE_TEST_START          0xa1d00000
+#define OPIPMUX_DDRTUNE_TEST_END            0xa1d00050
+
+/*------prihpa tests------*/
+/*
+#define INCLUDE_PERIPHA_TEST    1
+*/
+/*
+#define INCLUDE_TAB_TEST    1
+#define INCLUDE_REG_TEST    1
+*/
+/*
+#define INCLUDE_COUNTER 1
+#define INCLUDE_SDRAM_COUNTER    1
+#define INCLUDE_UART_TEST   1
+*/
+/*
+for cyang to test mem rw speed
+*/
+/*
+#define INCLUDE_MEM_EVALUE_RW 1
+*/
+#define INCLUDE_MEM_TEST      1
+
+/*
+#define INCLUDE_MEM_TEST      1
+#define DO_MEM_TEST      1
+*/
+
+/**************************************************************
+*			END								 				  *
+**************************************************************/
+
+
+/*#define DEBUG_FLASH 1*/
+
+#ifdef	DEBUG_FLASH
+#define dbgFlash(fmt,args...)	printf (fmt ,##args)
+#else
+#define dbgFlash(fmt,args...)
+#endif	/* DEBUG */
+
+
+#endif  /* __CONFIG_H */
+
+/***************************************
+       mips register using
+	   
+	s5 - keep ra before bal
+*/
+
+
+/*************************************** 
+       memory usage
+
+       0xa1000010-0xa100001c : log DDR delay value
+*/
+

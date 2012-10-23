@@ -1,0 +1,18 @@
+
+if ARCH_OPTRANN
+
+choice
+	prompt "Select target board type"
+
+config OPTRANN_EVA_BOARD
+	bool "Optrann Evaluation board "
+	select ARCH_OPTRANN
+
+config OPTRANN_FIBER_FPGA
+	bool "Optrann Fiber 10G FPGA  board "
+	select ARCH_OPTRANN
+
+endchoice
+
+endif
+

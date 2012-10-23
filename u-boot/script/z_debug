@@ -1,0 +1,86 @@
+#connect to MDI
+#file u-boot
+#set mdi target 1
+#set mdi connectreset 0
+#target mdi
+target mdi 0:1
+shell printf "loading ... "
+load
+shell printf " OK \n"
+
+shell printf "\a"
+
+delete breakpoints
+set $pc=0xa0090000
+si
+
+define s_i
+#set IV=1
+set $Cause=0x08000000      
+#set BEV=0 , IE =1
+set $sr=0x00000005     
+set $Config3=0x00000060
+end
+
+define s_ie
+set $sr=0x00400005 
+end
+
+define test_int
+s_ie
+set $pc=0xbfc00000
+set $count=0x0
+set $compare=0x20000000
+end
+
+define exit_u
+set $pc=0xa00cd1ac
+end
+
+define p_c
+p/x $Cause
+end
+
+define dc
+p/x $Cause
+end
+#shell printf "\a"
+#b board_init_f
+define testi
+call test_timer_int()
+end
+#b testgel
+#b main_loop
+#b NetLoop
+#b ArpTimeoutCheck
+#b *0xa00cd400
+	#b main_loop
+#b opipmux_gel_recv
+#b test_timer_int
+c
+
+
+# tftpb 0x80800000 u-boot1.bin
+# load bin 0x80800000 u-boot.bin
+
+
+# protect off 1:0-5
+# era 1:0-5
+# cp.b 0x80800000 0xbfc00000 0x2fff0
+
+
+
+#bkpt clear all
+
+#bkpt set 0xbfc004bc
+#bkpt set 0x80fd0520
+#bkpt set 0x80fd0c44
+#bkpt set 0x80FD0C70
+#bkpt set 0xbfc004a0
+#bkpt set 0xBFC004B8
+#setenv dl tftpb 0x80100000 vmlinux.bin
+#tftpb 0x80800000 u-boot1.bin
+#era 1:30-34
+#cp.b 0x80800000 0xbfc00000 0x2fff0
+#cp.b 0x80800000 0xbfdb0000 0x2fff0
+#cp.b 0xbfdb0000 0xbfc00000 0x2fff0

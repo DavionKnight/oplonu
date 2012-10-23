@@ -1,0 +1,12 @@
+Package: libpcap
+Version: 0.9.4-1
+Depends: 
+Provides: 
+Source: package/libpcap
+Section: libs
+Priority: optional
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Architecture: mips
+Description:  Low-level packet capture library
+ This package contains a system-independent library for user-level 
+ network packet capture.

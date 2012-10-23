@@ -1,0 +1,24 @@
+                           如何编译内核
+
+1.请正确安装MIPS GCC交叉编译工具。
+我们使用mips-linux-uclibc-gcc编译工具。
+
+2.选择目标板配置。
+在arch/mips/configs/目录下有很多目标板的配置文件，请选择一个适合的板子的配置文件，如我们要编译optrann的内核：
+$make optrann_defconfig
+
+如你还需要对内核配置选项进行微调：
+$make menuconfig
+
+3. 指定CPUID
+对于onu/onu2芯片：$ export CPUID=onu
+对于optrann芯片： $ export CPUID=optrann
+
+4.编译内核。
+$ sh mk.sh
+编译完成后的内核image在内核树的根目录下，文件名为：wrt_uImage
+我们把内核和根文件系统一起打包成一个image。根文件在内核树的root目录下。
+
+5. 清理编译。
+如果你想对编译进行清理：
+$make distclean

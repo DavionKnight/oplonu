@@ -1,0 +1,5 @@
+#script file to startup SDE-insight to debug vxlinux
+echo "=== start GDB-insight and connect to MDI ==="
+sde-insight u-boot -x ./z_new
+printf "\a"
+#zz

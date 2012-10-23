@@ -1,0 +1,18 @@
+# This is an example of a port file. This file have the syntax compatible
+# with Taylor UUCP (not HDB, not anything else). Please check uucp
+# documentation if you are not sure how Taylor config files are supposed to 
+# look like. Edit it as appropriate for your system.
+
+# Everything after a '#' character is a comment.
+
+#
+# yinghong zhang added for COM1 configuration
+#
+ 
+#/dev/ttyS0 at 9600
+port		serial0_57600
+type		direct
+device		/dev/ttyS0
+speed		57600
+hardflow	false
+

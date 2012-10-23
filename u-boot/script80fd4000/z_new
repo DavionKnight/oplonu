@@ -1,0 +1,26 @@
+#connect to MDI
+file u-boot
+set mdi target 1
+target mdi
+load
+delete breakpoints
+set $pc=0xa00d4000
+si
+delete breakpoints
+shell printf "\a"
+#b board_init_f
+printf "----------\n"
+#j in_ram
+b *0xa00d44c4
+c
+shell printf "\a"
+
+add-symbol-file  u-boot 0x80fd4000
+b *0x80fde778
+si
+#board_init_r
+#b *0x80fe18d4
+#b *0x80fe1a38
+c
+
+

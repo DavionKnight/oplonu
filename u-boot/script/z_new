@@ -1,0 +1,51 @@
+#connect to MDI
+#file u-boot
+
+shell printf "start debug ... \n "
+###for old fs2 tool###
+#set mdi connectreset 0
+#target mdi 0:1
+
+###for new fs2 tool###
+set mdi target 1
+target mdi
+
+shell printf "Loading ... "
+load
+shell printf " OK \n"
+shell printf "\a"
+
+shell printf "Running ... \n"
+delete breakpoints
+
+set $pc=0xA1E00000
+b testboard
+#b testcopy32
+#b sdram_test_asm
+#b board_init_f
+#b sdram_test_asm
+#b *0xa080fbb4
+#b *0xa080fb4c
+#b *0xA080F5C0
+#b *0xa08087e0
+###for debug uboot in real mode###
+#b *0xa00904bc
+#c
+#add-symbol-file u-boot 0x80f90000
+#si
+#si
+
+###for update uboot by fs2###
+#b testboard
+#b check_as1
+
+#b debug_halt
+#b relocate_code
+#define setb
+#b *0x807922c8
+#end
+#setb
+
+c 
+shell printf "Bye \a"
+shell printf "bye ... \n\a"

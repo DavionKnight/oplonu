@@ -1,0 +1,18 @@
+1.run sysnav in linux shell. 
+	First, put u-boot.bin in your current directory ! 
+	then type the following command:
+	$:sysnav
+	$:load bin 0x80800000 u-boot.bin
+
+2.program flash in uboot shell.
+
+        opulan > protect off 1:0-5
+        opulan > era 1:0-5
+	opulan > cp.b 0x80800000 0xbfc00000 0x29990
+
+3.shutdown the power and reboot the board.
+
+4.test booting up linuxt.
+	opulan > tftpb 0x80100000 vmlinux.bin
+	opulan > go 0x801ae398  (your entry address of linux) 
+

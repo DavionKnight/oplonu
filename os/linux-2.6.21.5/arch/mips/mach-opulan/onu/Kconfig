@@ -1,0 +1,94 @@
+
+if ARCH_ONU
+
+choice
+	prompt "Select target board type"
+
+config ONU_F13_BOARD
+	bool "Onu F13 board "
+	select ARCH_ONU
+
+config ONU_F13S_VOIP_BOARD
+	bool "Onu F13s voip board "
+	select ARCH_ONU
+
+config ONU_F13P_VOIP_BOARD
+	bool "Onu F13p voip board "
+	select ARCH_ONU
+	
+config ONU_F13P_VOIP_PCM_WDT_BOARD
+	bool "Onu F13p voip pcm watchdog board "
+	select ARCH_ONU
+
+config ONU_C13_BOARD
+	bool "Onu C13 board "
+	select ARCH_ONU
+
+#config ONU_TONGWEI_BOARD
+#	bool "Onu TongWei board "
+#	select ARCH_ONU
+	
+config ONU_D2_F33_BOARD
+	bool "Onu D2 (F33) board "
+	select ARCH_ONU
+
+config ONU_F23_BOARD
+	bool "Onu F23 board "
+	select ARCH_ONU
+
+config ONU_F23_VOIP_BOARD
+	bool "Onu F23 voip board "
+	select ARCH_ONU
+
+config ONU_F23S_VOIP_UT_BOARD
+	bool "Onu F23 UT SPI flash voip board "
+	select ARCH_ONU
+
+config ONU_F23S_VOIP_BOARD
+	bool "Onu F23 SPI flash voip board "
+	select ARCH_ONU
+
+config ONU_F23P_VOIP_BOARD
+	bool "Onu F23 parallel flash voip board "
+	select ARCH_ONU
+
+config ONU_F33_VOIP_BOARD
+    bool "Onu F33 voip board"
+    select ARCH_ONU
+
+config ONU_RESPIN_C13_BOARD
+	bool "Onu respin  parallel flash board "
+	select ARCH_ONU
+
+config ONU_RESPIN_F23_BOARD
+	bool "Onu respin  spi  flash board "
+	select ARCH_ONU
+
+config ONU_RESPIN_F23P_BOARD
+	bool "Onu respin parallel flash board "
+	select ARCH_ONU
+	
+config ONU_RESPIN_F13_BOARD
+	bool "Onu respin spi  flash board "
+	select ARCH_ONU	
+
+config ONU_RESPIN_C13_SPI_BOARD
+	bool "Onu respin c13 spi flash board "
+	select ARCH_ONU
+
+config ONU_RESPIN_C13_SPI_300M_BOARD
+	bool "Onu respin c13 spi flash board "
+	select ARCH_ONU
+	
+config ONU_RESPIN_RF400_BOARD
+	bool "Onu respin rf400-gna spi flash board "
+	select ARCH_ONU
+	
+config ONU_RESPIN_RF400P_BOARD
+	bool "Onu respin rf400-gna parallel flash board "
+	select ARCH_ONU
+
+endchoice
+
+endif
+

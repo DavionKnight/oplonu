@@ -1,0 +1,72 @@
+config OPTRANN_FE_ETH
+	tristate "Optrann FE network support"
+	depends on ARCH_OPTRANN
+	help
+	  This is a driver for the Opulan Optrann FE network.
+
+
+config ONU_FE_ETH
+	tristate "Onu FE network support"
+	depends on ARCH_ONU || ARCH_ONU2
+	help
+	  This is a driver for the Opulan Onu Soc FE network.
+
+config ONU_FE_ETH_D2
+	tristate "Onu FE network support for D2"
+	depends on ARCH_ONU || ARCH_ONU2
+	help
+	  This is a driver for the Opulan Onu Soc FE network.
+
+config ONU_FE_VOIP_F13_ETH
+	tristate "Onu FE network support for F13"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan Onu F13 Soc FE network.
+
+config ONU_FE_VOIP_F23_ETH
+	tristate "Onu FE network support for F23"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan Onu F23 Soc FE network.
+
+config ONU_FE_VOIP_F33_ETH
+	tristate "Onu FE network support for F33"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan Onu F33 Soc FE network.	  
+
+config ONU_FE_UT_F23_ETH
+	tristate "Onu FE network support for UT F23"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan Onu F23 Soc FE network.
+	  
+config ONU_FE_RESPIN_F13_ETH
+	tristate "Onu FE network support for onu_respin"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan onu_resin FE network.
+	  
+config ONU_FE_RESPIN_F23_ETH
+	tristate "Onu FE network support for onu_respin"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan onu_resin FE network.	
+	  
+config ONU_FE_RESPIN_C13_ETH
+	tristate "Onu FE network support for onu_respin"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan onu_resin FE network.
+	  
+config ONU_FE_RESPIN_RF400_ETH
+	tristate "Onu FE network support for onu_respin"
+	depends on ARCH_ONU
+	help
+	  This is a driver for the Opulan onu_resin FE network.
+	  
+config ATHEROS_SWITCH
+	tristate "support ATHEROS network switch"
+	depends on ONU_FE_ETH || ONU_FE_ETH_D2 ||ONU_FE_RESPIN_F23_ETH
+	help
+	  support ATHEROS network switch.

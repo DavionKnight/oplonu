@@ -1,0 +1,14 @@
+
+
+Optrann Platfrom Board Driver source file:
+
+0: Board config file : arch/mips/configs/optrann_defconfig
+
+1: arch setup files: arch/mips/mach-opulan/optrann/
+
+2: include files : include/asm-mips/mach-optrann/
+
+3: serial driver: driver/serial/optrann.c
+
+4: Fe driver: driver/net/ipmux_fe/optrann_fe.c
+

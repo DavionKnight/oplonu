@@ -1,0 +1,18 @@
+#
+#this file is a shortcut to launch serial terminal to connect to COM1
+# at 38400 noparity 8 1 nohardxoff
+#
+# to change the configuration for the COM1, please change files:
+#
+#	/etc/uucp/sys
+#	/ect/uucp/port
+#
+#
+
+#start the terminal
+cp sys_384 /etc/uucp/sys
+cp port_384 /etc/uucp/port
+
+echo "please enter ~. to dissconnect."
+
+cu S0@38400

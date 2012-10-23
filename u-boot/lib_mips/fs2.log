@@ -1,0 +1,55 @@
+(Sat Sep 24 04:10:57 2005) Fs2InitData
+(Sat Sep 24 04:10:57 2005) Fs2InitData
+(Sat Sep 24 04:10:57 2005) MDIVersion Entry: (-)
+(Sat Sep 24 04:10:57 2005) MDIVersion Detail: version->newest 0x10000, version->oldest 0x10000
+(Sat Sep 24 04:10:57 2005) MDIVersion Exit: MDISuccess
+(Sat Sep 24 04:10:57 2005) MDIConnect Entry: (version 00010000, handle -, config -)
+(Sat Sep 24 04:10:57 2005) MDIConnect Detail: User requesting MDILib is 'GNU gdb mips'.
+(Sat Sep 24 04:10:57 2005) MDIConnect Exit: MDISuccess
+(Sat Sep 24 04:10:57 2005) MDITGQuery Entry: (handle 0x44, howMany 0, data -)
+(Sat Sep 24 04:10:57 2005) MDITGQuery Exit: MDISuccess
+(Sat Sep 24 04:10:57 2005) MDITGQuery Entry: (handle 0x44, howMany 1, data -)
+(Sat Sep 24 04:10:57 2005) MDITGQuery Exit: MDISuccess
+(Sat Sep 24 04:10:57 2005) MDITGOpen Entry: (handle 0x44, id 1, flags 0x0, target handle -)
+(Sat Sep 24 04:10:57 2005) MDITGOpen Error: target group already open or shared access not supported
+(Sat Sep 24 04:10:57 2005) MDITGOpen Exit: MDIErrNoResource
+(Sat Sep 24 04:10:57 2005) MDITGOpen Entry: (handle 0x44, id 1, flags 0x1, target handle -)
+(Sat Sep 24 04:10:57 2005) MDITGOpen Exit: MDISuccess
+(Sat Sep 24 04:10:57 2005) MDIDQuery Entry: (handle 0x55)
+(Sat Sep 24 04:10:57 2005) MDIDQuery: Initialize target
+(Sat Sep 24 04:10:57 2005) Fs2InitBox Detail: AbiInit successful
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile Entry
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key bin)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  bin is /usr/local/fs2/mips/bin
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key port)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  port is lpt1
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key tckrate)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  tck rate is 30000000
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key tvccthreshold)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  tvcc threshold is 2500
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key showconsole)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  showconsole is 0x00000001
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key showclam)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  showclam is 0x00000001
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key showerrors)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  showerrors is 0x00000000
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key showconnect)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  showconnect is 0
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key mdimodifymemendian)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  mdimodifymemendian is 0x00000001
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key mdimodifyregendian)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  mdimodifyregendian is 0x00000001
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Entry: (key diagbits)
+(Sat Sep 24 04:10:57 2005) MdxFs2ReadSetup Exit: 0
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  diagbits is not defined in fs2.ini, turn off diagnostics now
+(Sat Sep 24 04:10:57 2005) Fs2ParseIniFile:  diagbits is 0x00000000

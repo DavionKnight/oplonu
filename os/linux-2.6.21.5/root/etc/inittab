@@ -1,0 +1,9 @@
+::sysinit:/etc/preinit
+::sysinit:/etc/init.d/rcS S boot
+::shutdown:/etc/init.d/rcS K stop
+::sysinit:/usr/sbin/telnetd -l /bin/login
+#::respawn:-/bin/sh -c /etc/rc.sh
+::sysinit:/etc/rc.sh
+#::respawn:/var/run/app
+#::respawn:/var/run/boa
+::respawn:-/bin/sh

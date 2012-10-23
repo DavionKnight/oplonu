@@ -1,0 +1,18 @@
+
+if ARCH_ONU2
+
+choice
+	prompt "Select target board type"
+
+config ONU2_EVA_BOARD
+	bool "Onu2 EVA board "
+	select ARCH_ONU2
+
+config ONU2_TRANSWITCH_BOARD
+	bool "Onu2  board for transwitch "
+	select ARCH_ONU2
+
+endchoice
+
+endif
+

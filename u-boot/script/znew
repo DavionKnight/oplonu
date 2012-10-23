@@ -1,0 +1,43 @@
+#script file to startup SDE-insight to debug vxlinux
+echo "=== start GDB-insight and connect to MDI ==="
+# stop the MIPS JTAG debugger
+ID_SYSNAV=`ps -A | grep "clisysnav" | tail -n1 | cut -d" " -f1`
+if [ ${ID_SYSNAV:=0} -gt 1 ]
+then
+	echo "Stop MIPS Sys-Navigator : pid=${ID_SYSNAV}"
+        kill -9 ${ID_SYSNAV}
+#else
+#	echo ${ID_SYSNAV}
+fi
+
+ID_SYSNAV=`ps -A | grep "clisysnav" | tail -n1 | cut -d" " -f2`
+if [ ${ID_SYSNAV:=0} -gt 1 ]
+then
+	echo "Stop MIPS Sys-Navigator : pid=${ID_SYSNAV}"
+        kill -9 ${ID_SYSNAV}
+#else
+#       echo ${ID_SYSNAV}
+fi
+
+# stop the MIPS JTAG debugger
+ID_SYSNAV=`ps -A | grep "insight" | tail -n1 | cut -d" " -f1`
+if [ ${ID_SYSNAV:=0} -gt 1 ]
+then
+	echo "Stop sde-insight: pid=${ID_SYSNAV}"
+        kill -9 ${ID_SYSNAV}
+#else
+#	echo ${ID_SYSNAV}
+fi
+
+ID_SYSNAV=`ps -A | grep "insight" | tail -n1 | cut -d" " -f2`
+if [ ${ID_SYSNAV:=0} -gt 1 ]
+then
+	echo "Stop sde-insight: pid=${ID_SYSNAV}"
+        kill -9 ${ID_SYSNAV}
+#else
+#       echo ${ID_SYSNAV}
+fi
+
+sde-insight u-boot -n -x ./z_new
+printf "\a"
+#zz

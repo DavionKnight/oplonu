@@ -1,0 +1,22 @@
+			Board support for Opulan Soc 
+
+-----------------------------------------------------------------------------
+Release support notes for Opulan Soc for Linux
+Maintained by Figo.zhang <figo1802@gmail.com>
+------------------------------------------------------------------------------
+
+Before build the kernel, pls read the <How-to-build-kernel.txt>
+
+
+Soc serials     Board          Kernel configure file             Descriptions
+------------------------------------------------------------------------
+  Onu           F13            onu_f13_defconfig         
+  onu           C13            onu_c13_defconfig
+  Onu           F23            onu_f23_defconfig            atheros swither,SPI flash
+  Onu           D2_f33         onu_d2_f33_defconfig         atheros swither,32M flash
+
+  onu2          eva            onu2_eva_defconfig           
+  onu2          Transwitch     onu2_transwitch_defconfig      have 3 cfg partition in flash
+
+ Optrann       Eva             optrann_defconfig
+ Optrann       Eva_highmem     optrann_highmem_defconfig      support more than 300MB RAM

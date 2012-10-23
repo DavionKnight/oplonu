@@ -1,0 +1,22 @@
+#!/bin/sh
+# Copyright (C) 2006 OpenWrt.org
+
+grep '^root:[^!]' /etc/passwd >&- 2>&-
+[ "$?" = "0" -a -z "$FAILSAFE" ]  &&  
+{
+    echo "Login failed."
+    exit 0
+} || {
+cat << EOF
+                                 [[
+         [[[[[[  [[[[[[  [[  [[  [[  [[[[[[  [[   [[
+         [[  [[  [[  [[  [[  [[  [[      [[  [[[  [[
+         [[  [[  [[  [[  [[  [[  [[  [[[[[[  [[ [ [[
+         [[  [[  [[  [[  [[  [[  [[  [[  [[  [[  [[[
+         [[[[[[  [[[[[[  [[[[[[  [[  [[[[[[  [[   [[
+                 [[
+                               http://www.opulan.com
+EOF
+}
+
+exec /bin/ash --login

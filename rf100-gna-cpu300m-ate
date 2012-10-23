@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if make rf100gnacpu300mate
+then
+	if make
+	then
+		if make install
+		then
+			echo "====================="
+			echo "======= Done ========"
+			echo "====================="
+		else
+			echo "====================="
+			echo "======= Error ======="
+			echo "====================="
+		fi
+	else
+			echo "====================="
+			echo "======= Error ======="
+			echo "====================="
+	fi
+else
+	echo "====================="
+	echo "======= Error ======="
+	echo "====================="
+fi

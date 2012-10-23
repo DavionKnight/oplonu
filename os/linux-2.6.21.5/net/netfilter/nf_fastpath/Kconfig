@@ -1,0 +1,23 @@
+config NF_CONNTRACK_FASTPATH
+	tristate "Fast path based on NF Connection tracking (EXPERIMENTAL)"
+	depends on NF_CONNTRACK && NF_CONNTRACK_IPV4 && IP_NF_IPTABLES
+        select NF_CONNTRACK_EVENTS
+        select NF_CONNTRACK_MARK
+
+	help 
+          If this option is enabled, the connection tracking code will
+	  provide a data fastpath for TCP and UDP connections.  This
+	  fastpath can bypass much of the normal packet processing in
+	  Linux to significantly improve performance.  If unsure, say
+	  'N'.  See Documentation/networking/nf_fastpath.txt for more 
+          information.
+
+
+config NF_FASTPATH_STATS
+	bool "Fast path statistics"
+        depends on NF_CONNTRACK_FASTPATH
+        help
+          Maintain statistics for the data fastpath.  This
+          is generally only needed for debug purposes.  If unsure,
+          say 'N';
+

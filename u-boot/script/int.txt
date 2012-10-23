@@ -1,0 +1,5 @@
+Cause 0x08000000      :set IV=1
+Status 0x00000005     :set BEV=0 , IE =1
+Config3 0x00000060
+
+

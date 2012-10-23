@@ -1,0 +1,26 @@
+
+if OPULAN_SOC
+
+choice
+	prompt "Select Soc type"
+
+config ARCH_OPTRANN
+	bool "Optrann Soc"
+	select OPULAN_SOC
+
+config ARCH_ONU
+	bool "ONU Soc"
+	select OPULAN_SOC
+
+config ARCH_ONU2
+	bool "ONU2 Soc"
+	select OPULAN_SOC
+
+endchoice
+
+source "arch/mips/mach-opulan/optrann/Kconfig"
+source "arch/mips/mach-opulan/onu/Kconfig"
+source "arch/mips/mach-opulan/onu2/Kconfig"
+
+endif
+

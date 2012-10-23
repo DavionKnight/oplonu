@@ -1,0 +1,46 @@
+-----------------------------------------------------------------------------
+Release support notes for Opulan Soc for Linux
+Maintained by Figo.zhang <figo1802@gmail.com>
+------------------------------------------------------------------------------
+
+How to build the linux kernel:
+
+
+1. Firstly you should install the crosstools corrently.
+
+2. Select a board config.
+Pls see <Board_support.txt> firstly.
+
+For example, Optrann board:
+$ make optrann_defconfig
+
+for ONU2 eva board:
+$make onu2_eva_defconfig
+
+Note: you can use make menuconfig to selset some kernel component which you want.
+$make menuconfig
+
+3. set CPUID:
+for onu/onu2: $export CPUID=onu
+for optrann:  $export CPUID=optrann
+
+Note: if you using old u-boot, it maybe have without "head checking", you can do
+it to build a kernel without "head checking"  
+$ cp build_image/Makefile-org build_image/Makefile
+
+4: Build kernel
+
+$ sh mk.sh
+
+After compile, the kernel image is wrt_uImage.
+
+5: Clean the kernel 
+$ make distclean
+
+6: Download kernel form u-boot.
+Before run kernel,pls set u-boot evirnment:
+setenv bootargs rdinit=/linuxrc console=ttyS0,115200 mem=32M nofpu mac=00:aa:aa:bb:bb:cc
+tftp 0x80a00000 wrt_uImage; bootm 0x80a00000
+
+Note: 
+1. mem=32M : physical RAM is 32MB

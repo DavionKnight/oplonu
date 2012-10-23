@@ -1,0 +1,3 @@
+
+v1.2 : remove the bug that command tftp cann't download file from LINUX tftp server more than one times.
+       Related file net/tftp.c net/net.c

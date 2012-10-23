@@ -1,0 +1,26 @@
+Package: base-files-atheros-2.6
+Status: install ok installed
+Root: /
+Conffiles: /etc/banner ba43416ec88a59ede8b5cbccb94e88ef /etc/hosts 89f616defd47b22702e3158ca7e70487 /etc/inittab f1d2628c87f2c6f99fd7aa5a61727683 /etc/group 31c4c2ea7b79761476954e66f9d4ed19 /etc/passwd 4160554a2386454f331d3ef7124f2281 /etc/profile 6133dc730c0124602ed99b08abca653b /etc/shells 725ba6f40dff0612f61ecd3f171bb3e1 /etc/ipkg.conf f308eed8df6d5759f5e177528c60ca49 /etc/sysctl.conf fb967929f3e9ec40d8212a1b5ae772b2 /etc/config/network 209c17e780f35d75d8f7d3c38c2b129b /etc/config/system 1fd8bbe3f2154f544f8be688bec32ebe
+Version: 10-0
+
+Package: libpthread
+Status: install ok installed
+Root: /
+Version: 0.9.28-10
+
+Package: uclibc
+Status: install ok installed
+Root: /
+Version: 0.9.28-10
+
+Package: busybox
+Status: install ok installed
+Root: /
+Version: 1.4.2-2
+
+Package: kernel
+Status: install ok installed
+Root: /
+Version: 2.6.21.5-atheros-1
+

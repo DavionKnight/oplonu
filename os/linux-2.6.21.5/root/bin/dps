@@ -1,0 +1,1 @@
+cat /proc/*/stat | awk -F" " '{if ($15+$16>5) {print $2 "=" $1 "\t PPID:" $4 "\t" "prio:" $19 "\t nice:" $20 "\t utime: " $15 "\tstime:" $16}}' 
