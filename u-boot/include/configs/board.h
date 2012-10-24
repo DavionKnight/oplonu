@@ -1,1 +1,1 @@
-#define CONFIG_ONU_1_1_RF400_P
+#define CONFIG_IPMUX_ONU_A_F23_TW
