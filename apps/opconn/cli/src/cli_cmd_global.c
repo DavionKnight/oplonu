@@ -230,6 +230,7 @@ STATUS cliCmdShowHistory(ENV_t *pstEnv, PARA_TABLE_t *psPara)
     return OK;
 }
 
+#if 0
 void cliPrintVersion(ENV_t *pstEnv, int nVerbose)
 {
   int nYear,nDay;
@@ -303,6 +304,62 @@ void cliPrintVersion(ENV_t *pstEnv, int nVerbose)
       build_date);
   }
 }
+#else
+void cliPrintVersion(ENV_t *pstEnv, int nVerbose)
+{
+  int nYear,nDay;
+  char acMonth[5] = {0};
+  time_t timep;
+  struct tm *pNow;
+  if (nVerbose) {
+    time(&timep);
+    pNow = localtime(&timep);
+    sscanf(build_date, "%s %d %d", acMonth, &nDay, &nYear);
+    if (pNow->tm_year + 1900 > nYear)
+        nYear = pNow->tm_year + 1900;
+    vosPrintf(pstEnv->nWriteFd,
+      " \r\n"
+      " \r\n"
+      "        GWdelight Technologies Corp.\r\n"
+      "        Copyright (C) 2001 - %d\r\n"
+      " \r\n"
+      "        Product  : %s \r\n"
+      "        Release  : V%dR%02dB%03d \r\n"
+      "        Revision : %s\r\n"
+      "        Build    : %s, %s \r\n"
+      " \r\n"
+      "        MAC     : %02x:%02x:%02x:%02x:%02x:%02x\r\n"
+      " \r\n",
+      nYear,
+      product_info,
+      MAJOR_VERSION,
+      MINOR_VERSION,
+      BUILD_NUMBER,
+      product_rev,
+      build_time,
+      build_date,
+      oam_src_mac[0],
+      oam_src_mac[1],
+      oam_src_mac[2],
+      oam_src_mac[3],
+      oam_src_mac[4],
+      oam_src_mac[5]);
+  }
+  else {
+    vosPrintf(pstEnv->nWriteFd,
+      "Software version: V%dR%02dB%03d \r\n"
+      "Revision: %s\r\n"
+      "Build time: %s, %s\r\n",
+      MAJOR_VERSION,
+      MINOR_VERSION,
+      BUILD_NUMBER,
+      BUILD_FLAG,
+      product_rev,
+      build_time,
+      build_date);
+  }
+}
+#endif
 
 STATUS cliCmdShowVersion(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {

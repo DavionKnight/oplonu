@@ -51,7 +51,7 @@
 
 /*-----------------global varible declaration--------------- */
 
-const char * product_info = "OpConn";
+const char * product_info = "GWdelight";
 const char * build_date = __DATE__;
 const char * build_time = __TIME__;
 
