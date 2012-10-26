@@ -353,7 +353,6 @@ void cliPrintVersion(ENV_t *pstEnv, int nVerbose)
       MAJOR_VERSION,
       MINOR_VERSION,
       BUILD_NUMBER,
-      BUILD_FLAG,
       product_rev,
       build_time,
       build_date);
