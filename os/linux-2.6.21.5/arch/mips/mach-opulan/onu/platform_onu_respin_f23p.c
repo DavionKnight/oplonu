@@ -66,8 +66,12 @@ static struct platform_device onu_fe_device = {
 #define FLASH_SIZE 0x800000 //8MB
 
 #define U_BOOT_SIZE  0x40000
-#define U_BOOT_ENV   0x10000
-#define OS_CFG  0x10000
+/*#define U_BOOT_ENV   0x10000
+#define OS_CFG  0x10000*/
+
+#define U_BOOT_ENV   0x20000
+#define OS_CFG  0xc0000
+
 #define OS_SIZE  ((FLASH_SIZE - U_BOOT_SIZE - U_BOOT_ENV - OS_CFG)/2)  
 #define NUM_OS   2     
 //#define JFFS2_SIZE (FLASH_SIZE -U_BOOT_SIZE - U_BOOT_ENV - NUM_OS * OS_SIZE)

@@ -186,7 +186,8 @@
        ||defined(CONFIG_ONU_2) ||defined(CONFIG_IPMUX_2)||defined(CONFIG_IPMUX_ONU_A_F23_TW_EOC) || defined(CONFIG_ONU_1_1_RF400_P)
     #define cfg_offset 0x60000     
 #else
-   #define cfg_offset 0x50000
+   //#define cfg_offset 0x50000
+	#define cfg_offset 0x60000
 #endif
 #if defined(CONFIG_IPMUX_E2_10G)||defined(CONFIG_IPMUX_ONU_A_F23_D2)       \
        ||defined(CONFIG_ONU_2) ||defined(CONFIG_IPMUX_2)||defined(CONFIG_IPMUX_ONU_A_F23_TW_EOC)|| defined(CONFIG_ONU_1_1_RF400_P)
@@ -194,7 +195,8 @@
 #elif (defined(CONFIG_IPMUX_E2_C))||defined(CONFIG_IPMUX_E2_ZTE)
    #define knl_1offset  0xe000000 
     #else
-  #define  knl_1offset 0x60000
+  //#define  knl_1offset 0x60000
+	#define  knl_1offset 0x120000
 #endif
 #define knl_2offset  ((flash_info[0].size+knl_1offset)/2)                       /*knl_1offset+(flashsize-knl_1offset)/2)*/
 
@@ -602,9 +604,12 @@
     
 #else
     #define ENV_OFFSET 0x40000   /*zw 925*/
-    #define CFG_ENV_SIZE 0x10000  /*zw 925*/
-    #define CFG_ENV_SECTOR_SIZE 0x10000  /*zw 925*/
-    #define FLASH_SECTOR_MASK 0xFFFF
+    //#define CFG_ENV_SIZE 0x10000  /*zw 925*/
+	//#define CFG_ENV_SECTOR_SIZE 0x10000  /*zw 925*/
+	//#define FLASH_SECTOR_MASK 0xFFFF
+	#define CFG_ENV_SIZE 0x20000  /*zw 925*/
+    #define CFG_ENV_SECTOR_SIZE 0x20000  /*zw 925*/
+	#define FLASH_SECTOR_MASK 0x1FFFF
 /* Since we use SPI flash, the CRC32 to the ENV variables would be really slow. We would take a simple action to 
 * reduce the size of the ENV variables, this is it, 0x10000--->0x1000 */
     #define CFG_MAX_FLASH_SECT  (256)    /* max number of sectors on one chip */  /*zw 925*/
@@ -618,7 +623,8 @@
 
 #ifdef CFG_ENV_SIZE 
 #undef CFG_ENV_SIZE
-#define CFG_ENV_SIZE 0x1000
+//#define CFG_ENV_SIZE 0x1000
+  #define CFG_ENV_SIZE 0x2000
 #endif
 
 
