@@ -56,7 +56,7 @@
 #define CNT_CLEHIT_NUM		128
 #define CNT_SWH_PORT_NUM	30
 
-#define SWITCH_PORT_NUM		4
+#define SWITCH_PORT_NUM		7
 
 #define DECIMAL_STR_LEN		21
 #define LONG_HEX_NUM		8
@@ -115,51 +115,51 @@ typedef enum OPL_MPCP_CNT_ST_IDX_e
 }OPL_MPCP_CNT_ST_IDX_t;
 
 typedef struct ONU_PON_Port_Statistics_Get_1_s{
-	UINT64 FramesTransmittedOK;			/* LLID¶Ë¿Ú·¢ËÍÖ¡¼ÆÊý*/
-	UINT64 OctetsTransmittedOK;			/* LLID¶Ë¿Ú·¢ËÍ×Ö½Ú¼ÆÊý*/
-	UINT64 MulticastFramesXmittedOK;	/* LLID¶Ë¿Ú·¢ËÍ×é²¥Ö¡¼ÆÊý*/
-	UINT64 BroadcastFramesXmittedOK;	/* LLID¶Ë¿Ú·¢ËÍ¹ã²¥°ü¼ÆÊý */
-	UINT64 PONPauseFramesTransmittedOk;	/* PON¶Ë¿Ú·¢ËÍPAUSEÖ¡¼ÆÊý*/
-	UINT64 FramesReceivedOK;			/*LLID¶Ë¿Ú½ÓÊÕÖ¡¼ÆÊý*/
-	UINT64 OctetsReceivedOK;			/* LLID¶Ë¿Ú½ÓÊÕ×Ö½Ú¼ÆÊý */
-	UINT64 MulticastFramesReceivedOK;	/* LLID¶Ë¿Ú½ÓÊÕ×é²¥Ö¡¼ÆÊý*/
-	UINT64 BroadcastFramesReceivedOK;	/* LLID¶Ë¿Ú½ÓÊÕ¹ã²¥°ü¼ÆÊý */
-	UINT64 PONPauseFramesReceivedOk;	/* PON¶Ë¿Ú½ÓÊÕPAUSEÖ¡¼ÆÊý*/
-	UINT64 SingleCollisionFrames;		/*µ¥´ÎÖ¡Åö×²¼ÆÊý*/
-	UINT64 MultipleCollisionFrames;		/*¶à´ÎÖ¡Åö×²¼ÆÊý*/ 	
-	UINT64 AlignmentErrors;				/*¶ÔÆë´íÎó¼ÆÊý*/
-	UINT64 FrameTooLongErrors;			/*Ö¡³¬³¤¼ÆÊý*/
+	UINT64 FramesTransmittedOK;			/* LLIDï¿½Ë¿Ú·ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 OctetsTransmittedOK;			/* LLIDï¿½Ë¿Ú·ï¿½ï¿½ï¿½ï¿½Ö½Ú¼ï¿½ï¿½ï¿½*/
+	UINT64 MulticastFramesXmittedOK;	/* LLIDï¿½Ë¿Ú·ï¿½ï¿½ï¿½ï¿½é²¥Ö¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 BroadcastFramesXmittedOK;	/* LLIDï¿½Ë¿Ú·ï¿½ï¿½Í¹ã²¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	UINT64 PONPauseFramesTransmittedOk;	/* PONï¿½Ë¿Ú·ï¿½ï¿½ï¿½PAUSEÖ¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 FramesReceivedOK;			/*LLIDï¿½Ë¿Ú½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 OctetsReceivedOK;			/* LLIDï¿½Ë¿Ú½ï¿½ï¿½ï¿½ï¿½Ö½Ú¼ï¿½ï¿½ï¿½ */
+	UINT64 MulticastFramesReceivedOK;	/* LLIDï¿½Ë¿Ú½ï¿½ï¿½ï¿½ï¿½é²¥Ö¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 BroadcastFramesReceivedOK;	/* LLIDï¿½Ë¿Ú½ï¿½ï¿½Õ¹ã²¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	UINT64 PONPauseFramesReceivedOk;	/* PONï¿½Ë¿Ú½ï¿½ï¿½ï¿½PAUSEÖ¡ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 SingleCollisionFrames;		/*ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MultipleCollisionFrames;		/*ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½*/ 	
+	UINT64 AlignmentErrors;				/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+	UINT64 FrameTooLongErrors;			/*Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 }ONU_PON_Port_Statistics_Get_1_t;
 
 typedef struct ONU_PON_Port_Statistics_Get_2_s{
-	UINT64 CRC8Errors;						/* CRC´íÎó¼ÆÊý */
-	UINT64 FECCorrectedBlocks;				/* FECÕýÈ·¿é¼ÆÊý */
-	UINT64 FECUncorrectableBlocks;			/* FEC´íÎó¿é¼ÆÊý */
-	UINT64 MPCPMACCtrlFramesTransmitted;	/* MPCP¿ØÖÆÖ¡·¢ËÍ¼ÆÊý*/
-	UINT64 MPCPMACCtrlFramesReceived;		/* MPCP¿ØÖÆÖ¡½ÓÊÕ¼ÆÊý*/
-	UINT64 MPCPTxGate;						/* MPCP Tx Gate¼ÆÊý*/
-	UINT64 MPCPTxRegAck;					/* MPCP Tx Reg Ack¼ÆÊý*/
-	UINT64 MPCPTxRegister;					/* MPCP Tx Register¼ÆÊý*/
-	UINT64 MPCPTxRegRequest;				/* MPCP Tx Registe Requestr¼ÆÊý  */
-	UINT64 MPCPTxReport;					/* MPCP Tx Report¼ÆÊý */
-	UINT64 MPCPRxGate;						/*MPCP Rx Gate¼ÆÊý*/
-	UINT64 MPCPRxRegAck;					/*MPCP Rx Reg Ack¼ÆÊý*/
-	UINT64 MPCPRxRegister;					/*MPCP Rx Register¼ÆÊý*/
-	UINT64 MPCPRxRegRequest;				/*MPCP Rx RegRequest¼ÆÊý*/
-	UINT64 MPCPRxReport;					/*MPCP Rx Report¼ÆÊý*/	
+	UINT64 CRC8Errors;						/* CRCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	UINT64 FECCorrectedBlocks;				/* FECï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	UINT64 FECUncorrectableBlocks;			/* FECï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	UINT64 MPCPMACCtrlFramesTransmitted;	/* MPCPï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½*/
+	UINT64 MPCPMACCtrlFramesReceived;		/* MPCPï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½*/
+	UINT64 MPCPTxGate;						/* MPCP Tx Gateï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPTxRegAck;					/* MPCP Tx Reg Ackï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPTxRegister;					/* MPCP Tx Registerï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPTxRegRequest;				/* MPCP Tx Registe Requestrï¿½ï¿½ï¿½ï¿½  */
+	UINT64 MPCPTxReport;					/* MPCP Tx Reportï¿½ï¿½ï¿½ï¿½ */
+	UINT64 MPCPRxGate;						/*MPCP Rx Gateï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPRxRegAck;					/*MPCP Rx Reg Ackï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPRxRegister;					/*MPCP Rx Registerï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPRxRegRequest;				/*MPCP Rx RegRequestï¿½ï¿½ï¿½ï¿½*/
+	UINT64 MPCPRxReport;					/*MPCP Rx Reportï¿½ï¿½ï¿½ï¿½*/	
 }ONU_PON_Port_Statistics_Get_2_t;
 
 typedef struct ONU_Port_Flux_Statistics_Counter_s{
-	UINT64 ifInOctets;       /* ÊÕµ½µÄÉÏÐÐ°ü×Ö½ÚÊý */
-	UINT64 ifInUcastPkts;    /* ÊÕµ½µÄÉÏÐÐµ¥²¥°üÊýÄ¿ */
-	UINT64 ifInNUcastPkts;   /* ÊÕµ½µÄÉÏÐÐ×é²¥°üÊýÄ¿ */
-	UINT64 ifInDiscards;     /* ¶ªÆúµÄÉÏÐÐ°üÊýÄ¿ */
-	UINT64 ifInErrors;       /* ÊÕµ½µÄÉÏÐÐ´íÎó°üÊýÄ¿  */
-	UINT64 ifOutOctets;      /* ÊÕµ½µÄÏÂÐÐ°ü×Ö½ÚÊý  */
-	UINT64 ifOutUcastPkts;   /* ÊÕµ½µÄÏÂÐÐµ¥²¥°üÊýÄ¿  */
-	UINT64 ifOutNUcastPkts;  /* ÊÕµ½µÄÏÂÐÐ×é²¥°üÊýÄ¿  */
-	UINT64 ifOutDiscards;    /* ¶ªÆúµÄÏÂÐÐ°üÊýÄ¿  */
-	UINT64 ifOutErrors;      /* ÊÕµ½µÄÏÂÐÐ°üÊýÄ¿  */
+	UINT64 ifInOctets;       /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð°ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ */
+	UINT64 ifInUcastPkts;    /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ */
+	UINT64 ifInNUcastPkts;   /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é²¥ï¿½ï¿½ï¿½ï¿½Ä¿ */
+	UINT64 ifInDiscards;     /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð°ï¿½ï¿½ï¿½Ä¿ */
+	UINT64 ifInErrors;       /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿  */
+	UINT64 ifOutOctets;      /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð°ï¿½ï¿½Ö½ï¿½ï¿½ï¿½  */
+	UINT64 ifOutUcastPkts;   /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿  */
+	UINT64 ifOutNUcastPkts;  /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é²¥ï¿½ï¿½ï¿½ï¿½Ä¿  */
+	UINT64 ifOutDiscards;    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð°ï¿½ï¿½ï¿½Ä¿  */
+	UINT64 ifOutErrors;      /* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð°ï¿½ï¿½ï¿½Ä¿  */
 }ONU_Port_Flux_Statistics_Counter_t;
 
 
