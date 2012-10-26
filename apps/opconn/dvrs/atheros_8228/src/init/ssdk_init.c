@@ -230,9 +230,11 @@ sw_error_t	atheros_init()
 	}
 
     /* enable 10M led control, 0xca35ca35 -> 0xcb35cb35 */
-	regVal = 0xc936c936;
+/*	regVal = 0xc936c936;*/
+	regVal = 0xcb35cb35;
     shiva_reg_set(0, 0xb0, (a_uint8_t *)&regVal, sizeof(a_uint32_t));
-	regVal = 0xcb36cb36;
+/*	regVal = 0xcb36cb36;*/
+	regVal = 0xcb05cb05;
     shiva_reg_set(0, 0xb4, (a_uint8_t *)&regVal, sizeof(a_uint32_t));
 
 	/* to support bc/mc/uu strom suppression */

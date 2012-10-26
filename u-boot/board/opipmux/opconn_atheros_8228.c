@@ -1484,6 +1484,8 @@ sw_error_t	atheros_init()
 
     /* enable 10M led control, 0xca35ca35 -> 0xcb35cb35 */
 	ulData = 0xcb35cb35;
+    shiva_mdio_reg_set(0, 0xb0, (a_uint8_t *)&ulData, sizeof(a_uint32_t));
+    ulData = 0xcb05cb05;
     shiva_mdio_reg_set(0, 0xb4, (a_uint8_t *)&ulData, sizeof(a_uint32_t));
 #endif
 
