@@ -1,3 +1,0 @@
-mknod /dev/mtdcfg c 90 0
-mknod /dev/mtdk0 c 90 2
-mknod /dev/mtdk1 c 90 4
