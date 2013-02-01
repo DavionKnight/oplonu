@@ -97,7 +97,8 @@ extern "C" {
 #define CLI_CHILD_TASK_STACK_SIZE   0x20000
 
 #define ENABLE_MODE_PWD             "admin"  /* default password of enable mode  */
-#define SUPER_MODE_PWD              "Opconn<M>!^*"  /* default password of super mode  */
+//#define SUPER_MODE_PWD              "Opconn<M>!^*"  /* default password of super mode  */
+#define SUPER_MODE_PWD              "root"  /* default password of super mode  */
 
 #define CLI_MODE_USER               0x01    /* user mode */
 #define CLI_MODE_ENABLE             0x02    /* enable mode */

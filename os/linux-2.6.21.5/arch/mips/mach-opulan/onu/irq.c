@@ -123,12 +123,18 @@ void malta_hw0_irqdispatch(void)
 	if(irq_status & IRQ_BIT_PCM)  do_IRQ(OPL_ONU_PCM_IRQ);
 	if(irq_status & IRQ_BIT_GPIO4) do_IRQ(OPL_ONU_GPIO_4);
 	if(irq_status & IRQ_BIT_GPIO5) do_IRQ(OPL_ONU_GPIO_5);
+#if 0
 	if(irq_status & IRQ_BIT_GPIO10) do_IRQ(OPL_ONU_GPIO_10);
+#endif
 	if(irq_status & IRQ_BIT_UPTM) do_IRQ(OPL_UPTM_IRQ); 
 	if(irq_status & IRQ_BIT_TIMER0) do_IRQ(OPL_TIMER0_IRQ);
 	if(irq_status & IRQ_BIT_TIMER1) do_IRQ(OPL_TIMER1_IRQ);
 	//add for 485-232 card 
+	#if 0
     if(irq_status & IRQ_BIT_GPIO11) do_IRQ(OPL_EXAR_PORT_IRQ);
+	#else
+    if(irq_status & IRQ_BIT_GPIO10) do_IRQ(OPL_EXAR_PORT_IRQ);	
+	#endif
 
 	if(irq_status & ipmux_irq_mask){
 		do_IRQ(OPL_IPMUX_IRQ);      /* for OTHERS,mainly for IPMUX-e switch chip */
@@ -191,7 +197,11 @@ void ipmux_irq_enable(unsigned int irq)
 		case OPL_TIMER0_IRQ: irq_enable |= (IRQ_BIT_TIMER0);break;
 	    case OPL_TIMER1_IRQ: irq_enable |= (IRQ_BIT_TIMER1);break;
 		/*  -----       Add for 485 card    --------      */
+		#if 0
 		case OPL_EXAR_PORT_IRQ: irq_enable|= (IRQ_BIT_GPIO11);break;
+		#else
+		case OPL_EXAR_PORT_IRQ: irq_enable|= (IRQ_BIT_GPIO10);break;		
+		#endif
 		
 		default:
 		printk("%s:the irq %d is invalid\n",__FILE__,irq);
@@ -231,7 +241,11 @@ void ipmux_irq_disable(unsigned int irq)
 		case OPL_TIMER0_IRQ:irq_enable |= (IRQ_BIT_TIMER0);break;
 		case OPL_TIMER1_IRQ:irq_enable |= (IRQ_BIT_TIMER1);break;
 		/*  -----       Add for 485 card    --------      */
-		case OPL_EXAR_PORT_IRQ: irq_enable|= IRQ_BIT_GPIO11;break;
+		#if 0
+		case OPL_EXAR_PORT_IRQ: irq_enable|= (IRQ_BIT_GPIO11);break;
+		#else
+		case OPL_EXAR_PORT_IRQ: irq_enable|= (IRQ_BIT_GPIO10);break;		
+		#endif
 		default:
 				    printk("the irq is invalid\n");
 				    break;

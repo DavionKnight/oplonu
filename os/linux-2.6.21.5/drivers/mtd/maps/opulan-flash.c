@@ -102,13 +102,15 @@ static int __init opulan_flash_probe(struct platform_device *pdev)
 
 	info->map.virt = info->map.phys;
 
-	//	printk("flash->map_name=%s,info->map.virt = 0x%x, map.size=0x%x, info->nr_parts=%d\n",flash->map_name, info->map.virt, 
-	//		info->map.size, info->nr_parts );
+//		printk("flash->map_name=%s,info->map.virt = 0x%x, map.size=0x%x, info->nr_parts=%d\n",flash->map_name, info->map.virt,
+			//info->map.size, info->nr_parts );
 
 #ifdef CONFIG_ARCH_ONU
+#if 0
 	*(volatile unsigned int *)0xbf003020 = (info->map.phys & 0x1FFFFFFF)>>12;
 	/*32M*/
 	*(volatile unsigned int *)0xbf003048 = (0xE000);
+#endif
 #endif
 
 #ifdef CONFIG_ARCH_OPTRANN

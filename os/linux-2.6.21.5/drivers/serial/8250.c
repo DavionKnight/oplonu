@@ -58,13 +58,13 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 /*
  * Debugging.
  */
-#if 0
+#if 1
 #define DEBUG_AUTOCONF(fmt...)	printk(fmt)
 #else
 #define DEBUG_AUTOCONF(fmt...)	do { } while (0)
 #endif
 
-#if 0
+#if 1
 #define DEBUG_INTR(fmt...)	printk(fmt)
 #else
 #define DEBUG_INTR(fmt...)	do { } while (0)
@@ -106,6 +106,9 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #include <asm/mach-onu/onu_reg.h>
 #include <asm/mach-onu/onu_irq.h>
 
+#define GT873A
+
+#ifndef GT873A
 
 #define EXAR_PORT_BASE   0xbf900000
 #define EXAR_PORT1_BASE  EXAR_PORT_BASE+0x10
@@ -127,6 +130,62 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 
 #define EXAR_MOD_ADD  0x20
 #define EXAR_232_MODE 0x24
+
+#else
+
+#define EXAR_PORT_BIT(x) (1<<x)
+
+#define EXAR_PORT_BASE   0xb2800000
+#define EXAR_PORT1_BASE  EXAR_PORT_BASE+0x08
+#define EXAR_PORT2_BASE  EXAR_PORT_BASE+0x18
+#define EXAR_PORT3_BASE  EXAR_PORT_BASE+0x28
+#define EXAR_PORT4_BASE  EXAR_PORT_BASE+0x38
+
+#define EXAR_PORT_PROP_ADDR (EXAR_PORT_BASE+0x07)
+#define EXAR_PORT_IE_CTRL		(EXAR_PORT_BASE+0x01)
+#define EXAR_PORT_PORT_SEL    (EXAR_PORT_BASE+0x02)
+#define EXAR_PORT_RST_REG (EXAR_PORT_BASE+0x03)
+
+#define EXAR_PORTD_IE		EXAR_PORT_BIT(7)
+#define EXAR_PORTC_IE		EXAR_PORT_BIT(6)
+#define EXAR_PORTB_IE		EXAR_PORT_BIT(5)
+#define EXAR_PORTA_IE		EXAR_PORT_BIT(4)
+#define EXAR_PORTD_IS		EXAR_PORT_BIT(3)
+#define EXAR_PORTC_IS		EXAR_PORT_BIT(2)
+#define EXAR_PORTB_IS		EXAR_PORT_BIT(1)
+#define EXAR_PORTA_IS		EXAR_PORT_BIT(0)
+
+#define EXAR_PORTD_SEL		EXAR_PORT_BIT(3)
+#define EXAR_PORTC_SEL		EXAR_PORT_BIT(2)
+#define EXAR_PORTB_SEL		EXAR_PORT_BIT(1)
+#define EXAR_PORTA_SEL		EXAR_PORT_BIT(0)
+
+#define EXAR_PORT_RST		EXAR_PORT_BIT(7)
+
+#define EXAR_PORT_UNLOCK_VAL 0x55
+#define EXAR_PORT_LOCK_VAL 0x00
+
+#define EXAR_PORT_SIZE 0x7
+#define EXAR_CLK 14745600
+#define OPL_BASE  0xbf000000
+#define OPL_CS1_BASE (0x0C11*4)
+#define OPL_CS2_BASE (0x0C12*4)
+#define OPL_CS1_MASK (0x0C19*4)
+#define OPL_CS2_MASK (0x0C1A*4)
+#define OPL_CS2_CFG (0x0C04*4)
+
+
+#define OPL_CS_VALID		(1<<31)
+#define OPL_CS_SEL_PFLASH (1<<30)
+#define OPL_CS_PORT_SIZE_8  (1<<2)
+
+
+#define EXAR_PHY2_ADDR 0x12800
+#define EXAR_ADD_MASK 0xff00
+
+/*cpld ref defines*/
+
+#endif
 
 #define PORT(_base,_irq)				\
 	{						\
@@ -396,10 +455,40 @@ static inline int map_8250_out_reg(struct uart_8250_port *up, int offset)
 
 #endif
 
+#ifdef GT873A
+void exar_port_serial_unlock()
+{
+	writeb(EXAR_PORT_UNLOCK_VAL, EXAR_PORT_PROP_ADDR);
+}
+
+void exar_port_serial_lock()
+{
+	writeb(EXAR_PORT_LOCK_VAL, EXAR_PORT_PROP_ADDR);
+}
+
+void serial_sel_port(struct uart_8250_port *up)
+{
+	if(up != NULL)
+	{
+		unsigned char port = ( ((int)up->port.membase) >> 4) & 3;
+		port = (1<<port);
+
+		writeb(port, EXAR_PORT_PORT_SEL);
+	}
+}
+
+#endif
+
 static unsigned int serial_in(struct uart_8250_port *up, int offset)
 {
 	unsigned int tmp;
 	offset = map_8250_in_reg(up, offset) << up->port.regshift;
+
+#ifdef GT873A
+	exar_port_serial_unlock();
+	serial_sel_port(up);
+	exar_port_serial_lock();
+#endif
 
 	switch (up->port.iotype) {
 	case UPIO_HUB6:
@@ -434,6 +523,11 @@ serial_out(struct uart_8250_port *up, int offset, int value)
 {
 	offset = map_8250_out_reg(up, offset) << up->port.regshift;
 
+#ifdef GT873A
+	exar_port_serial_unlock();
+	serial_sel_port(up);
+#endif
+
 	switch (up->port.iotype) {
 	case UPIO_HUB6:
 		outb(up->port.hub6 - 1 + offset, up->port.iobase);
@@ -461,6 +555,10 @@ serial_out(struct uart_8250_port *up, int offset, int value)
 	default:
 		outb(value, up->port.iobase + offset);
 	}
+
+#ifdef GT873A
+	exar_port_serial_lock();
+#endif
 }
 
 static void
@@ -1481,8 +1579,11 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
 
 		up = list_entry(l, struct uart_8250_port, list);
 
+		DEBUG_INTR("inter port membase: 0x%08x\n", (int)up->port.membase);
+
 		iir = serial_in(up, UART_IIR);
 		if (!(iir & UART_IIR_NO_INT)) {
+			DEBUG_INTR("8250 int handle int priority %d\r\n", ((iir>>1)&0x7));
 			serial8250_handle_port(up);
 
 			handled = 1;
@@ -1537,6 +1638,8 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
 	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
 
 	spin_lock_irq(&i->lock);
+
+	printk("link irq for port: 0x%08x\n", up->port.membase);
 
 	if (i->head) {
 		list_add(&up->list, i->head);
@@ -1736,6 +1839,9 @@ static int serial8250_startup(struct uart_port *port)
 	unsigned long flags;
 	unsigned char lsr, iir;
 	int retval;
+
+	printk("gpio mod sel reg 0x%08x\n", readl(OPL_BASE+(0xb26*4)));
+	printk("gpio level trigger reg 0x%08x\n", readl(OPL_BASE+(0xb27*4)));
 
 	up->capabilities = uart_config[up->port.type].flags;
 	up->mcr = 0;
@@ -2881,10 +2987,15 @@ static int __init serial8250_init(void)
     #define GPIO_MODE_SEL 0xB26
 	#define GPIO_LEVEL_MODE 0xb27
 	/* map 485/232 daughter card physical address CS1-->0xbf800000, cs2 -->0xbf900000*/
+#ifndef GT873A
 	writel(EXAR_PHY1_ADDR,(unsigned int *)(OPL_BASE+OPL_CS1_BASE));
 	writel(EXAR_ADD_MASK,(unsigned int *)(OPL_BASE+OPL_CS1_MASK));
+#endif
+
 	writel(EXAR_PHY2_ADDR,(unsigned int *)(OPL_BASE+OPL_CS2_BASE));
 	writel(EXAR_ADD_MASK,(unsigned int *)(OPL_BASE+OPL_CS2_MASK));
+
+#ifndef GT873A
 	ugpio =readl((u32 *)(OPL_BASE+GPIO_DIR *4)) & (~(1<<11));
 	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_DIR *4));
 
@@ -2898,9 +3009,52 @@ static int __init serial8250_init(void)
 	writeb(EXAR_232_MODE,(unsigned char *)(EXAR_PORT_BASE+EXAR_MOD_ADD));
 	
 	printk("******232 mode reg addr= 0x%x value 0x%x \n",EXAR_PORT_BASE+EXAR_MOD_ADD, readb((unsigned char *)(EXAR_PORT_BASE+EXAR_MOD_ADD)));
+
+#else
+
+	writel((OPL_CS_VALID|OPL_CS_SEL_PFLASH|OPL_CS_PORT_SIZE_8), (unsigned int *)(OPL_BASE+OPL_CS2_CFG));
+
+	ugpio =readl((u32 *)(OPL_BASE+GPIO_DIR *4)) & (~(1<<10));
+	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_DIR *4));
+
+//	ugpio =readl((u32 *)(OPL_BASE+GPIO_MODE_SEL *4)) |(1<<10); level trigger mode
+	ugpio =readl((u32 *)(OPL_BASE+GPIO_MODE_SEL *4)) &(~(1<<10));  //edge trigger mode
+	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_MODE_SEL *4));
+
+	ugpio =readl((u32 *)(OPL_BASE+GPIO_LEVEL_MODE *4)) |(1<<10);  //level high active
+//		ugpio =readl((u32 *)(OPL_BASE+GPIO_LEVEL_MODE *4))&(~(1<<10));  //level low active
+	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_LEVEL_MODE *4));
+
+	ugpio =readl((u32 *)(OPL_BASE+0xb28 *4)) |(1<<(10*2));  //rising edge active
+	ugpio =readl((u32 *)(OPL_BASE+0xb28 *4))&(~(1<<(10*2)));  //falling edge active
+	writel(ugpio,(unsigned int *)(OPL_BASE+0xb28 *4));
+
+#endif
+
 	printk("******cs2 address = 0x%x  value = 0x%x \n", OPL_BASE+OPL_CS2_BASE,readl((unsigned int *)(OPL_BASE+OPL_CS2_BASE)));
 	printk("******cs1 address = 0x%x  value = 0x%x \n", OPL_BASE+OPL_CS1_BASE,readl((unsigned int *)(OPL_BASE+OPL_CS1_BASE)));
 	/******************************************************************/
+
+#ifdef GT873A
+	{
+		unsigned char v =0;
+		writel(0x80000000, (OPL_BASE+OPL_CS2_CFG));
+		printk("set cs2 bus 8bit size\r\n");
+
+		v = readb(EXAR_PORT_BASE);
+		printk("read uart card type 0x%02x\r\n", v);
+
+		exar_port_serial_unlock();
+		v = readb(EXAR_PORT_RST_REG);
+		printk("rst reg val 0x%02x\r\n", v);
+		v = v  &(~EXAR_PORT_RST);
+		writeb(v, EXAR_PORT_RST_REG);
+		exar_port_serial_lock();
+		printk("disable uart card(0x%02x)\r\n", v);
+
+	}
+#endif
+
      serial8250_isa_devs->dev.platform_data = exar_device.dev.platform_data;
 	serial8250_isa_devs->resource=exar_device.resource;
 	ret = platform_device_add(serial8250_isa_devs);
