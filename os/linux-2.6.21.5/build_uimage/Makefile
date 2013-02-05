@@ -50,7 +50,8 @@ piggy.lzma: $(LX)
 	ls -lh $(LX)
 	mips_4KC-objcopy --gap-fill=0xff -O binary $(LX) piggy
 #	gzip -9 < piggy > piggy.gz
-	lzma e piggy piggy.lzma
+#	lzma e piggy piggy.lzma
+	lzma -f piggy
 	echo "piggy.lzma ok"
 
 uImage \

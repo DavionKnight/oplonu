@@ -64,7 +64,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #define DEBUG_AUTOCONF(fmt...)	do { } while (0)
 #endif
 
-#if 1
+#if 0
 #define DEBUG_INTR(fmt...)	printk(fmt)
 #else
 #define DEBUG_INTR(fmt...)	do { } while (0)
@@ -145,6 +145,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #define EXAR_PORT_IE_CTRL		(EXAR_PORT_BASE+0x01)
 #define EXAR_PORT_PORT_SEL    (EXAR_PORT_BASE+0x02)
 #define EXAR_PORT_RST_REG (EXAR_PORT_BASE+0x03)
+#define EXAR_PORT_PORT_RSMODE    (EXAR_PORT_BASE+0x06)
 
 #define EXAR_PORTD_IE		EXAR_PORT_BIT(7)
 #define EXAR_PORTC_IE		EXAR_PORT_BIT(6)
@@ -173,6 +174,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #define OPL_CS1_MASK (0x0C19*4)
 #define OPL_CS2_MASK (0x0C1A*4)
 #define OPL_CS2_CFG (0x0C04*4)
+#define OPL_CS2_CFG_1 (0x0C05*4)
 
 
 #define OPL_CS_VALID		(1<<31)
@@ -596,8 +598,29 @@ static inline int _serial_dl_read(struct uart_8250_port *up)
 /* Uart divisor latch write */
 static inline void _serial_dl_write(struct uart_8250_port *up, int value)
 {
+
+#ifdef GT873A
+	{
+		unsigned char v = 0;
+
+		value = 151;
+
+		printk("divisor latch set value: 0x%08x\n", value);
+
+		v = serial_in(up, UART_LCR) | 0x80;
+		serial_out(up, UART_LCR, v);
+
+		serial_outp(up, UART_DLL, value & 0xff);
+		serial_outp(up, UART_DLM, value >> 8 & 0xff);
+
+		serial_out(up, UART_LCR, v&~0x80);
+	}
+#else
+
 	serial_outp(up, UART_DLL, value & 0xff);
 	serial_outp(up, UART_DLM, value >> 8 & 0xff);
+
+#endif
 }
 
 #ifdef CONFIG_SERIAL_8250_AU1X00
@@ -953,6 +976,7 @@ static void autoconfig_16550a(struct uart_8250_port *up)
 	up->port.type = PORT_16550A;
 	up->capabilities |= UART_CAP_FIFO;
 
+#ifndef GT873A
 	/*
 	 * Check for presence of the EFR when DLAB is set.
 	 * Only ST16C650V1 UARTs pass this test.
@@ -970,6 +994,7 @@ static void autoconfig_16550a(struct uart_8250_port *up)
 		serial_outp(up, UART_EFR, 0);
 		return;
 	}
+#endif
 
 	/*
 	 * Maybe it requires 0xbf to be written to the LCR.
@@ -1579,7 +1604,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
 
 		up = list_entry(l, struct uart_8250_port, list);
 
-		DEBUG_INTR("inter port membase: 0x%08x\n", (int)up->port.membase);
+//		DEBUG_INTR("inter port membase: 0x%08x\n", (int)up->port.membase);
 
 		iir = serial_in(up, UART_IIR);
 		if (!(iir & UART_IIR_NO_INT)) {
@@ -1840,8 +1865,6 @@ static int serial8250_startup(struct uart_port *port)
 	unsigned char lsr, iir;
 	int retval;
 
-	printk("gpio mod sel reg 0x%08x\n", readl(OPL_BASE+(0xb26*4)));
-	printk("gpio level trigger reg 0x%08x\n", readl(OPL_BASE+(0xb27*4)));
 
 	up->capabilities = uart_config[up->port.type].flags;
 	up->mcr = 0;
@@ -2133,7 +2156,10 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 	/*
 	 * Ask the core to calculate the divisor for us.
 	 */
-	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16); 
+	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
+
+	printk("caculated baud %d\n", baud);
+
 	quot = serial8250_get_divisor(port, baud);
 
 	/*
@@ -2146,7 +2172,11 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 		if (baud < 2400)
 			fcr = UART_FCR_ENABLE_FIFO | UART_FCR_TRIGGER_1;
 		else
+#ifndef GT873A
 			fcr = uart_config[up->port.type].fcr;
+#else
+			fcr = 0xbf;
+#endif
 	}
 
 	/*
@@ -2265,6 +2295,41 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 		serial_outp(up, UART_FCR, fcr);		/* set fcr */
 	}
 	serial8250_set_mctrl(&up->port, up->port.mctrl);
+
+
+#ifdef GT873A
+	exar_port_serial_unlock();
+
+	{
+		unsigned char v, port, i;
+		port = ((int)up->port.membase)>>4 & 0x3;
+
+		printk("set port %d 485 2-wire mode\n", port);
+		v = readb(EXAR_PORT_PORT_SEL) & (~(1<<(port+4)));
+		writeb(v, EXAR_PORT_PORT_SEL);
+
+		printk("set port %d 485 mode\n", port);
+		v = readb(EXAR_PORT_PORT_RSMODE) | (1<<port);
+		writeb(v, EXAR_PORT_PORT_RSMODE);
+
+		printk("cpld enable port %d IE\n", port);
+		v = readb(EXAR_PORT_IE_CTRL) & (~(1<<(port+4)));
+		writeb(v, EXAR_PORT_IE_CTRL);
+
+		for(i=0;i<8; i++)
+		{
+			printk("cpld reg %d val: 0x%02x\n", i, readb(EXAR_PORT_BASE+i));
+		}
+
+		for(i=0;i<8; i++)
+		{
+			printk("port %d reg %d val: 0x%02x\n", port, i, serial_in(up, i));
+		}
+	}
+
+	exar_port_serial_lock();
+#endif
+
 	spin_unlock_irqrestore(&up->port.lock, flags);
 }
 
@@ -3012,7 +3077,11 @@ static int __init serial8250_init(void)
 
 #else
 
+	//8bit config
 	writel((OPL_CS_VALID|OPL_CS_SEL_PFLASH|OPL_CS_PORT_SIZE_8), (unsigned int *)(OPL_BASE+OPL_CS2_CFG));
+
+	//config cs2 config1 for mem access time
+	writel(0x0b981f8f, (unsigned int*)(OPL_BASE+OPL_CS2_CFG_1));
 
 	ugpio =readl((u32 *)(OPL_BASE+GPIO_DIR *4)) & (~(1<<10));
 	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_DIR *4));
@@ -3026,13 +3095,13 @@ static int __init serial8250_init(void)
 	writel(ugpio,(unsigned int *)(OPL_BASE+GPIO_LEVEL_MODE *4));
 
 	ugpio =readl((u32 *)(OPL_BASE+0xb28 *4)) |(1<<(10*2));  //rising edge active
-	ugpio =readl((u32 *)(OPL_BASE+0xb28 *4))&(~(1<<(10*2)));  //falling edge active
+//	ugpio =readl((u32 *)(OPL_BASE+0xb28 *4))&(~(1<<(10*2)));  //falling edge active
 	writel(ugpio,(unsigned int *)(OPL_BASE+0xb28 *4));
 
 #endif
 
 	printk("******cs2 address = 0x%x  value = 0x%x \n", OPL_BASE+OPL_CS2_BASE,readl((unsigned int *)(OPL_BASE+OPL_CS2_BASE)));
-	printk("******cs1 address = 0x%x  value = 0x%x \n", OPL_BASE+OPL_CS1_BASE,readl((unsigned int *)(OPL_BASE+OPL_CS1_BASE)));
+//	printk("******cs1 address = 0x%x  value = 0x%x \n", OPL_BASE+OPL_CS1_BASE,readl((unsigned int *)(OPL_BASE+OPL_CS1_BASE)));
 	/******************************************************************/
 
 #ifdef GT873A
@@ -3050,7 +3119,7 @@ static int __init serial8250_init(void)
 		v = v  &(~EXAR_PORT_RST);
 		writeb(v, EXAR_PORT_RST_REG);
 		exar_port_serial_lock();
-		printk("disable uart card(0x%02x)\r\n", v);
+		printk("disable uart card rst(0x%02x)\r\n", v);
 
 	}
 #endif
