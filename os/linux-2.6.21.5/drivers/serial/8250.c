@@ -58,7 +58,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 /*
  * Debugging.
  */
-#if 1
+#if 0
 #define DEBUG_AUTOCONF(fmt...)	printk(fmt)
 #else
 #define DEBUG_AUTOCONF(fmt...)	do { } while (0)
@@ -71,6 +71,7 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #endif
 
 #define PASS_LIMIT	256
+
 
 /*
  * We default to IRQ0 for the "no irq" hack.   Some
@@ -107,6 +108,11 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
 #include <asm/mach-onu/onu_irq.h>
 
 #define GT873A
+
+#ifdef GT873A
+#define BAUD_RATE_REF_DIVISOR 30
+#endif
+
 
 #ifndef GT873A
 
@@ -592,7 +598,23 @@ serial_out_sync(struct uart_8250_port *up, int offset, int value)
 /* Uart divisor latch read */
 static inline int _serial_dl_read(struct uart_8250_port *up)
 {
+#ifdef GT873A
+	{
+		unsigned char v = 0, v1;
+
+		v = serial_in(up, UART_LCR) | 0x80;
+		serial_out(up, UART_LCR, v);
+
+		v1 = serial_inp(up, UART_DLL) | serial_inp(up, UART_DLM) << 8;
+
+		serial_out(up, UART_LCR, v&~0x80);
+
+		return v1;
+	}
+#else
 	return serial_inp(up, UART_DLL) | serial_inp(up, UART_DLM) << 8;
+#endif
+
 }
 
 /* Uart divisor latch write */
@@ -603,9 +625,7 @@ static inline void _serial_dl_write(struct uart_8250_port *up, int value)
 	{
 		unsigned char v = 0;
 
-		value = 151;
-
-		printk("divisor latch set value: 0x%08x\n", value);
+//		printk("divisor latch set value: 0x%08x\n", value);
 
 		v = serial_in(up, UART_LCR) | 0x80;
 		serial_out(up, UART_LCR, v);
@@ -1549,6 +1569,7 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
 	return status;
 }
 
+#ifndef GT873A
 /*
  * This handles the interrupt from one port.
  */
@@ -1572,6 +1593,34 @@ serial8250_handle_port(struct uart_8250_port *up)
 
 	spin_unlock_irqrestore(&up->port.lock, flags);
 }
+#else
+
+static inline void
+serial8250_handle_port(struct uart_8250_port *up, unsigned int iir)
+{
+	unsigned int status;
+	unsigned long flags;
+
+	spin_lock_irqsave(&up->port.lock, flags);
+
+	status = serial_inp(up, UART_LSR);
+
+	DEBUG_INTR("status = %x...", status);
+
+	DEBUG_INTR("iir = %x...", iir);
+	iir = (iir>>1) & 7;
+	DEBUG_INTR("iir * = %x...", iir);
+	if (status & UART_LSR_DR && (iir == 2 || iir == 6 || iir==3))
+		receive_chars(up, &status);
+	check_modem_status(up);
+
+	if (status & UART_LSR_THRE &&(iir == 1))
+		transmit_chars(up);
+
+	spin_unlock_irqrestore(&up->port.lock, flags);
+}
+
+#endif
 
 /*
  * This is the serial driver's interrupt routine.
@@ -1608,8 +1657,12 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
 
 		iir = serial_in(up, UART_IIR);
 		if (!(iir & UART_IIR_NO_INT)) {
-			DEBUG_INTR("8250 int handle int priority %d\r\n", ((iir>>1)&0x7));
+			DEBUG_INTR("\n8250 port %d int handle int priority %d\r\n", (((int)up->port.membase)>>4)&3, ((iir>>1)&0x7));
+#ifndef GT873A
 			serial8250_handle_port(up);
+#else
+			serial8250_handle_port(up, iir);
+#endif
 
 			handled = 1;
 
@@ -1664,8 +1717,6 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
 
 	spin_lock_irq(&i->lock);
 
-	printk("link irq for port: 0x%08x\n", up->port.membase);
-
 	if (i->head) {
 		list_add(&up->list, i->head);
 		spin_unlock_irq(&i->lock);
@@ -1716,7 +1767,11 @@ static void serial8250_timeout(unsigned long data)
 
 	iir = serial_in(up, UART_IIR);
 	if (!(iir & UART_IIR_NO_INT))
+#ifndef GT873A
 		serial8250_handle_port(up);
+#else
+		serial8250_handle_port(up, iir);
+#endif
 	mod_timer(&up->timer, jiffies + poll_timeout(up->port.timeout));
 }
 
@@ -1750,7 +1805,11 @@ static void serial8250_backup_timeout(unsigned long data)
 	}
 
 	if (!(iir & UART_IIR_NO_INT))
+#ifndef GT873A
 		serial8250_handle_port(up);
+#else
+		serial8250_handle_port(up, iir);
+#endif
 
 	if (is_real_interrupt(up->port.irq))
 		serial_out(up, UART_IER, ier);
@@ -2114,6 +2173,11 @@ static unsigned int serial8250_get_divisor(struct uart_port *port, unsigned int 
 	else
 		quot = uart_get_divisor(port, baud);
 
+#ifdef GT873A
+		quot -= (quot*2+BAUD_RATE_REF_DIVISOR)/(BAUD_RATE_REF_DIVISOR*2);
+#endif
+
+
 	return quot;
 }
 
@@ -2157,8 +2221,6 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 	 * Ask the core to calculate the divisor for us.
 	 */
 	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
-
-	printk("caculated baud %d\n", baud);
 
 	quot = serial8250_get_divisor(port, baud);
 
@@ -2301,21 +2363,32 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 	exar_port_serial_unlock();
 
 	{
-		unsigned char v, port, i;
+		unsigned char v, port, i, afe;
 		port = ((int)up->port.membase)>>4 & 0x3;
 
-		printk("set port %d 485 2-wire mode\n", port);
+//		printk("set port %d 485 2-wire mode\n", port);
 		v = readb(EXAR_PORT_PORT_SEL) & (~(1<<(port+4)));
 		writeb(v, EXAR_PORT_PORT_SEL);
 
-		printk("set port %d 485 mode\n", port);
+//		printk("set port %d 485 mode\n", port);
 		v = readb(EXAR_PORT_PORT_RSMODE) | (1<<port);
 		writeb(v, EXAR_PORT_PORT_RSMODE);
 
-		printk("cpld enable port %d IE\n", port);
+//		printk("cpld enable port %d IE\n", port);
 		v = readb(EXAR_PORT_IE_CTRL) & (~(1<<(port+4)));
 		writeb(v, EXAR_PORT_IE_CTRL);
 
+//		printk("enable uart afe 485en\n");
+		v = serial_in(up, UART_LCR) | 0x80;
+		serial_out(up, UART_LCR, v);
+
+		afe = serial_in(up, UART_EFR) | 0x04 | 0x08 | 0x10;
+		afe = (afe&0x1f)|(2<<5);
+		serial_out(up, UART_EFR, afe);
+
+		serial_out(up, UART_LCR, v&(~0x80));
+
+#if 0
 		for(i=0;i<8; i++)
 		{
 			printk("cpld reg %d val: 0x%02x\n", i, readb(EXAR_PORT_BASE+i));
@@ -2325,6 +2398,7 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
 		{
 			printk("port %d reg %d val: 0x%02x\n", port, i, serial_in(up, i));
 		}
+#endif
 	}
 
 	exar_port_serial_lock();
@@ -2569,6 +2643,7 @@ static void __init serial8250_isa_init_ports(void)
 		up->mcr_force = ALPHA_KLUDGE_MCR;
 
 		up->port.ops = &serial8250_pops;
+
 	}
 
 	for (i = 0, up = serial8250_ports;
@@ -3121,6 +3196,19 @@ static int __init serial8250_init(void)
 		exar_port_serial_lock();
 		printk("disable uart card rst(0x%02x)\r\n", v);
 
+	}
+
+	{
+		struct plat_serial8250_port * up = exar_data;
+		while(up)
+		{
+			if(up->membase == 0)
+				break;
+
+			up->uartclk = 24000000;
+
+			up++;
+		}
 	}
 #endif
 
