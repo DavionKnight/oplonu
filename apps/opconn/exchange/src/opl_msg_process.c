@@ -310,12 +310,14 @@ opint32 msgImageUploadProcessHandler(opuint8 onuId,opuint8 *pData,opuint32 len)
                     vosSystem("mtd erase "FLASH_DEV_NAME_OS1);
 					vosSystem("mtd write /tmp/opconn.img.bak.uart "FLASH_DEV_NAME_OS1);
                     vosSystem("rm -f /tmp/opconn.img.bak.uart ");
+//						printf("FLASH_BOOT_FLAG_NORMALHHHHHHHHHHH\n");
 					vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
                 }
                 else {
                     vosSystem("mtd erase "FLASH_DEV_NAME_OS2);
                     vosSystem("mtd write /tmp/opconn.img.bak.uart "FLASH_DEV_NAME_OS2);
                     vosSystem("rm -f /tmp/opconn.img.bak.uart ");
+//											printf("FLASH_BOOT_FLAG_NORMALJJJJJJJJJJJJ\n");
 					vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
                 }
                 /*system reboot*/

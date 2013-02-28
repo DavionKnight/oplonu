@@ -62,6 +62,8 @@ all:
 	@echo "==== Compiling ipmux-e linux minte intr module and register mmap module for MIPS_4KC ====="
 	cd ../opl_minte;make
 	cd ../opl_reg;make
+	cd ../opl_uart;make
+	cd ../opl_cs1;make
 	cd ../opl_cpuif;make	
 	cd ../opl_wdt; make
 	cd ../opl_uptm_intr; make		
@@ -71,6 +73,8 @@ all:
 	@echo "   >Make all  ;make Minte module, Register Memmap Module;"
 	@echo "   >Make minte  ;make Minte module;"
 	@echo "   >Make reg  ;make Register mmap module."
+	@echo "   >Make uart  ;make uart Register mmap module."
+	@echo "   >Make cs1  ;make cs1 Register mmap module."
 	@echo "	  >make cpuif ;make cpuif(dma) module"
 	@echo "   >make misc; make misc module"
 	@echo "   >make wdt; make wdt module"
@@ -90,6 +94,15 @@ reg:
 	@echo "==== Compiling ipmux-e linux module-reg mmap module for MIPS_4KC ====="
 	cd ../opl_reg;make
 	@echo "===== Make register mmap module  competed!!!====="
+uart:
+	@echo "==== Compiling ipmux-e linux module-uart mmap module for MIPS_4KC ====="
+	cd ../opl_uart;make
+	@echo "===== Make uart mmap module  competed!!!====="
+
+cs1:
+	@echo "==== Compiling ipmux-e linux module-uart mmap module for MIPS_4KC ====="
+	cd ../opl_cs1;make
+	@echo "===== Make cs1 mmap module  competed!!!====="
 
 tmc:	
 	@echo "==== Compiling ipmux-e linux timer0 module for MIPS_4KC ====="
@@ -129,6 +142,8 @@ clean:
 	rm -rf ../obj/linux-2.6/*
 	cd ../opl_minte;make clean
 	cd ../opl_reg;make clean
+	cd ../opl_uart;make clean
+	cd ../opl_cs1;make clean
 	cd ../opl_cpuif;make clean
 	cd ../opl_tmc;make clean
 	cd ../opl_wdt;make clean

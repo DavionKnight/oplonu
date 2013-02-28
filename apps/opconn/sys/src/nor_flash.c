@@ -168,7 +168,7 @@ static int mtd_write(int imagefd,FILE* fp,  int fd)
 
 	    mtdEraseInfo.start = 0;
 //	       printf("write %d(0x%x) bytes to flash...\n",e,e);
-	       e = ((e-1)|0xffff)+1;
+	       e = ((e-1)|0xffff)+1;				//earse 64k once
 	        while (e  > 0) { 
 		        mtdEraseInfo.length = mtdInfo.erasesize;
   

@@ -3204,6 +3204,7 @@ void IpcHalFlashImageBurn(void *pPar,int length)
 #endif /* #if 0 */
         vosSystem("rm -f /var/firmware.bin ");
         vosSystem("rm -f /var/delheaderfirmware.bin ");
+//			printf("FLASH_BOOT_FLAG_NORMALFFFFFFFFFFF\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
     }
     else {
@@ -3217,6 +3218,7 @@ void IpcHalFlashImageBurn(void *pPar,int length)
 #endif /* #if 0 */
         vosSystem("rm -f /var/firmware.bin ");
         vosSystem("rm -f /var/delheaderfirmware.bin ");
+//								printf("FLASH_BOOT_FLAG_NORMALGGGGGGGGGGGGGG\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
     }
 	

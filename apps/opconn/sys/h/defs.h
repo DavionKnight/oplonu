@@ -88,7 +88,7 @@
 #define DEFAULT_LAN_ADMIN_IP    "192.168.1.1"
 #define DEFAULT_LAN_ADMIN_MASK  "255.255.255.0"
 
-#define DEFAULT_HOSTNAME        "opulan"
+#define DEFAULT_HOSTNAME        "gwdelight"
 
 #define DEFAULT_CONFIG_FILE     "/cfg/startup-config"
 #define DEFAULT_CONFIG_FILE_SIZ 524288
@@ -433,17 +433,17 @@ typedef enum VOIP_IAD_OPERATION_s{
 #define VOIP_FaxModemConfig_T38Enable "VoiceT38Enable"  
 #define VOIP_FaxModemConfig_Mode "VoiceFax/ModemControl"
 /*
- * 注意：应调用接口 CfmAgent_GetStatus，
- * 输出value对应的值为: 
- *  "Registered "和 "UnRegistered"，
- *  Registered表示注册成功，UnRegistered表示注销
+ * 注锟解：应锟斤拷锟矫接匡拷 CfmAgent_GetStatus锟斤拷
+ * 锟斤拷锟絭alue锟斤拷应锟斤拷值为: 
+ *  "Registered "锟斤拷 "UnRegistered"锟斤拷
+ *  Registered锟斤拷示注锟斤拷晒锟斤拷锟経nRegistered锟斤拷示注锟斤拷
  */
 #define VOIP_H248IADOperationStatus_IadOperStatus "E_REG_STATUS"
 #define VOIP_H248IADOperationStatus_Registered "Registered"
 #define VOIP_H248IADOperationStatus_UnRegistered "UnRegistered"
 /* 
- * 注意：调用接口CfmAgent_GetStatus，输出value对应的值为
- * "on hook"和"off hook"，on hook表示挂机，off hook表示摘机
+ * 注锟解：锟斤拷锟矫接匡拷CfmAgent_GetStatus锟斤拷锟斤拷锟絭alue锟斤拷应锟斤拷值为
+ * "on hook"锟斤拷"off hook"锟斤拷on hook锟斤拷示锟揭伙拷off hook锟斤拷示摘锟斤拷
  */
 #define VOIP_POTSStatus_IADPortStauts "E_HOOK_STATUS"
 #define VOIP_POTSStatus_IADPortStauts_Onhook "on hook"

@@ -31,7 +31,7 @@
  
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 1
-#define BUILD_NUMBER 1
+#define BUILD_NUMBER 5
 
 #if defined(ONU_1PORT_V1)
 #define BUILD_FLAG "F13"

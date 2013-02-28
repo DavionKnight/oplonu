@@ -2317,7 +2317,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
 	 */
 	if (port->type != PORT_UNKNOWN &&
 	    port->cons && !(port->cons->flags & CON_ENABLED))
-		register_console(port->cons);
+	  //		register_console(port->cons);
 
 	/*
 	 * Ensure UPF_DEAD is not set.

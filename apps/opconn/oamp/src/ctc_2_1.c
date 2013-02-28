@@ -392,7 +392,7 @@ int oamLSCAlignmentStrGet(UINT8 *pucSrc, UINT16 usSrcSize, char *pcDst, UINT16 u
 
     return OK;
 }
-
+#if 0    // changed by zhangjj
 int SwVersionGet(u8_t *pucVerStr)
 {
 	int		iStatus=0;
@@ -482,7 +482,43 @@ int SwVersionGet(u8_t *pucVerStr)
 */
 	return iStatus;
 }
+#else
+int SwVersionGet(u8_t *pucVerStr)
+{
+	int		iStatus=0;
+	int 	len=0;
+	u8_t	ucCnt, ucCnt1=0;
+	u8_t	ucVer;
+	u8_t	aucVer[SUBVERSTR_LEN];
+	char minor[3];
+	char build[4];
 
+	if(0 == pucVerStr)
+	{
+		return -1;
+	}
+
+	if((9<MAJOR_VERSION) || (9<MINOR_VERSION) || (99<BUILD_NUMBER))
+	{
+		return -1;
+	}
+	memset(aucVer, 0, SUBVERSTR_LEN);
+	memset(minor,0,3);
+	memset(build,0,4);
+
+	minor[1] = '0' + MINOR_VERSION%10;
+	minor[0] = '0' + MINOR_VERSION/10;
+	build[2] = '0' + BUILD_NUMBER%10;
+	build[1] = '0' + (BUILD_NUMBER%100)/10;
+	build[0] = '0' + BUILD_NUMBER/100;
+	
+	vosSprintf(aucVer, "V%dR%sB%s",MAJOR_VERSION,minor,build);
+	len = strlen(aucVer)+1;
+	memcpy(pucVerStr,aucVer,len);
+
+	return iStatus;
+}
+#endif
 /*** checked ok ***/
 void eopl_get_onu_sn_rsp(void)
 {
@@ -9790,13 +9826,19 @@ int eopl_set_tag_id(u16_t portid,u32_t *value)
 	}
 
 	p_16++;
+
+	//test by zhangjj 
+//	printf("default vlan is %d..\n",*p_16);
+	//test by zhangjj
+	
 	ret = odmPortDefaultVlanSet(portid, (*p_16)&0xFFF);
 	if(ret != OPL_OK)
 	{
 		return ret;
 	}
+#if 1				//deleted by zhangjj 2013-2-25
 	ret = odmPortDefaultEtherPriSet(portid, (*p_16)>>13);
-
+#endif
 	return ret;
 }
 
@@ -9993,7 +10035,10 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 		g_usOutDataIdx += sizeof(oam_instance_tlv_t) + sizeof(oam_set_response_t);
 		return 0;
 	}
+//test by zhangjj 
+//printf("portNum is %d..\n",portNum);
 
+//
 	if(0xFFFF == portNum)
 	{
 		portS = 1;
@@ -10386,15 +10431,21 @@ int eopl_set_onu_vlan(u8_t*  p_in)
               }
 #endif
     ////20100327_XFAN_ADD_END		
-    
+
+
+
 		for(; portS<=portE; portS++)
 		{
 			vosMemCpy(&default_vlan, p_in, 4);
 			p_in += sizeof(u32_t);
-
+			
 			/* set default vlan */
 			OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "[ %s ]: eopl_set_tag_id(%d, %llx)\n", __FUNCTION__, portS, default_vlan);
 
+		//added by wangxy 2013-01-07
+			eopl_set_tag_id(portS, &default_vlan);
+		//end
+			
 			/* check if default vlan exist vlan list */
 			vosMemSet(vlanlist, 0, sizeof(vlanlist));
 			vlanIndex = 0;			
@@ -10422,6 +10473,10 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 					goto response;
 				}
 			}
+//test by zhangjj
+//printf("in odmPortDefaultVlanSet  default_vlan is %d...\n",default_vlan);
+//end
+
 			
             ret = odmPortDefaultVlanSet(portS, default_vlan);
 			if (OPL_OK != ret)
@@ -12137,10 +12192,12 @@ OPL_STATUS eopl_ctc_load_new_img(void)
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
+//								printf("FLASH_BOOT_FLAG_NORMAL9999999999999\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
     }
     else {
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
+//								printf("FLASH_BOOT_FLAG_NORMALAAAAAAAAAAA\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
     }
 	
@@ -12148,6 +12205,8 @@ OPL_STATUS eopl_ctc_load_new_img(void)
        that the os upgrade by OAM
     */
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_UPGRADE to FLASH_BOOT_OS2_FLAG!\n");
+//	OP_DEBUG(DEBUG_LEVEL_INFO, "IN   LOAD   NEW  IMAGE  !!!!!!!!\n");
+//						printf("FLASH_BOOT_FLAG_NORMALBBBBBBBB\n");
     vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS2_FLAG);
 
 	ucAck = 0;
@@ -12284,7 +12343,7 @@ OPL_STATUS eopl_ctc_commit_req_handler(u8_t *pucData)
 	pucIn = pucData;
 
 	ucFlag = *((u8_t *)pucIn);
-
+//printf("in commit req handler\n");
 	switch(ucFlag)
 	{
 		case COMMIT_NEW_IMG:
@@ -12312,16 +12371,24 @@ OPL_STATUS eopl_ctc_commit_new_img(void)
 	/* commit new image as primary bootable image*/
 
     bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
+	printf("bootFlag is %c\n",bootFlag);
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
-		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
-		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
+//								printf("FLASH_BOOT_FLAG_NORMALCCCCCCC\n");
+//		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
+//		printf("KKKKKKKKKKKKKKK\n");
+									printf("FLASH_BOOT_FLAG_NORMALEEEEEEEEE\n");
+    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
+
     }
     else {
-		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
-		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
+//								printf("FLASH_BOOT_FLAG_NORMALDDDDDDDDDDD\n");
+//		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
+//								printf("FLASH_BOOT_FLAG_NORMALEEEEEEEEE\n");
+    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
     }
-
 	ucAck = 0;
 
 send_rsp_msg:
@@ -12405,7 +12472,7 @@ OPL_STATUS eopl_ctc_commit_handler(u8_t *pucData)
 
 	usOpcode = *((u16_t *)pucIn);
 	pucIn += sizeof(u16_t);
-
+printf("come in commit handler\n");
 	switch(usOpcode)
 	{
 		case TFTP_COMMIT_IMG_REQ:

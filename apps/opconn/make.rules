@@ -272,10 +272,10 @@ image: rmmain $(LIBDIR)/main.o
 #	-@rm -f $(LIBDIR)/$(TARGET).image
 	@if command -v lzma &>/dev/null; \
 	then \
-#		lzma e $(LIBDIR)/$(TARGET).stripped $(LIBDIR)/$(TARGET).img; \
-		lzma $(LIBDIR)/$(TARGET).stripped \
+		lzma e $(LIBDIR)/$(TARGET).stripped $(LIBDIR)/$(TARGET).img; \
+#		lzma $(LIBDIR)/$(TARGET).stripped \
 		rm -f $(LIBDIR)/$(TARGET).stripped; \
-		mv -f $(LIBDIR)/$(TARGET).stripped.lzma $(LIBDIR)/$(TARGET).img; \
+#		mv -f $(LIBDIR)/$(TARGET).stripped.lzma $(LIBDIR)/$(TARGET).img; \
 		echo ""; \
 	else \
         gzip -9 $(LIBDIR)/$(TARGET).stripped; \

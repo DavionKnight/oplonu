@@ -25,7 +25,7 @@
 *
 *
 **************************************************************************/
-
+#include <stdio.h>
 #include <vos.h>
 #include "cli.h"
 
@@ -118,14 +118,12 @@ void cliInit(void)
 
     g_punArrayOfCliMode = g_aunArrayOfCliModeTemp;
     g_asArrayOfCmdTree = g_asArrayOfCmdTreeTemp;
-    
     nCmdNums = cliCmdCountGet();
     if (cliForestCreate(g_asCliCmdTable, nCmdNums, g_asArrayOfCmdTree,&g_psRootOfForest) != OK)
     {   
         vosPrintf(g_pstConsole->nWriteFd, "CLI: Command tree initialization failed.\r\n");
     	return;
     }
-
 }
 
 /*******************************************************************************

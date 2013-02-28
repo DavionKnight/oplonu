@@ -532,12 +532,14 @@ STATUS cliCmdSystemProcess(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
                         write_flash("/tmp/opconn.img.bak", FLASH_DEV_NAME_OS1);
 						
                         vosSystem("rm -f /tmp/opconn.img.bak ");
+//						printf("FLASH_BOOT_FLAG_NORMAL11111111\n");
     					vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
                     }
                     else {
                         write_flash("/tmp/opconn.img.bak", FLASH_DEV_NAME_OS2);
 
                         vosSystem("rm -f /tmp/opconn.img.bak ");
+//						printf("FLASH_BOOT_FLAG_NORMAL22222222\n");
     					vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
                     }
 
@@ -654,9 +656,11 @@ STATUS cliCmdSystemFirmwareSwitch(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
     bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
+// 		printf("FLASH_BOOT_FLAG_NORMAL3333333\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
     }
     else {
+//		printf("FLASH_BOOT_FLAG_NORMAL44444444\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
     }
 
@@ -753,6 +757,7 @@ STATUS cliCmdTftp(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
         
                 sprintf(acCommand, "rm -f %s",pstPt[2].p);                
                 vosSystem(acCommand);
+//			printf("FLASH_BOOT_FLAG_NORMAL555555555\n");
                 vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
             }
             else {
@@ -760,6 +765,7 @@ STATUS cliCmdTftp(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
             
                 sprintf(acCommand, "rm -f %s",pstPt[2].p);                
                 vosSystem(acCommand);
+//			printf("FLASH_BOOT_FLAG_NORMAL66666666666\n");
                 vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
             }
             
@@ -854,6 +860,7 @@ STATUS cliCmdFtp(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 
                 sprintf(acCommand, "rm -f %s",pstPt[4].p);                
                 vosSystem(acCommand);
+//			printf("FLASH_BOOT_FLAG_NORMAL777777777\n");
                 vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
             }
             else {
@@ -861,6 +868,7 @@ STATUS cliCmdFtp(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
             
                 sprintf(acCommand, "rm -f %s",pstPt[4].p);                
                 vosSystem(acCommand);
+//			printf("FLASH_BOOT_FLAG_NORMAL88888888888\n");
                 vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
             }
             

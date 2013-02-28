@@ -242,13 +242,14 @@ int vosConfigInit(void)
     {
         if (FLASH_BOOT_OS2_FLAG == pcConfigData[FLASH_BOOT_FLAG_UPGRADE])
         {
+ //       printf("UPGRADE is FLASH_BOOT_OS2_FLAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n ");
             /* restore the NORMAL BOOT option */
             if (FLASH_BOOT_OS2_FLAG == pcConfigData[FLASH_BOOT_FLAG_NORMAL])
             {
-        		pcConfigData[FLASH_BOOT_FLAG_NORMAL] = FLASH_BOOT_OS1_FLAG;
+ //       		pcConfigData[FLASH_BOOT_FLAG_NORMAL] = FLASH_BOOT_OS1_FLAG;
             }
             else {
-        		pcConfigData[FLASH_BOOT_FLAG_NORMAL] = FLASH_BOOT_OS2_FLAG;
+ //       		pcConfigData[FLASH_BOOT_FLAG_NORMAL] = FLASH_BOOT_OS2_FLAG;
             }
             /* cleanup the UPGRADE BOOT option */
             pcConfigData[FLASH_BOOT_FLAG_UPGRADE] = FLASH_BOOT_OS1_FLAG;
@@ -277,6 +278,7 @@ int vosConfigInit(void)
     if (nReadBytes <= FLASH_BOOT_FLAG_MAX || FLASH_BOOT_OS1_FLAG != pcConfigData[FLASH_BOOT_FLAG_UPGRADE])
     {
         /* set default boot flag and upgrade value */
+//								printf("FLASH_BOOT_FLAG_NORMALKKKKKKKKKK\n");
         vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
         vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
     }
@@ -434,7 +436,17 @@ int  vosConfigBootFlagSet(uint8 offset, uint8 value)
     vosSprintf(acCommand, "mtd write %s %s", acString, FLASH_DEV_NAME_CFG);
     rv = vosSystem(acCommand);
 	#else
-	write_flash(acString, FLASH_DEV_NAME_CFG);
+	//add by zhangjj 2013.1.24
+	int ret=0;
+	ret = write_flash(acString, FLASH_DEV_NAME_CFG);
+	if(ret == 0)
+		{
+			printf("write_flash success..\n");
+		}
+	else
+		{
+		printf("write_flas error \n");
+		}
 	#endif
 
     /* remove temp file */

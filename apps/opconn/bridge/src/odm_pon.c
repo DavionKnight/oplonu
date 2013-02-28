@@ -24,6 +24,8 @@ Author                Date              Description of Changes
 #include "ctc_2_1.h"
 #include "oam.h"
 
+#include "product_info.h"
+
 static TIMER_OBJ_t * g_pstTimePonBer = NULL;
 static float berArry[4] = {0x0};
 static UINT32 berIndex = 0x0;
@@ -1383,6 +1385,25 @@ UINT32 odmPonMpcpFsmHoldoverTimeGet(UINT32 *holdTime)
 	return retVal;
 }
 
+void setEth0MAC()
+{
+	UINT8 macaddr[6]="";
+	int ret=0;
+	char *macid;
+	
+
+	macid = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"MAC","00:00:00:00:00:00");
+
+	printf("retrive mac addres is %s\r\n", macid);
+	
+	if(strcmp(macid,"00:00:00:00:00:00"))
+	{
+	    char szCmd[80]="ifconfig eth0 hw ether ";
+		vosSprintf(szCmd, "%s%s", szCmd, macid);
+		vosSystem(szCmd);
+	}
+
+}
 
 /*******************************************************************************
 * odmPonMacIdInit

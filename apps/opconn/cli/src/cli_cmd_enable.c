@@ -35,8 +35,19 @@
 
 #include <unistd.h>
 #include <errno.h>
-#include <sys/wait.h>
+#include <sys/wait.h> 
 #include <stats.h>
+#include "run_led.h"
+#include "uart_default.h"
+#include "serial_ser.h"
+#include "serial.h"
+#include "terminal_server.h"
+#include "terminal_server_api.h"
+#include "cs_cmn.h"
+#include "cs_types.h"
+#include "product_info.h"
+#include "ctc_2_1.h"
+#include <math.h>
 
 #if defined(ONU_4PORT_AR8306)||defined(ONU_4PORT_AR8228)||defined(ONU_4PORT_AR8327)
 #include "sw.h"
@@ -1229,6 +1240,472 @@ STATUS cliCmdLinuxShell(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 }
 
 
+STATUS  cliCmdBoardReset(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char uData;
+	
+	cpldRead(7,&uData);
+	cpldWrite(7, (uData & 0xfe));
+      vosSleep(1);;
+	cpldWrite(7,(uData | 0x01));
+
+	return OK;
+}
+
+STATUS cliCmdPonCpld(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char uData;
+	unsigned char pon_num,pon_num_and,pon_num_or;
+
+	pon_num = pstPt[1].u - 1;
+	pon_num = pon_num << 1;
+	pon_num_and = pon_num |0xfd;
+	cpldRead(0x0a,&uData);
+	cpldWrite(0x0a,(uData & 0xfe));
+	cpldWrite(0x0a,((uData & 0xfe) & pon_num_and | pon_num));
+printf("set cpld pon%d over ..\n",pstPt[1].u);
+	return OK;
+}
+
+STATUS cliCmdPonCpu(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char uData;
+	unsigned char pon_num,pon_num_and,pon_num_or;
+
+	pon_num = pstPt[1].u - 1;
+	pon_num = pon_num << 1;
+	pon_num_and = pon_num |0xfd;
+	cpldRead(0x0a,&uData);
+	cpldWrite(0x0a,(uData | 0x01));
+	cpldWrite(0x0a,((uData | 0x01) & pon_num_and | pon_num));
+printf("set cpu pon%d over ..\n",pstPt[1].u);
+	return OK;
+}
+STATUS cliCmdSerialSet(ENV_t *pstEnv,PARA_TABLE_t *pstPt)
+{
+
+	unsigned int  baud_rate,data_size,stopbit,parity_size;
+	unsigned char port_num;
+	int value;
+	char FCR_reg = 0;
+	char MCR_reg;
+
+	
+    if (NULL == pstEnv || NULL == pstPt)
+    {
+        return ERROR;
+    }
+
+printf("port_num is %d,baud_rate is %d, data_size is %d ,stopbit is %d ,parity_size is %d\n",pstPt[1].u,pstPt[3].u,pstPt[5].u,pstPt[7].u,pstPt[9].u);
+	port_num  = pstPt[1].u-1;
+	baud_rate = pstPt[3].u;
+	data_size = pstPt[5].u;
+	stopbit =pstPt[7].u;
+	parity_size =  pstPt[9].u;
+
+ #ifndef SERIAL_8250
+    Serial_Cs_Set(port_num);
+
+   	UARTClearAllReg();
+ 
+	UARTEFREnable(FALSE);
+ 
+	S2E_SET_info(port_num, SERIAL_BAUD, &baud_rate);
+ 
+	S2E_SET_info(port_num ,SERIAL_DATA_SIZE, &data_size);
+ 
+	S2E_SET_info(port_num, SERIAL_PARITY_CTRL, &parity_size);
+ 
+	S2E_SET_info(port_num, SERIAL_STOP_BIT, &stopbit);
+ 
+	value = SERIAL_DEFAULT_FC;
+	S2E_SET_info(port_num, SERIAL_FC_MODE_CTRL, &value);
+ 
+    Serial_Cs_Set(port_num);
+    UARTFIFOEnable(TRUE, &FCR_reg);
+    UARTDMAEnable(TRUE, &FCR_reg);
+    UART_FIRO_Rx_Trigger_Level(SERIAL_DEFAULT_TRIGGER_RX, &FCR_reg);
+//	printf("FCR_reg is 0x%x\n",FCR_reg);
+    UARTSet_FCR(FCR_reg);
+
+ 
+    UARTIntEnable(TRUE);
+    //
+    // Start the UART.
+    //
+ 
+    SerialPurgeData(port_num);
+    UARTFIRO_RDY_Enable(TRUE);
+    //
+    // (Re)enable the UART transmit and receive interrupts.
+    //
+    UARTIntType(SERIAL_INT_TYPE_RX, TRUE);
+    UARTIntType(SERIAL_INT_TYPE_TX, TRUE);
+
+    UARTRxTimeOutEn(TRUE);
+ //UARTEFREnable(TRUE);
+	if((SERIAL_TYPE_485 == S2E_Control.serial_type)&&(SERIAL_DUPLEX_HALF ==serial_duplex))
+	{
+		Serial_Uart_485_half(port_num, TRUE);
+	}
+	else
+	{
+    		Serial_Uart_485_half(port_num, FALSE);
+	}
+	cpldcs2Read(0xc, &MCR_reg);
+	MCR_reg&=0xef;
+	cpldcs2Write(0xc,MCR_reg);    //stop loopback  add by zhangjj   2013.1.7
+#else
+
+	port_num  = pstPt[1].u-1;
+	baud_rate = pstPt[3].u;
+	data_size = pstPt[5].u;
+	stopbit =pstPt[7].u;
+	parity_size =  pstPt[9].u;
+ts_serial_open_single(port_num, baud_rate, data_size, stopbit, parity_size);
+#endif
+
+
+	int ret;
+	term_server_config_t Term_serv_cfg;
+
+	ret = ts_get_config(pstPt[1].u, &Term_serv_cfg);
+	if(ERROR == ret)
+	{
+		printf("get  config error\n");
+		return OK;
+	}	
+	Term_serv_cfg.uart_cfg.baud_rate = baud_rate;
+	Term_serv_cfg.uart_cfg.data_bits = data_size;
+	Term_serv_cfg.uart_cfg.stop_bits = stopbit;
+	Term_serv_cfg.uart_cfg.parity= parity_size;
+
+	ts_save_config(pstPt[1].u, &Term_serv_cfg);
+	
+	printf("serial set successfully...!\n");
+	
+#if 0
+
+	for(i=0;i<20;i++)
+	{
+		cpldcs2Read(i, &setData);
+		printf("set Data  %d  is 0x%x\n",i,setData);
+	}
+#endif
+//}
+  //  cliShowEnd(pstEnv);
+	
+	return OK;
+}
+
+STATUS cliCmdMessageSend(ENV_t *pstEnv,PARA_TABLE_t *pstPt)
+{
+	unsigned int portnum;
+	unsigned int para=0;
+
+	portnum = pstPt[1].u-1;
+
+	printf("port  is %d\n",pstPt[1].u);
+	printf("message is %s\n",pstPt[3].p);
+
+//	SerialSend(portnum, pstPt[3].p, strlen(pstPt[3].p));
+
+	portComSend(serial_fds[portnum],pstPt[3].p, strlen(pstPt[3].p));
+
+	return OK;
+}
+
+STATUS cliCmdModeType(ENV_t *pstEnv,PARA_TABLE_t *pstPt)
+{
+#ifndef SERIAL_8250
+	unsigned int ulPort ;
+	unsigned int serial_type;
+
+	ulPort = pstPt[1].u-1;
+	serial_type = pstPt[3].u;
+if(serial_type == 232)
+	 SerialSetUartInterface(ulPort, SERIAL_TYPE_232);
+else
+	SerialSetUartInterface(ulPort, SERIAL_TYPE_485);
+
+	 printf("set port %d mode %d successfully\n",ulPort,serial_type);
+	 return OK;
+#endif
+}
+
+STATUS cliCmdReceive(ENV_t *pstEnv,PARA_TABLE_t *pstPt)
+{
+	if(!strcmp(pstPt[1].p,"on"))
+	{
+		receive_flag = 1;
+		printf("receive task on...\n");
+	}
+	else if(!strcmp(pstPt[1].p,"off"))
+	{
+		receive_flag = 0;
+		printf("receive task off...\n");
+	}
+	else
+	{
+		printf("error command please check the last parameter!\n");
+		return ERROR;
+	}
+	return OK;
+}
+
+STATUS cliCmdTsConfigure(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	term_server_config_t Term_serv_cfg;
+	int ret;
+
+	printf("uart is %d ,proto is %d,port is %d\n",pstPt[1].u,pstPt[3].u,pstPt[5].u);
+
+            
+                memset(&Term_serv_cfg,0,sizeof(term_server_config_t));
+
+		ret = ts_get_config(pstPt[1].u, &Term_serv_cfg);
+		if(ERROR == ret)
+		{
+                Term_serv_cfg.uart_cfg.baud_rate = SERIAL_DEFAULT_BAUD_RATE;
+                Term_serv_cfg.uart_cfg.data_bits = SERIAL_DEFAULT_DATA_SIZE;
+                Term_serv_cfg.uart_cfg.parity = SERIAL_DEFAULT_PARITY;
+                Term_serv_cfg.uart_cfg.stop_bits = 1;
+		}
+			
+                Term_serv_cfg.client_fd = -1;
+//			if(old_port == 0)			//if have not bind before then initialize, else  do not
+                Term_serv_cfg.server_fd = -1;
+                Term_serv_cfg.init_flag = VALID_CONFIG_FLAG;
+                Term_serv_cfg.uart_cfg.mode = UART_MODE_INTR;
+                Term_serv_cfg.uart_cfg.duplex = UART_DUPLEX_HALF;
+
+                Term_serv_cfg.client_closed_flag = 1;
+                Term_serv_cfg.uart_cfg.uart_id = pstPt[1].u;
+                Term_serv_cfg.proto_type = pstPt[3].u;
+                Term_serv_cfg.proto_port = pstPt[5].u;
+                Term_serv_cfg.client_timeout = 0;
+                Term_serv_cfg.min_payload = 40;
+                Term_serv_cfg.max_payload = 1024;
+                Term_serv_cfg.max_res_time = 1000;
+                if(CS_E_OK == ts_uart_id_check(pstPt[1].u))
+                {
+                    if(epon_request_onu_ts_enable(0,0,
+                        Term_serv_cfg.uart_cfg.uart_id,
+                        (term_server_config_t *)&Term_serv_cfg))
+                        printf("Terminal Server %d create failed\n\r",
+                                            UART_TO_TERM_SERV(pstPt[1].u));
+                    else
+                        printf("Terminal Server %d create sucess\n\r",
+                                            UART_TO_TERM_SERV(pstPt[1].u));
+//					printf("Term serv enable is %d\n",Term_serv_cfg.enable_flag);
+				ts_save_config(pstPt[1].u, &Term_serv_cfg);
+                }
+                else
+                    printf("Invalid UART ID [1~4]\n\r");
+
+ return OK;
+}
+
+STATUS cliCmdTsDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	if(CS_E_OK == ts_uart_id_check(pstPt[1].u))
+	{
+		epon_request_onu_ts_disable(0,0,pstPt[1].u);
+		
+	}
+	else
+	{
+		printf("Invalid UART ID [1~4]\n\r");
+	}
+	return OK;
+}
+
+STATUS cliCmdTsShow(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char buf[20]={0};
+	printf("\nThe Config Terminal Server Have Saved:\n\n");
+	vosSprintf(buf,"cat %s",TERM_SERV_CFG_FILE);
+	system(buf);
+	return OK;
+}
+STATUS cliCmdTsSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char ip_set[30]={0};
+
+	printf("New IP is %s\n",pstPt[1].p);
+	printf("\nAll of Terminal Servers Will Restart ...\n\n");
+
+	ts_disable(1);
+	ts_disable(2);
+	ts_disable(3);
+	ts_disable(4);
+
+	vosSprintf(ip_set, "ifconfig eth0:0 %s",pstPt[1].p);
+	system(ip_set);
+//	system("ifconfig eth0:0");
+vosSleep(1);
+	ts_auto_create();
+	printf("\nSet New IP Successfully!\n\n");
+	return OK;
+}
+
+STATUS cliCmdProductDateSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+
+	char section[20];
+	char date_value[15];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+	vosSprintf(date_value, "%d-%d-%d",pstPt[1].u,pstPt[3].u,pstPt[5].u);
+
+	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+	{
+		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+	}
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Manufature date",date_value)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	    cliTextConfigSave();
+    vosConfigSave(NULL);
+	return OK;
+}
+
+STATUS cliCmdProductSerialSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char section[20];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+
+	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+	{
+		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+	}
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Serial number",pstPt[1].p)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+
+    cliTextConfigSave();
+    vosConfigSave(NULL);
+	return OK;
+}
+STATUS cliCmdProductHwVerSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char section[20];
+	char date_value[10];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+	vosSprintf(date_value, "V%d.%d",pstPt[1].u,pstPt[3].u);
+
+	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+	{
+		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+	}
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Hardware version",date_value)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	   cliTextConfigSave();
+    vosConfigSave(NULL);
+	return OK;
+}
+/*
+STATUS cliCmdProductMACSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char section[20];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+
+	if((ret =strlen(pstPt[1].p))!=17)
+	{
+		printf("Length of MAC is wrong!\n");
+		return ERROR;
+	}
+
+	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+	{
+		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+	}
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"MAC",pstPt[1].p)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	
+	return OK;
+}*/
+STATUS cliCmdProductShowInfo(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char section[20];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+
+	vosConfigShowBySection(PRODUCT_CFG_FILE,section,pstEnv->nWriteFd);
+
+	return OK;
+}
+
+STATUS cliCmdRelayAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	SetAlarmEnable(1);
+	return OK;
+}
+
+STATUS cliCmdRelayAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	SetAlarmEnable(0);
+	return OK;
+}
+STATUS cliCmdLedAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	test_led_flag =1;	
+	return OK;
+}
+STATUS cliCmdLedAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	test_led_flag =2;
+	return OK;
+}
+STATUS cliCmdDisplayOpm(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	short int temperature;
+	u16_t vcc;
+	u16_t current;
+	u16_t txPower;
+	u16_t rxPower;
+	double txdbm =0.9,rxdbm = 0.0;
+
+	stub_get_onu_optical_transiver_temperature(&temperature);
+	stub_get_onu_optical_transiver_supply_vcc(&vcc);
+	stub_get_onu_optical_transiver_tx_bias_current(&current);
+	stub_get_onu_optical_transiver_tx_power(&txPower);
+	stub_get_onu_optical_transiver_rx_power(&rxPower);
+
+	temperature /=256;
+	vcc = (u16_t)(vcc*0.1);
+	current *=0.002;
+	txdbm = txPower;
+	rxdbm = rxPower;
+
+	txdbm = 10*log10(txdbm*0.0001);
+	rxdbm = 10*log10(rxdbm*0.0001);
+
+	printf("temperature			:%hd C\n",temperature);
+	printf("working-voltage			:%hd mV\n",vcc);
+	printf("bias-current			:%hd mA\n",current);
+	printf("txPower				:%4.1f dbm\n",txdbm);
+	printf("rxPower				:%4.1f dbm\n",rxdbm);
+	return OK;
+}
 STATUS cliCmdShowThreadInfo(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
     if (NULL == pstEnv)

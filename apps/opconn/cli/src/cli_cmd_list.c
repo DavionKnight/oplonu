@@ -718,6 +718,460 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     (FUNCPTR)cliCmdLinuxShell
 },
+
+{
+    "board reset",
+
+    "{board,0, the board},\
+    {reset,0,reset operation}",
+
+    "",
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdBoardReset
+},
+{
+    "pon cpld [pon_num]",
+
+    "{pon,0, select pon by cpld},\
+    {cpld,0, cpld produce the control signal},\
+    {pon_num,1,pon1 or pon2}",
+
+    "pon_num,CLI_UINT,1,2,1",
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdPonCpld
+},
+
+{
+    "pon cpu [pon_num]",
+
+    "{pon,0,select pon by cpu},\
+    {cpu,0,cpu produce the control signal},\
+    {pon_num,1,pon1 or pon2}",
+
+    "pon_num,CLI_UINT,1,2,1",
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdPonCpu
+},
+
+{
+    "serial set port {serial_port} {baud_rate} {data_size} {stopbit} {parity_size}",
+
+    "{serial,0, serial port set port baud_rate databit stopbit parity},\
+    {set,0,serial set},\
+    {port, 0, serial port set},\
+    {serial_port,1,1 for uart1 , 2 for uart2 ... 4 for uart4},\
+    {baud_rate,1,baud_rate},\
+    {data_size,1,the data_bit size },\
+    {stopbit,1,stop bit },\
+    {parity_seize,1,parity }",
+
+    "{serial_port,CLI_UINT,1,4,1},\
+    {baud_rate,CLI_UINT,300,230400,9600},\
+    {data_size,CLI_UINT,5,8,8},\
+    {stopbit,CLI_UINT,1,2,1},\ 
+    {parity_size,CLI_UINT,0,4,0}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdSerialSet
+},
+{
+    "serial send port {serial_port} {message}",
+
+    "{serial,0, serial port set portnum message},\
+    {send,0,send message},\
+    {port,0,serial port set},\
+    {serial_port,1,1 for uart1 , 2 for uart2 ... 4 for uart4},\
+    {message,1,message want to send}",
+
+    "{serial_port,CLI_UINT,1,4,1},\
+    {message,CLI_WORD,NULL,NULL,255}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdMessageSend
+},
+{
+    "serial set  port {serial_port} mode {mode_type}",
+
+    "{serial,0, serial port set portnum message},\
+    {set ,0,serial mode set},\
+    {port,0, serial port set},\
+    {serial_port,1, 1 for uart1 , 2 for uart2 ... 4 for uart4},\
+    {mode,0,mode type 232 / 485},\
+    {mode_type,1,232 / 485}",
+
+    "{serial_port,CLI_UINT,1,4,1},\
+    {mode_type,CLI_UINT,232,485,232}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdModeType
+},
+{
+    "serial receive {receive_type}",
+
+    "{serial,0,serial port set portnum message},\
+    {receive ,0,serial receive},\
+    {receive_type,1,on or off}",
+
+    "receive_type,CLI_WORD,NULL,NULL,255",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdReceive
+},
+//set terminal server configure 
+{
+    "ts enable {uart}  {proto} {port}",
+
+	"{ts,0, terminal server},\
+	{enable,0,terminal server enable},\
+	{uart,1, 1 for uart1 , 2 for uart2 ... 4 for uart4},\
+	{proto,1,protocol 17 for UDP,6 for TCP},\
+	{port,1,port 1024~65535}",
+
+	"{uart,CLI_UINT,1,4,1},\
+	{proto,CLI_UINT,6,17,6},\
+	{port,CLI_UINT,1024,65535,1024}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdTsConfigure,
+},
+//disable terminal server 
+{
+    "ts disable {uart}",
+
+	"{ts,0, terminal server},\
+	{disable,0,terminal server disable},\
+	{uart,1, 1 for uart1 , 2 for uart2 ... 4 for uart4}",
+
+	"{uart,CLI_UINT,1,4,1}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdTsDisable,
+},
+
+{
+    "ts config show",
+
+	"{ts,0, terminal server},\
+	{config,0,terminal server config},\
+	{show,0, show ts config }",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdTsShow,
+},
+
+{
+    "ts ip set {ip_msg}",
+
+	"{ts,0, terminal server},\
+	{ip,0,terminal server ip},\
+	{set,0,ip set},\
+	{ip_msg,1,from 0.0.0.0~255.255.255.255}",
+
+	"{ip_msg,CLI_WORD,NULL,NULL,15}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdTsSetip,
+},
+
+{
+    "set date {year} {month} {date}",
+
+	"{set,0,information set},\
+	{date,0,Manufacture date},\
+	{year,1,Year(2001~2100)},\
+	{month,1,Month},\
+	{date,1,Date}",
+
+	"{year,CLI_UINT,2007,2100,2007}\
+	{month,CLI_UINT,1,12,1},\
+	{date,CLI_UINT,1,31,1}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdProductDateSet,
+},
+
+{
+    "set serial {serial_num}",
+
+	"{set,0,information set},\
+	{serial,0,Manufacture serial number(<16)},\
+	{serial_num,1,Manufacture serial number(length<16)}",
+
+	"{serial_num,CLI_WORD,NULL,NULL,16}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdProductSerialSet,
+},
+{
+    "set hw-version {Major_version} {Release_version}",
+
+	"{set,0,information set},\
+	{hw-version,0,Hardware version},\
+	{Major_version,1,Major version},\
+	{Release_version,1,Release version}",
+
+	"{Major_version,CLI_UINT,1,9,1},\
+	{Release_version,CLI_UINT,1,9,1}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdProductHwVerSet,
+},
+/*{
+    "set MAC {num}",
+
+	"{set,0,information set},\
+	{MAC,0,MAC},\
+	{num,1,MAC num}",
+
+	"{num,CLI_WORD,NULL,NULL,1}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdProductMACSet,
+},*/
+{
+    "display product",
+
+	"{display,0,information show},\
+	{product,0, product information}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdProductShowInfo,
+},
+{
+    "test relay alarm enable",
+
+	"{test,0,test mode},\
+	{relay,0, relay alarm}\
+	{alarm,0,relay alarm},\
+	{enable,0,enable}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdRelayAlarmEnable,
+},
+{
+    "test relay alarm disable",
+
+	"{test,0,test mode},\
+	{relay,0, relay alarm}\
+	{alarm,0,relay alarm},\
+	{disable,0,disable}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdRelayAlarmDisable,
+},
+{
+    "test led alarm enable",
+
+	"{test,0,test mode},\
+	{led,0,alarm led}\
+	{alarm,0,alarm led},\
+	{enable,0,enable}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdLedAlarmEnable,
+},
+{
+    "test led alarm disable",
+
+	"{test,0,test mode},\
+	{led,0,alarm led}\
+	{alarm,0,alarm led},\
+	{disable,0,disable}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdLedAlarmDisable,
+},
+{
+    "display opm",
+
+	"{display,0,display},\
+	{opm,0,opm}",
+
+	"",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdDisplayOpm,
+},
 {
     "orr addr",
 
@@ -736,6 +1190,9 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     (FUNCPTR)cliCmdOrr
 },
+
+
+
 {
     "owr addr value",
 

@@ -105,6 +105,8 @@ extern ENV_t *g_pstConsole;
  *  @see 
  */
 
+extern void setEth0MAC();
+
 int main(int argc,char *argv[])
 {
 	UINT32 retVal, regVal;;
@@ -164,7 +166,11 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
-
+int ret=0;
+run_led();         //cs1 init
+//ret =init_main();		//cs2 init
+//if(ret !=-1)
+ts_init();			//terminal server init
     DBG_LINE
     /* session initialize */
     printf("Init command line sessions ... ");
@@ -181,6 +187,7 @@ int main(int argc,char *argv[])
     DBG_LINE
     /* cli initialize */
     printf("Init command line engine ... ");
+	
     cliInit();
     printf("done\r\n");
 
@@ -199,12 +206,16 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
+	
+//
+//  init eth0 by configuration
+	setEth0MAC();
 
     /* Init PON MAC ID */
     odmPonMacIdInit();
 
     printf("Init HAL ... ");
-    if(NO_ERROR != halInit())
+    if(NO_ERROR != halInit())			//oam in it  note by zhangjj 2013-2-27
     {
         printf("failed\r\n");
         return SYS_INIT_ERROR;
@@ -348,6 +359,9 @@ int main(int argc,char *argv[])
         printf("done\r\n");
     }
 
+	printf("Led start run...\n");
+	
+
 #ifdef OPL_COM_UART1
     odmOnuUartCommEnableGet(&enable);
     if (TRUE == enable)
@@ -454,7 +468,12 @@ int main(int argc,char *argv[])
 	}
 
     oplRegWrite(REG_FE_TRANSFER_ENA, 0x3);
-    
+
+	#if 0
+    /*start voip module by start_voip.sh*/
+    vosSystem("sh /etc/start_voip.sh");
+	#endif
+
     /* Start console CLI */
     cliMainEntry();
 

@@ -30,6 +30,7 @@
 #include "cli_cmd_list.h"
 
 #include <dal_lib.h>
+#include "product_info.h"
 #include "odm_pon.h"
 #include "oam.h"
 
@@ -245,6 +246,13 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {
     UINT32  retVal = OK;
     UINT8   macId[MAC_LENGTH];
+
+	char section[20];
+	int ret=0;
+
+	strcpy(section,"Product Information");
+
+
 	if (NULL == pstEnv || NULL == psPara) 
 	{
 		return ERROR;
@@ -255,11 +263,26 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
     {
         return ERR_INVALID_PARAMETERS;
     }
+	
     retVal = odmPonMacIdSet(macId);
+	
     if(OK != retVal)
     {
         vosPrintf(pstEnv->nWriteFd, "\r\nerror code %u\r\n",retVal);
     }
+	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+	{
+		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+	}
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"MAC",psPara[0].p)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+
+    cliTextConfigSave();
+    vosConfigSave(NULL);
+	
 	return OK;
 }
 

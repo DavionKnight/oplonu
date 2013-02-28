@@ -544,7 +544,7 @@ INT16 eopl_host_recv(void)
 		
         eopl_pkt_process((void *)pBuff, usLen);
 #elif defined(ONU_4PORT_88E6046)||defined(ONU_4PORT_88E6045)||defined(ONU_4PORT_88E6097)
-        eopl_rx_pkt_dispatch(pBuff, usLen);
+		eopl_rx_pkt_dispatch(pBuff, usLen);
 #endif
         ptr_pkt_hdr = (host_inbound_hdr_t *)pBuff;
 
