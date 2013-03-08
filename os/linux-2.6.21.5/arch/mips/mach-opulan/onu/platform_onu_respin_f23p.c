@@ -70,7 +70,7 @@ static struct platform_device onu_fe_device = {
 #define OS_CFG  0x10000*/
 
 #define U_BOOT_ENV   0x20000
-#define OS_CFG  0xc0000
+#define OS_CFG  0xa0000
 
 #define OS_SIZE  ((FLASH_SIZE - U_BOOT_SIZE - U_BOOT_ENV - OS_CFG)/2)  
 #define NUM_OS   2     
