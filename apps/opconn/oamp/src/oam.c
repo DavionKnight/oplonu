@@ -26,6 +26,8 @@ MODIFICATION DETAILS
 #include "hal.h"
 #include "version.h"
 #include "zte.h"
+#include "gwdonuif.h"
+#include "product_info.h"
 
 #define MODULE MOD_OAM
 oam_sate_t oams;
@@ -44,12 +46,18 @@ u8_t    oam_private_oui[3] = {0x00,0x00,0x00};
 oam_send_handler oam_snd_cb = NULL;
 /*!EricYang */
 #endif
+gw_macaddr_t olt_mac_addr;
 u8_t 	oam_broadcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 u8_t	oam_src_mac[6] = {0x00, 0x07, 0x49, 0x08, 0x30, 0xc8};
 u8_t	oam_dest_mac[6] = {0x01,0x80,0xc2,0x00,0x00,0x02};
 u8_t	oam_length_type[2] = {0x88,0x09};
 u8_t	oam_oui[3] = {0x11,0x11,0x11};
+
+#if 0
 u8_t	oam_onu_vendor[4] = {0x4F,0x50,0x4C,0x00};
+#else
+u8_t	oam_onu_vendor[4] = {0x47,0x57,0x44,0x4C};//GWDL
+#endif
 u8_t	oam_chip_vendor[2] = {0x45,0x30};
 //u8_t	oam_onu_model[4] = {0x32,0x30,0x30,0x39};
 u8_t	oam_onu_model[4] = {0x30,0x87,0x30,0x02};
@@ -62,6 +70,9 @@ u8_t	oam_onu_swarever[16] = {0x30,0x2E,0x30,0x2E,0x31,0x39};
 u8_t	ctc_oui[3] = {0x11, 0x11, 0x11};
 u8_t	fiberhome_oui[3] = {0x00, 0x0a, 0xc2};
 u8_t    zte_oui[3] = {0x00, 0x0F, 0x3E};
+#ifdef GWD_OAM
+u8_t	gwd_oui[3] = {0x00, 0x0F, 0xE9};
+#endif 
 
 u8_t    alarm_out_data[OAM_MAXIMUM_PDU_SIZE+1];
 u8_t	out_data[OAM_MAXIMUM_PDU_SIZE+4];
@@ -629,6 +640,9 @@ int OamInit(void)
 	return iStatus;
 }
 
+
+extern int gwlib_sendPktToQueue(char *pkt, const int len, int portid);
+
 /*
   * Function:
   * eopl_oam_pdu_process
@@ -660,6 +674,39 @@ void eopl_oam_pdu_process(u16_t framelen)
 	p_hdr = (oampdu_hdr_t*)p_byte;
 	p_info = (oam_info_tlv_t *)(p_byte+sizeof(struct oampdu_hdr));
 	pstRmtInfo = (oam_info_tlv_t *)(p_byte+sizeof(struct oampdu_hdr)+sizeof(oam_info_tlv_t));
+
+
+#if 1
+memcpy(olt_mac_addr,p_hdr->src,GW_MACADDR_LEN);
+						host_inbound_hdr_t *pstInHeader = NULL;
+						char ucPort;
+
+						pstInHeader = (host_inbound_hdr_t *)in_data;
+						ucPort = pstInHeader->iport;
+//						printf("come in gwd oam process  and port is %x........\r\n",ucPort);
+												gwlib_sendPktToQueue(p_byte, in_data_len, ucPort);
+#if 0
+int uiIdx=0;
+char *pucFrmTmp=in_data+4;
+if(*(pucFrmTmp+21)==0x14)
+{
+
+		printf("==========receive payload length2: ===========");
+		for(uiIdx=0; uiIdx<framelen; uiIdx++)
+		{
+			if(0 == uiIdx%16)
+			{
+				printf("\n0x%08x\t", uiIdx);
+			}
+			printf(" 0x%02x", *pucFrmTmp++);
+		}
+		printf("\n--------------------------------------\n");
+//		while(1);
+}
+#endif
+
+						
+#endif
 
 	/*set the flags of remote evaluating and stable */
 	flags = READ_BITS(p_hdr->flags, 0x18);
@@ -1011,6 +1058,22 @@ void eopl_oam_pdu_process(u16_t framelen)
 						oamMsqSend(&in_data[4],in_data_len);
 #endif
 					}
+					
+					/**********  add by zhangjj 2013-4-17 **********/
+#if 0
+#ifdef  GWD_OAM
+					else if(!memcmp(gwd_oui, (u8_t *)p_info, 3)){
+						host_inbound_hdr_t *pstInHeader = NULL;
+						char ucPort;
+
+						pstInHeader = (host_inbound_hdr_t *)in_data;
+						ucPort = pstInHeader->iport;
+						printf("***************come in gwd oam process  and port is %x*************************\r\n",ucPort);
+
+						gwlib_sendPktToQueue(&in_data[4], in_data_len, ucPort);
+						}
+#endif
+#endif
 					else {
 						OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "\nOAM_CODE_ORG_SPEC\n");
 #if defined(OAM_SUPPORT_REG_CALLBACK)
@@ -2021,4 +2084,307 @@ u32_t OamDeRegisterProcessEntry(u8_t * oui)
 #endif
 
 /* ! EricYang*/
+
+
+
+
+#if 0
+extern int OamFrameSend(u8_t *pucFrame, u16_t usFrmLen);
+
+gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
+{
+	int iStatus = OK;
+	int usIdx=0;
+	char *pucTmp = buf;
+
+	printf("********** payload length: %d ***********", len);
+	for(usIdx=0; usIdx<len; usIdx++)
+	{
+		if(0 == usIdx%16)
+		{
+			printf("\n0x%08x\t", usIdx);
+		}
+		printf(" 0x%02x", *pucTmp++);
+	}
+	printf("\n#####################################\n");
+
+
+	iStatus = OamFrameSend(buf, (u16_t)len);
+
+	printf("PORT SEND AND ISTATUS is %d\r\n",iStatus);
+	if(0 != iStatus)
+	{
+		/*OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "frame send error\n");*/
+		return 0;
+	};
+	return 0;
+}
+//export oam_sate_t oams;
+extern int opl_dump_data_pty(char *p,int len,int width);
+gw_uint32 gwdonu_oam_std_hdr_builer(gw_uint8 *a , gw_uint32 b)
+{
+	gw_uint32 length=0;
+	eopl_oam_pdu_hdr(a, oams.flags, OAM_CODE_ORG_SPEC);
+	length = 18;
+	printf("************head is like this and length is %d************\r\n",length);
+	opl_dump_data_pty(a, length, 16);
+//	printf("in oamhdrbuiler fuction ,this function is not defined .......\r\n");
+	return length;
+}
+gw_status gwdonu_onu_llid_get(gw_uint32 *llid)
+{
+	printf("in onullidget fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_onu_sys_info_get(gw_uint8 * sysmac, gw_uint32 *uniportnum)
+{
+//	printf("in sysinfoget fuction ,this function is not defined .......\r\n");
+	u8_t 	lanmac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
+	u8_t	*ip_point;
+	u8_t 	buf[25];
+
+	strcpy(buf,"Product Information");
+
+	if(!strcmp((ip_point = vosConfigValueGet(PRODUCT_CFG_FILE,buf,"WAN MAC",lanmac)),lanmac))
+	{
+		printf("Get mac error! Please set mac first");
+		return -1;
+	}
+	else
+		vosStrCpy(overall_lanmac,ip_point);
+	
+	return 0;
+}
+gw_uint32 gwdonu_sys_conf_save(gw_uint8 * info, gw_uint32 len)
+{
+	printf("in sysconfsave fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_uint32 gwdonu_sys_conf_restore(gw_uint8 *info, gw_uint32 len)
+{
+//	printf("in sysconfrestore fuction ,this function is not defined .......\r\n");
+
+	char *serial_num = NULL;
+	char *hw_version = NULL;
+	char *hw_manufature_date = NULL;
+	char *pointer = info;
+	char section[20] ={0};
+	int ret = -1;
+
+	pointer +=4;
+
+	/*** device name ***/
+	vosStrCpy(pointer,"GT873_A");
+
+	/*** serial number ***/
+	vosStrCpy(section,"Product Information");
+	if((serial_num = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Serial number",NULL)) == NULL)
+	{
+		printf("Get Serial number error..\r\n");
+		return ret;
+	}
+	else
+	{
+		pointer +=76; 
+		vosStrCpy(pointer,serial_num);
+	}
+
+	/*** hardware version ***/
+	if((hw_version = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Hardware version",NULL)) == NULL)
+	{
+		printf("Get Hardware version error ...\r\n");
+		return ret;
+	}
+	else
+	{
+		pointer +=18;
+		vosStrCpy(pointer,hw_version);
+	}
+
+	/*** Manufacture date ***/
+	if((hw_manufature_date = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Manufature date",NULL)) == NULL)
+	{
+		printf("Get Manufature data error ...\r\n");
+		return ret;
+	}
+	else
+	{
+		pointer += 6;
+		printf("manufacture date is %s...\r\n",hw_manufature_date);
+		vosStrCpy(pointer,hw_manufature_date);
+	}
+	return 0;
+}
+gw_status gwdonu_port_admin_status_get(gw_int32 portid, gwd_port_admin_t *status)
+{
+	printf("in portadminget fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_port_admin_status_set(gw_int32 portid, gwd_port_admin_t status)
+{
+	printf("in portadminset fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+
+gw_status gwdonu_port_oper_status_get(gw_int32 portid, gwd_port_oper_status_t *status)
+{
+	printf("in portoperget fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+
+gw_status gwdonu_vlan_entry_getnext(gw_uint32 index, gw_uint16 *vlanid, gw_uint32 *tag_portlist, gw_uint32 *untag_portlist)
+{
+	printf("in vlanentrygetnext fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_vlan_entry_get(gw_uint32 vlanid, gw_uint32 *tag_portlist, gw_uint32 *untag_portlist)
+{
+	printf("in vlanentryget fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_fdb_entry_get(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *eg_portlist)
+{
+	printf("in fdbentryget fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *nextvid, gw_uint8 *nextmac, gw_uint32 * eg_portlist)
+{
+	printf("in fdbentrygetnext fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * mac)
+{
+	printf("in fdbmgtmacset fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+
+gw_status gwdonu_register_special_pkt_handler( libgwdonu_special_frame_handler_t phandler)
+{
+//	g_onu_pkt_handler = phandler;
+	printf("gwdonu_register_sepcial_pkt_handler has not used ...\r\n");
+	return GW_OK;
+}
+
+
+//typedef unsigned short u16_t;
+extern int stub_get_onu_optical_transiver_temperature(u16_t *pTemperature);
+extern int stub_get_onu_optical_transiver_supply_vcc(u16_t *pVcc);
+extern int stub_get_onu_optical_transiver_tx_bias_current(u16_t *pCurrent);
+extern int stub_get_onu_optical_transiver_rx_power(u16_t *pRxPower);
+extern int stub_get_onu_optical_transiver_tx_power(u16_t *pTxPower);
+
+
+
+gw_status gwdonu_opm_get(gw_uint16 *temp,gw_uint16 *vcc,gw_uint16 *bias,gw_uint16 *txpow,gw_uint16 *rxpow)
+{
+	short int temperature;
+	u16_t vcc_t;
+	u16_t current;
+	u16_t txPower;
+	u16_t rxPower;
+	double txdbm =0.9,rxdbm = 0.0;
+
+	stub_get_onu_optical_transiver_temperature(&temperature);
+	stub_get_onu_optical_transiver_supply_vcc(&vcc_t);
+	stub_get_onu_optical_transiver_tx_bias_current(&current);
+	stub_get_onu_optical_transiver_tx_power(&txPower);
+	stub_get_onu_optical_transiver_rx_power(&rxPower);
+
+#if 0
+	temperature /=256;
+	*temp = temperature;
+	*vcc = (u16_t)(vcc_t*0.1);
+	current *=0.002;
+	*bias = current;
+	txdbm = txPower;
+	rxdbm = rxPower;
+
+	txdbm = 10*log10(txdbm*0.0001);
+	rxdbm = 10*log10(rxdbm*0.0001);
+
+	*txpow = txdbm;
+	*rxpow = rxdbm;
+	printf("temperature			:%hd C\n",temperature);
+	printf("working-voltage			:%hd mV\n",vcc);
+	printf("bias-current			:%hd mA\n",current);
+	printf("txPower				:%4.1f dbm\n",txdbm);
+	printf("rxPower				:%4.1f dbm\n",rxdbm);
+#endif
+	return 0;
+}
+
+gw_status gwdonu_port_loop_event_post(gw_uint32 status)
+{
+	printf("in portloopnotify fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+gw_status specialpkthandler(libgwdonu_special_frame_handler_t handler)
+{
+	printf("in specialpkthandler fuction ,this function is not defined .......\r\n");
+	return 0;
+}
+
+
+gwdonu_im_if_t g_onu_im_ifs = {
+		gwdonu_onu_llid_get,
+		gwdonu_onu_sys_info_get,
+		gwdonu_sys_conf_save,
+		gwdonu_sys_conf_restore,
+		gwdonu_port_send,
+		gwdonu_oam_std_hdr_builer,
+
+		gwdonu_port_admin_status_get,
+		gwdonu_port_admin_status_set,
+		gwdonu_port_oper_status_get,
+//		gwdonu_port_mode_get,
+//		gwdonu_port_mode_set,
+//		gwdonu_port_isolate_get,
+//		gwdonu_port_isolate_set,
+//		gwdonu_port_stat_get,
+ 
+		gwdonu_vlan_entry_getnext,
+		gwdonu_vlan_entry_get,
+		gwdonu_fdb_entry_get,
+		gwdonu_fdb_entry_getnext,		
+		gwdonu_fdb_mgt_mac_set,
+//		gwdonu_atu_learning_get,
+//		gwdonu_atu_learning_set,
+//		gwdonu_atu_age_get,
+//		gwdonu_atu_age_set,
+
+//		gwdonu_mac_set, 
+		
+		gwdonu_opm_get,
+		
+		gwdonu_port_loop_event_post,
+
+ 		gwdonu_register_special_pkt_handler,
+//		gwdonu_current_timer_get,
+//		gwdonu_broadcast_speed_limit_set,
+//		gwdonu_localtime_get,
+//		gwdonu_static_mac_add,
+//		gwdonu_static_mac_del,
+//		gwdonu_onu_register_stat_get,
+		//gwdonu_onu_reset,
+};
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

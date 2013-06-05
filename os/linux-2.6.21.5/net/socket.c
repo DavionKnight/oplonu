@@ -2144,7 +2144,6 @@ static int __init sock_init(void)
 
 	return 0;
 }
-
 core_initcall(sock_init);	/* early initcall */
 
 #ifdef CONFIG_PROC_FS

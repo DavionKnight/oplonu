@@ -439,7 +439,11 @@ int telnetd_main(int argc UNUSED_PARAM, char **argv)
 #if ENABLE_FEATURE_TELNETD_STANDALONE
 #define IS_INETD (opt & OPT_INETD)
 	int master_fd = master_fd; /* be happy, gcc */
+	#if 0  /*changed by zhangjiajie 2013-3-27*/
 	unsigned portnbr = 23;
+	#else
+	unsigned portnbr = 2323;
+	#endif
 	char *opt_bindaddr = NULL;
 	char *opt_portnbr;
 #else

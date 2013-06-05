@@ -139,6 +139,7 @@ int
 if_ppp_unload()
 {
     int i;
+	
 
     if (if_ppp_count > 0)
 	return EBUSY;

@@ -787,7 +787,12 @@ int vosConfigErase()
 
     /* backup loid.conf file */
     vosSystem("mv /cfg/loid.conf /tmp/loid.conf");
-
+#if 1 /*modified by zhangjiajie-2013-3-20*/
+	   /*save product infomation*/
+	vosSystem("mv /cfg/product.conf /tmp/product.conf");
+	/*save pon mac information*/
+	vosSystem("mv /cfg/pmac.conf /tmp/pmac.conf");
+#endif
     /* delete cfg/* files */
 #if 0  /* modified by Gan Zhiheng - 2009/11/15 */
     if (g_pstConfigDatabase)
@@ -801,6 +806,10 @@ int vosConfigErase()
     /* resore loid.conf file */
     vosSystem("mkdir /cfg");
     vosSystem("mv /tmp/loid.conf /cfg/");
+#if 1
+    vosSystem("mv /tmp/product.conf /cfg/");
+	vosSystem("mv /tmp/pmac.conf /cfg/");
+#endif
 #if 0  /* deleted by Gan Zhiheng - 2009/11/16 */
     vosSystem("cp /etc/config.xml /cfg/");
 #endif /* #if 0 */

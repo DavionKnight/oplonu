@@ -114,6 +114,7 @@ static void __uart_start(struct tty_struct *tty)
 
 static void uart_start(struct tty_struct *tty)
 {
+
 	struct uart_state *state = tty->driver_data;
 	struct uart_port *port = state->port;
 	unsigned long flags;
@@ -152,11 +153,13 @@ uart_update_mctrl(struct uart_port *port, unsigned int set, unsigned int clear)
  */
 static int uart_startup(struct uart_state *state, int init_hw)
 {
+
+
+
 	struct uart_info *info = state->info;
 	struct uart_port *port = state->port;
 	unsigned long page;
 	int retval = 0;
-
 	if (info->flags & UIF_INITIALIZED)
 		return 0;
 
@@ -926,6 +929,7 @@ static void uart_break_ctl(struct tty_struct *tty, int break_state)
 
 static int uart_do_autoconfig(struct uart_state *state)
 {
+
 	struct uart_port *port = state->port;
 	int flags, ret;
 
@@ -1398,6 +1402,7 @@ static void uart_hangup(struct tty_struct *tty)
  */
 static void uart_update_termios(struct uart_state *state)
 {
+
 	struct tty_struct *tty = state->info->tty;
 	struct uart_port *port = state->port;
 

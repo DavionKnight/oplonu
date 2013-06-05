@@ -325,6 +325,10 @@ extern STATUS cliCmdPonSerdesDelaySet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
 
 extern STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
 
+extern STATUS cliCmdLanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
+
+extern STATUS cliCmdWanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
+
 extern STATUS cliCmdPonDbaAgentAllParaSet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
 
 extern STATUS cliCmdPonTxDelaySet(ENV_t *pstEnv, PARA_TABLE_t *psPara);
@@ -512,13 +516,13 @@ extern STATUS cliCmdTsConfigure(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdTsDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdTsShow(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdTsSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
+extern STATUS cliCmdTelnetSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdProductDateSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdProductSerialSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdProductHwVerSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdProductMACSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdProductShowInfo(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdRelayAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
-extern STATUS cliCmdRelayAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdLedAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdLedAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdDisplayOpm(ENV_t *pstEnv, PARA_TABLE_t *pstPt);

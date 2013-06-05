@@ -1169,7 +1169,7 @@ OPL_STATUS intMpcpEnHwWrite(UINT8 type,UINT8 enable)
 	}
 
 	regVal = enable?OPL_ENABLE:OPL_DISABLE;
-	
+//	printf("intMpcpEnHwWrite*******************\r\n");
 	switch(type)
 	{
     	case MPCP_STATE_INT_TYPE:
@@ -1232,6 +1232,7 @@ OPL_STATUS intMpcpEnHwRead(UINT8 type,UINT8 *enable)
     	case MPCP_STATE_CHANGE_INT_TYPE:
     	case MPCP_GRANT_LIST_FULL_INT_TYPE:
     	case MPCP_GATE_TIMEOUT_INT_TYPE:
+//			printf("intMpcpEnHwRead***************\r\n");
     	case MPCP_LINK_UP_INT_TYPE:
     	case MPCP_LINK_DOWN_INT_TYPE:
             retVal = oplRegRead(oplIntInfo[OPL_MPCP_INTR].level2Int[type].enAddr, &regVal);
@@ -1632,7 +1633,7 @@ OPL_STATUS intMpcpHandler(UINT32 intIndex, UINT32 level2Int)
 {
 	OPL_STATUS retVal = OPL_OK;
 	INT32  i = OPL_ZERO;
-
+//printf("intMpcpHandler*****************\r\n");
 	if(!level2Int)
 	{
 		return OPL_OK;
@@ -1656,6 +1657,7 @@ OPL_STATUS intMpcpHandler(UINT32 intIndex, UINT32 level2Int)
 				case MPCP_GRANT_LIST_FULL_INT_TYPE:
 					break;
                 case MPCP_GATE_TIMEOUT_INT_TYPE:
+//					printf("MPCP_GATE_TIMEOUT_INT_TYPE********************************\r\n");
                     break;
                 case MPCP_LINK_UP_INT_TYPE:
                     break;

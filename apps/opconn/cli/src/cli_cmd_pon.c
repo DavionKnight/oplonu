@@ -265,7 +265,7 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
     }
 	
     retVal = odmPonMacIdSet(macId);
-	
+
     if(OK != retVal)
     {
         vosPrintf(pstEnv->nWriteFd, "\r\nerror code %u\r\n",retVal);
@@ -274,7 +274,7 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 	{
 		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
 	}
-	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"MAC",psPara[0].p)) != 0)
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"PON MAC",psPara[0].p)) != 0)
 	{
 			printf("save error\n");
 		    return ERROR;
@@ -285,7 +285,73 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 	
 	return OK;
 }
+extern overall_lanmac;
+STATUS cliCmdLanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
+{
+	char section[20];
+	int ret=0;
+	char macStr[50]={0};
+	
+	strcpy(section,"Product Information");
 
+//	strncpy(overall_lanmac,psPara[0].p,6);
+
+	vosSprintf(macStr,"%s%s","ifconfig eth0 hw ether ",psPara[0].p);
+     if(0==system(macStr))
+     {
+		if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+		{
+			ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+		}
+		if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"LAN MAC",psPara[0].p)) != 0)
+		{
+				printf("save error\n");
+			    return ERROR;
+		}
+ //   cliTextConfigSave();
+    		vosConfigSave(NULL);
+     	}
+	 else
+	 {
+	 	printf("error ! Please change another unused macid !\r\n");
+	 }
+}
+STATUS cliCmdWanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
+{
+	char section[20];
+	int ret=0;
+	char macStr[50]={0};
+
+	strcpy(section,"Product Information");
+	vosStrToMac(psPara[0].p,overall_lanmac);
+
+
+	vosSprintf(macStr,"%s%s","ifconfig eth3 hw ether ",psPara[0].p);
+	ret = system(macStr);
+	printf("ret is %d\r\n",ret);
+     if(0==ret)
+     {
+		vosMemSet(macStr,0,50);
+		vosSprintf(macStr,"%s%s","ifconfig eth4 hw ether ",psPara[0].p);
+     		system(macStr);
+	 
+		if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+		{
+			ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+		}
+		if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"WAN MAC",psPara[0].p)) != 0)
+		{
+				printf("save error\n");
+			    return ERROR;
+		}
+ //   cliTextConfigSave();
+		vosConfigSave(NULL);
+     	}
+	 else
+	 {
+	 	printf("error ! Please change a legal macid !\r\n");
+	 }
+}
 STATUS cliCmdPonDbaAgentAllParaSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 
 {

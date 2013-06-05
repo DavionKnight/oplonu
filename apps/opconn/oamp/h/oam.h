@@ -12,8 +12,11 @@ MODIFICATION DETAILS
 #ifndef __OAM_H__
 #define __OAM_H__
 
+#define GWD_OAM
+
 #define FALSE	0
 #define TRUE	1
+
 
 #define OPL_OK	0
 
@@ -1548,5 +1551,5 @@ extern int oamMsqDestroy(void);
 extern int oamMsqSend(void *msgBuf, unsigned int msgsz);
 extern unsigned int oamMsqReceive(void *msgBuf, unsigned int msgsz);
 #endif
-
+//export oam_sate_t oams;
 #endif /* __OAM_H__ */

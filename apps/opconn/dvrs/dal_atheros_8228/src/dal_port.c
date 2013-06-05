@@ -2770,7 +2770,7 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 	}
 
 	dalSoftArlMacFlush(portId);
-
+//printf("vlan mode is %d...\n",mode);
 	switch(mode)
 	{
 		case VLAN_TRANSPARENT:
@@ -2814,8 +2814,8 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			shiva_port_vlan_propagation_set(0, atherosPort, FAL_VLAN_PROPAGATION_CLONE);
 
 			/* added by cylan for bug3027*/
-//			dalToTransparentModeHandle(portId);
-
+			dalToTransparentModeHandle(portId);
+//printf("after handle...\n");
 			/* get GE's pcvid and set it to portId's pcvid */
 			shiva_port_default_cvid_get(0, 6, &vid);
 			shiva_port_default_cvid_set(0, atherosPort, vid);
@@ -2954,7 +2954,7 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			
 			break;
 		case VLAN_TRUNK:
-			iStatus = shiva_port_1qmode_set(0,atherosPort,FAL_1Q_FALLBACK);//has changed by zhangjj
+			iStatus = shiva_port_1qmode_set(0,atherosPort,FAL_1Q_SECURE);//has changed by zhangjj
 			if(OPL_OK != iStatus)
 			{
 				return iStatus;
@@ -3004,7 +3004,7 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			if (SW_OK == shiva_vlan_find(0, 4095, &p_vlan))
 			{
 				p_vlan.mem_ports &=  ~(1 << atherosPort);
-
+//printf("p_vlan.mem_ports is %d\n",p_vlan.mem_ports);
 				if (SW_OK == shiva_vlan_member_update(0, 4095, p_vlan.mem_ports, 0))
 				{
 					dal_vlan8228[4095].member = p_vlan.mem_ports;
@@ -3024,13 +3024,18 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			shiva_portvlan_member_del(0, 6, atherosPort);
 #else
 
-			shiva_port_default_cvid_get(0, 6, &vid);
-			shiva_port_default_cvid_set(0, atherosPort, vid);
+//			shiva_port_default_cvid_get(0, 6, &vid);
+//			shiva_port_default_cvid_set(0, atherosPort, vid);
+
+			shiva_port_default_cvid_get(0, atherosPort, &vid);
+//			printf("vid is %d*******\n",vid);
 
 			if (SW_OK == shiva_vlan_find(0, 4095, &p_vlan))
 			{
-				p_vlan.mem_ports |= (1 << atherosPort);
-
+				if(1==vid)
+					p_vlan.mem_ports |= (1 << atherosPort);
+				else
+					p_vlan.mem_ports &=  ~(1 << atherosPort);
 				if (SW_OK == shiva_vlan_member_update(0, 4095, p_vlan.mem_ports, 0))
 				{
 					dal_vlan8228[4095].member = p_vlan.mem_ports;
@@ -3046,10 +3051,18 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 				return OPL_ERROR;
 			}
 
+			/* delete this port from GE port based vlan member */	
+//			shiva_portvlan_member_del(0, 6, atherosPort);
+//				}
 			/* add this port to GE port based vlan member */	
-			shiva_portvlan_member_add(0, 6, atherosPort);
-            dal_vtt_info[atherosPort].vlanMode = VLAN_TRUNK;
-            dal_vtt_info[atherosPort].defaultVlanTag = 0xFFF;
+//			shiva_port_default_cvid_get(0, atherosPort, &vid);
+//			printf("vid is %d*******\n",vid);
+//			if(1==vid)
+				shiva_portvlan_member_del(0, 6, atherosPort);
+//			else
+//				shiva_portvlan_member_del(0, 6, atherosPort);				
+ //           dal_vtt_info[atherosPort].vlanMode = VLAN_TRUNK;
+ //           dal_vtt_info[atherosPort].defaultVlanTag = 0xFFF;
 #endif
 
 			/* added by cylan for bug3027*/

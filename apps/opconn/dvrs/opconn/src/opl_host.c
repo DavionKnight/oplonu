@@ -203,6 +203,12 @@ void eopl_pkt_process(void * pkt, UINT16 len)
  #endif
 
 	 /* OAM packet processing */
+
+ 	/*if the protocol and type is right ,then it is  an oam pkt and do pud_receive function   --add by zhangjj 2013-3.14 */
+
+//#define INTHERNET_DEBUG
+
+
 	 if(!memcmp(&oam_dest_mac[0], ((UINT8 *)pkt + sizeof(host_inbound_hdr_t)) ,ETH_MAC_ADDR_LEN))
 	{
 		ptr_eth_oam_hdr =   (eth_header_none_tag_t *)((UINT8 *)pkt + sizeof(host_inbound_hdr_t));
@@ -211,6 +217,9 @@ void eopl_pkt_process(void * pkt, UINT16 len)
 		/* OAM packet processing */
 		if((ETH_TYPE_SLOW_PROTOCOL == ptr_eth_oam_hdr->protocol)&&(ETH_SLOW_PROTOCOL_TYPE_OAM == type))
 		{
+#ifdef  INTHERNET_DEBUG
+printf("in eopl_pkt_process......\r\n");
+#endif
 			eopl_oam_pdu_receive((UINT8 *)pkt, len);
 		}
 		return;
@@ -219,12 +228,25 @@ void eopl_pkt_process(void * pkt, UINT16 len)
        #ifndef ONU_4PORT_AR8327
 	/* IGMP packet processing */
 	ptr_eth_hdr = (eth_header_with_sgl_tag_t *)((unsigned char *)pkt + sizeof(host_inbound_hdr_t));
+
+#ifdef  INTHERNET_DEBUG
+printf("ptr_eth_hdr->protocol is 0x%x......\r\n",ptr_eth_hdr->protocol);
+#endif
 	
 	if(ETH_P_IP == ptr_eth_hdr->protocol)
 	{
+
+#ifdef  INTHERNET_DEBUG
+printf("in if(ETH_P_IP == ptr_eth_hdr->protocol)......\r\n");
+#endif
+	
        	ptr_ipv4_hdr = (ipv4_header_t *)((unsigned char *)pkt + sizeof(host_inbound_hdr_t) + sizeof(eth_header_with_sgl_tag_t));
 		 if((IPV4_PROTOCOL_IGMP == ptr_ipv4_hdr->protocol)&&(INET_IP_VER == ptr_ipv4_hdr->version))
        	{
+
+#ifdef  INTHERNET_DEBUG
+printf("in if((IPV4_PROTOCOL_IGMP......\r\n");
+#endif
 			odmMulticastIgmpMsgHandler(pkt, len);
        	}
 	}
@@ -374,12 +396,9 @@ INT16 eopl_host_send(void *pkt, UINT16 len)
 
     if (NULL == pkt || 0 == len)
         return -1;
-
     /* begin added by jiangmingli for host debug */
     if (OPL_TRUE == g_bHostDsDbgEn)
     {
-        //opl_dump_data(pkt,len,16);
-        printf("\r\nSend Pkt to PON, len=%u\r\n",len);
         pucBuf = (char *)pkt;
         for(index = 0; index < len; index++)
         {

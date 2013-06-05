@@ -173,7 +173,7 @@ static void halDma1Thread(void)
 				
 			}
 #endif
-            /* HAL_HOST_DMA1_DUMP(g_acDma1RecvBuf, g_acDma1RecvLen); */
+             HAL_HOST_DMA1_DUMP(g_acDma1RecvBuf, g_acDma1RecvLen); 
         }
 #else
         vosSleep(1);

@@ -9,7 +9,15 @@
 #include "log.h"
 
 #include "odm_port.h"
-
+/*** add by zhangjj for gw pty  2013-5-21 ***/
+int overall_major_version = MAJOR_VERSION_t;
+int overall_minor_version = MINOR_VERSION_t;
+int overall_build_version = BUILD_NUMBER_t;
+/*
+char const iros_version[]="IROS ONU "\
+								MAJOR_VERSION_t "." \
+								MINOR_VERSION_t "." \
+								BUILD_NUMBER_t;*/
 extern const char * product_rev;
 extern const char * build_date;
 extern const char * build_time;

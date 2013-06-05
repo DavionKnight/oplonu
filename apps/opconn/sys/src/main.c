@@ -40,6 +40,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include "gwdonuif.h"
+#include "oam.h"
 
 #ifdef LINUX
 #include <signal.h>
@@ -89,6 +91,7 @@ const char *g_pcDebugLevel[DEBUG_LEVEL_MAX] =
     "debugging"
 };
 
+
 extern UINT8	oam_src_mac[6];
 
 extern int g_nDisableMDIO;
@@ -104,9 +107,13 @@ extern ENV_t *g_pstConsole;
 
  *  @see 
  */
-
+extern gwdonu_im_if_t g_onu_im_ifs;
+extern void plat_init();
 extern void setEth0MAC();
+//extern gw_status reg_gwdonu_im_interfaces(gwdonu_im_if_t *ifs);
 
+
+//extern void plat_init();
 int main(int argc,char *argv[])
 {
 	UINT32 retVal, regVal;;
@@ -125,7 +132,9 @@ int main(int argc,char *argv[])
 
     DBG_LINE
     /* configuration database initialize */
+	
     printf("Init configuration database ... ");
+//		#if 0
     if(vosConfigInit() < 0)
     {
         printf("failed\r\n");
@@ -157,6 +166,7 @@ int main(int argc,char *argv[])
 
     /* optimer initialize */
     printf("Init vos timer ... ");
+
     if(vosTimerInit() < 0)
     {
         printf("failed\r\n");
@@ -166,11 +176,8 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
-int ret=0;
-run_led();         //cs1 init
-//ret =init_main();		//cs2 init
-//if(ret !=-1)
-ts_init();			//terminal server init
+
+
     DBG_LINE
     /* session initialize */
     printf("Init command line sessions ... ");
@@ -183,7 +190,7 @@ ts_init();			//terminal server init
     {
         printf("done\r\n");
     }
-
+//#endif
     DBG_LINE
     /* cli initialize */
     printf("Init command line engine ... ");
@@ -196,7 +203,7 @@ ts_init();			//terminal server init
     printf("done\r\n");
 
     /* sys log initialize */
-    printf("Init sysLog task ... ");
+    printf("Init sysLog task ...\n");
     if(NO_ERROR != sysLogInit())
     {
         printf("failed\r\n");
@@ -413,6 +420,14 @@ ts_init();			//terminal server init
     {
         printf("done\r\n");
     }
+reg_gwdonu_im_interfaces(&g_onu_im_ifs,sizeof(g_onu_im_ifs));
+plat_init();
+
+run_led();         //cs1 init
+//ret =init_main();		//cs2 init
+//if(ret !=-1)
+ts_init();			//terminal server init
+	
 
 	/* respin version config */
 	if (IS_ONU_RESPIN)

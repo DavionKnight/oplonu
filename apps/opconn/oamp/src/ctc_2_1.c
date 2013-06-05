@@ -929,7 +929,11 @@ void eopl_get_onu_capabilities2(void)
 #if defined(ONU_4PORT_88E6045)||defined(ONU_4PORT_88E6046)||defined(ONU_4PORT_88E6097)||defined(ONU_4PORT_AR8306)||defined(ONU_4PORT_AR8228)
 	p_cap2->onu_type = OAM_CTC_ONU_TYPE_SFU;
 	p_cap2->multiLlid = OAM_CTC_SINGLE_LLID;
+#if 0  
 	p_cap2->protection_type = OAM_CTC_PROTECTION_NONE;
+#else
+	p_cap2->protection_type = OAM_CTC_PROTECTION_TYPE_C;
+#endif
 	p_cap2->number_of_PONIf = 1;
 	p_cap2->number_of_slot = 0;
 	p_cap2->number_of_interface_type = 1;

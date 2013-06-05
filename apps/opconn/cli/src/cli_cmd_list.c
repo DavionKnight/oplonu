@@ -942,10 +942,33 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 },
 
 {
-    "ts ip set {ip_msg}",
+    "ts ip set {iptype} {ip_msg}",
 
 	"{ts,0, terminal server},\
 	{ip,0,terminal server ip},\
+	{set,0,ip set},\
+	{iptype,1,wan or lan},\
+	{ip_msg,1,from 0.0.0.0~255.255.255.255}",
+
+	"{iptype,CLI_WORD,NULL,NULL,3},\
+	{ip_msg,CLI_WORD,NULL,NULL,15}",
+    
+
+    CLI_MODE_SUPER, 
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdTsSetip,
+},
+{
+    "telnet ip set {ip_msg}",
+
+	"{telnet,0, telnet ip},\
+	{ip,0,telnet  ip},\
 	{set,0,ip set},\
 	{ip_msg,1,from 0.0.0.0~255.255.255.255}",
 
@@ -960,9 +983,8 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     CLI_EXEC_FUNC,
 
-    (FUNCPTR)cliCmdTsSetip,
+    (FUNCPTR)cliCmdTelnetSetip,
 },
-
 {
     "set date {year} {month} {date}",
 
@@ -1070,14 +1092,13 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     (FUNCPTR)cliCmdProductShowInfo,
 },
 {
-    "test relay alarm enable",
+    "protect alarm {enable}",
 
-	"{test,0,test mode},\
-	{relay,0, relay alarm}\
-	{alarm,0,relay alarm},\
-	{enable,0,enable}",
+	"{protect,0,protect},\
+	{alarm,0,alarm}\
+	{enable,1,0   enable     1     disable}",
 
-	"",
+	"{enable,CLI_UINT,0,1,0}",
     
 
     CLI_MODE_SUPER, 
@@ -1089,27 +1110,6 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     CLI_EXEC_FUNC,
 
     (FUNCPTR)cliCmdRelayAlarmEnable,
-},
-{
-    "test relay alarm disable",
-
-	"{test,0,test mode},\
-	{relay,0, relay alarm}\
-	{alarm,0,relay alarm},\
-	{disable,0,disable}",
-
-	"",
-    
-
-    CLI_MODE_SUPER, 
-
-    CLI_NULL_SUB_MODE,
-
-	ACCESS_LEVEL_SUPER,
-
-    CLI_EXEC_FUNC,
-
-    (FUNCPTR)cliCmdRelayAlarmDisable,
 },
 {
     "test led alarm enable",
@@ -1190,9 +1190,6 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     (FUNCPTR)cliCmdOrr
 },
-
-
-
 {
     "owr addr value",
 
@@ -4728,11 +4725,12 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 },
 
 {
-    "set macid macaddress",
+    "set pon mac macaddress",
 
     "{set,0,Set a config},\
-    {macid,0,Macaddress;<xx:xx:xx:xx:xx:xx>},\
-    {macaddress,1,Pon mac address}",
+	{pon,0,Pon mac},\
+    {mac,0,Macaddress;<xx:xx:xx:xx:xx:xx>},\
+    {macaddress,1,Mac address}",
 
    "{macaddress,CLI_WORD,NULL,NULL,18}",
 
@@ -4745,6 +4743,46 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     CLI_EXEC_FUNC,
 
     (FUNCPTR)cliCmdPonMacIdSet
+},
+{
+    "set lan mac macaddress",
+
+    "{set,0,Set a config},\
+	{lan,0,lan mac(eth0)},\
+    {mac,0,Macaddress;<xx:xx:xx:xx:xx:xx>},\
+    {macaddress,1,Mac address}",
+
+   "{macaddress,CLI_WORD,NULL,NULL,18}",
+
+    CLI_MODE_SUPER,
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdLanMacIdSet
+},
+{
+    "set wan mac macaddress",
+
+    "{set,0,Set a config},\
+	{wan,0,wan mac(eth3,eth4)},\
+    {mac,0,Macaddress;<xx:xx:xx:xx:xx:xx>},\
+    {macaddress,1,Mac address}",
+
+   "{macaddress,CLI_WORD,NULL,NULL,18}",
+
+    CLI_MODE_SUPER,
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdWanMacIdSet
 },
 
 {

@@ -80,7 +80,11 @@
 
 #define STATE_STR_GET(state)    ((ENABLED == (state)) ? STATE_ENABLE_STR : STATE_DISABLE_STR)
 
+#if 0 /*modified by zhangjiajie 2013-3-27*/
 #define DEFAULT_TELNET_PORT     2323
+#else
+#define DEFAULT_TELNET_PORT     23
+#endif
 #define DEFAULT_WEB_PORT        80
 #define DEFAULT_SESSION_NUM     5
 #define DEFAULT_SESSION_TIMEOUT 180

@@ -203,7 +203,6 @@ UINT32 sysLogInit()
        // g_pstSysLogMutex = NULL;
         return SYS_LOG_THREAD_CREATE_FAILED;
     }
-
     sysLogFileOpen(1);
 
     if (vosMutexCreate(&g_pstSysAlarmFileMutex) != VOS_MUTEX_OK) {

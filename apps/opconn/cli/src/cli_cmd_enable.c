@@ -39,8 +39,8 @@
 #include <stats.h>
 #include "run_led.h"
 #include "uart_default.h"
-#include "serial_ser.h"
-#include "serial.h"
+//#include "serial_ser.h"
+//#include "serial.h"
 #include "terminal_server.h"
 #include "terminal_server_api.h"
 #include "cs_cmn.h"
@@ -1244,10 +1244,10 @@ STATUS  cliCmdBoardReset(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	char uData;
 	
-	cpldRead(7,&uData);
-	cpldWrite(7, (uData & 0xfe));
+	cpldRead(CS1_RESET_REG,&uData);
+	cpldWrite(CS1_RESET_REG, (uData & 0xfe));
       vosSleep(1);;
-	cpldWrite(7,(uData | 0x01));
+	cpldWrite(CS1_RESET_REG,(uData | 0x01));
 
 	return OK;
 }
@@ -1255,14 +1255,25 @@ STATUS  cliCmdBoardReset(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 STATUS cliCmdPonCpld(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	char uData;
-	unsigned char pon_num,pon_num_and,pon_num_or;
+	unsigned char pon_num=0;
 
+#if 0
 	pon_num = pstPt[1].u - 1;
+	pon_num = 0x1 & (!pon_num);
 	pon_num = pon_num << 1;
 	pon_num_and = pon_num |0xfd;
-	cpldRead(0x0a,&uData);
-	cpldWrite(0x0a,(uData & 0xfe));
-	cpldWrite(0x0a,((uData & 0xfe) & pon_num_and | pon_num));
+	cpldRead(0x0b,&uData);
+	cpldWrite(0x0b,(uData & 0xfe));
+	cpldWrite(0x0b,((uData & 0xfe) & pon_num_and | pon_num));
+#else
+	pon_num = pstPt[1].u - 1;
+	pon_num = 0x1 & (!pon_num);	
+	pon_num = pon_num << 1;
+	cpldRead(CS1_PON_CONTROL,&uData);
+	uData &= 0xfc;
+	uData |= pon_num;
+	cpldWrite(CS1_PON_CONTROL,uData);	
+#endif
 printf("set cpld pon%d over ..\n",pstPt[1].u);
 	return OK;
 }
@@ -1270,14 +1281,25 @@ printf("set cpld pon%d over ..\n",pstPt[1].u);
 STATUS cliCmdPonCpu(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	char uData;
-	unsigned char pon_num,pon_num_and,pon_num_or;
-
+	unsigned char pon_num=0;
+#if 0
 	pon_num = pstPt[1].u - 1;
+	pon_num = 0x1 & (!pon_num);	
 	pon_num = pon_num << 1;
 	pon_num_and = pon_num |0xfd;
-	cpldRead(0x0a,&uData);
-	cpldWrite(0x0a,(uData | 0x01));
-	cpldWrite(0x0a,((uData | 0x01) & pon_num_and | pon_num));
+	cpldRead(0x0b,&uData);
+	cpldWrite(0x0b,(uData | 0x01));
+	cpldWrite(0x0b,((uData | 0x01) & pon_num_and | pon_num));
+#else
+	pon_num = pstPt[1].u - 1;
+	pon_num = 0x1 & (!pon_num);	
+	pon_num = pon_num << 1;
+	pon_num |= 0x1;
+	cpldRead(CS1_PON_CONTROL,&uData);
+	uData &= 0xfc;
+	uData |= pon_num;
+	cpldWrite(CS1_PON_CONTROL,uData);	
+#endif
 printf("set cpu pon%d over ..\n",pstPt[1].u);
 	return OK;
 }
@@ -1492,10 +1514,10 @@ STATUS cliCmdTsConfigure(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
                     if(epon_request_onu_ts_enable(0,0,
                         Term_serv_cfg.uart_cfg.uart_id,
                         (term_server_config_t *)&Term_serv_cfg))
-                        printf("Terminal Server %d create failed\n\r",
+                        printf("Terminal Server %d is created failed\n\r",
                                             UART_TO_TERM_SERV(pstPt[1].u));
                     else
-                        printf("Terminal Server %d create sucess\n\r",
+                        printf("Terminal Server %d is created successfully\n\r",
                                             UART_TO_TERM_SERV(pstPt[1].u));
 //					printf("Term serv enable is %d\n",Term_serv_cfg.enable_flag);
 				ts_save_config(pstPt[1].u, &Term_serv_cfg);
@@ -1522,25 +1544,41 @@ STATUS cliCmdTsDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 
 STATUS cliCmdTsShow(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
+#if 0
 	char buf[20]={0};
 	printf("\nThe Config Terminal Server Have Saved:\n\n");
 	vosSprintf(buf,"cat %s",TERM_SERV_CFG_FILE);
 	system(buf);
+#else
+	char section[20];
+	int ret=0;
+
+	strcpy(section,"ts.conf");
+//printf("section is %s ...\r\n",section);
+	vosConfigShowByModule(TERM_SERV_CFG_FILE,pstEnv->nWriteFd);
+#endif
 	return OK;
 }
 STATUS cliCmdTsSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	char ip_set[30]={0};
 
-	printf("New IP is %s\n",pstPt[1].p);
+	if(vosStrCmp(pstPt[1].p,"lan")==0)
+		vosSprintf(ip_set, "ifconfig eth0 %s",pstPt[3].p);
+	else if(vosStrCmp(pstPt[1].p,"wan")==0)
+		vosSprintf(ip_set, "ifconfig eth4 %s",pstPt[3].p);
+	else
+	{
+		printf("Please input correct command :\nLike   ts ip set wan 192.168.0.1\n");
+		return OK;
+	}
+	printf("New IP is %s\n",pstPt[3].p);
 	printf("\nAll of Terminal Servers Will Restart ...\n\n");
 
 	ts_disable(1);
 	ts_disable(2);
 	ts_disable(3);
 	ts_disable(4);
-
-	vosSprintf(ip_set, "ifconfig eth0:0 %s",pstPt[1].p);
 	system(ip_set);
 //	system("ifconfig eth0:0");
 vosSleep(1);
@@ -1548,7 +1586,16 @@ vosSleep(1);
 	printf("\nSet New IP Successfully!\n\n");
 	return OK;
 }
+STATUS cliCmdTelnetSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	char ip_set[30]={0};
 
+	printf("New IP is %s\n",pstPt[1].p);
+	vosSprintf(ip_set, "ifconfig eth3 %s",pstPt[1].p);
+	system(ip_set);
+	telnet_ip_save(pstPt[1].p);
+	return OK;
+}
 STATUS cliCmdProductDateSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 
@@ -1656,15 +1703,15 @@ STATUS cliCmdProductShowInfo(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 
 STATUS cliCmdRelayAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
-	SetAlarmEnable(1);
+	if(0 == pstPt[1].u)
+		SetAlarmEnable(1);
+	else if(1 == pstPt[1].u)
+		SetAlarmEnable(0);
+	else
+		printf("error\r\n");
 	return OK;
 }
 
-STATUS cliCmdRelayAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
-{
-	SetAlarmEnable(0);
-	return OK;
-}
 STATUS cliCmdLedAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	test_led_flag =1;	

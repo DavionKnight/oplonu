@@ -1391,15 +1391,28 @@ void setEth0MAC()
 	int ret=0;
 	char *macid;
 	
-
-	macid = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"MAC","00:00:00:00:00:00");
+    char szCmd[80]="ifconfig eth0 hw ether ";
+	macid = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"LAN MAC","00:00:00:00:00:00");
 
 	printf("retrive mac addres is %s\r\n", macid);
 	
 	if(strcmp(macid,"00:00:00:00:00:00"))
 	{
-	    char szCmd[80]="ifconfig eth0 hw ether ";
 		vosSprintf(szCmd, "%s%s", szCmd, macid);
+		vosSystem(szCmd);
+	}
+
+	macid = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"WAN MAC","00:00:00:00:00:00");
+
+	printf("retrive mac addres is %s\r\n", macid);
+	
+	if(strcmp(macid,"00:00:00:00:00:00"))
+	{
+		vosMemSet(szCmd,0,80);
+		vosSprintf(szCmd, "%s%s","ifconfig eth3 hw ether ", macid);
+		vosSystem(szCmd);
+		vosMemSet(szCmd,0,80);
+		vosSprintf(szCmd, "%s%s", "ifconfig eth4 hw ether ", macid);
 		vosSystem(szCmd);
 	}
 

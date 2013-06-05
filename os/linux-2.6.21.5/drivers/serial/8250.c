@@ -480,7 +480,6 @@ void serial_sel_port(struct uart_8250_port *up)
 	{
 		unsigned char port = ( ((int)up->port.membase) >> 4) & 3;
 		port = (1<<port);
-
 		writeb(port, EXAR_PORT_PORT_SEL);
 	}
 }
@@ -1447,6 +1446,7 @@ receive_chars(struct uart_8250_port *up, unsigned int *status)
 
 	do {
 		ch = serial_inp(up, UART_RX);
+
 		flag = TTY_NORMAL;
 		up->port.icount.rx++;
 
@@ -1498,7 +1498,6 @@ receive_chars(struct uart_8250_port *up, unsigned int *status)
 		}
 		if (uart_handle_sysrq_char(&up->port, ch))
 			goto ignore_char;
-
 		uart_insert_char(&up->port, lsr, UART_LSR_OE, ch, flag);
 
 	ignore_char:
@@ -1531,6 +1530,7 @@ static void transmit_chars(struct uart_8250_port *up)
 	}
 
 	count = up->tx_loadsz;
+	DEBUG_INTR("xmit->buf[xmit->tail] is %c\r\n",xmit->buf[xmit->tail]);
 	do {
 		serial_out(up, UART_TX, xmit->buf[xmit->tail]);
 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
@@ -1601,10 +1601,51 @@ serial8250_handle_port(struct uart_8250_port *up, unsigned int iir)
 	unsigned int status;
 	unsigned long flags;
 
+#if 0
+		char v;
+
+		v = readb(EXAR_PORT_BASE);
+		printk("0read uart card type 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+1);
+		printk("1read uart card type 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+2);
+		printk("2read uart card type 0x%02x\r\n", v);
+
+		v = readb(EXAR_PORT_BASE+3);
+		printk("3read uart card type 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+4);
+		printk("4card type is 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+5);
+		printk("5read uart card type 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+6);
+		printk("6232/485 model is 0x%02x\r\n", v);
+
+
+		v = readb(EXAR_PORT_BASE+8);
+		printk("reg 8 is 0x%02x\r\n",v);
+		v = readb(EXAR_PORT_BASE+9);
+		printk("reg 9 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+10);
+		printk("reg 10 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+11);
+		printk("reg 11 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+12);
+		printk("reg 12 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+13);
+		printk("reg 13 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+14);
+		printk("reg 14 is 0x%02x\r\n",v);
+				v = readb(EXAR_PORT_BASE+15);
+		printk("reg 15 is 0x%02x\r\n",v);
+
+
+#endif
+
+
+
 	spin_lock_irqsave(&up->port.lock, flags);
 
 	status = serial_inp(up, UART_LSR);
-
 	DEBUG_INTR("status = %x...", status);
 
 	DEBUG_INTR("iir = %x...", iir);
@@ -1923,7 +1964,6 @@ static int serial8250_startup(struct uart_port *port)
 	unsigned long flags;
 	unsigned char lsr, iir;
 	int retval;
-
 
 	up->capabilities = uart_config[up->port.type].flags;
 	up->mcr = 0;
@@ -3185,16 +3225,26 @@ static int __init serial8250_init(void)
 		writel(0x80000000, (OPL_BASE+OPL_CS2_CFG));
 		printk("set cs2 bus 8bit size\r\n");
 
-		v = readb(EXAR_PORT_BASE);
-		printk("read uart card type 0x%02x\r\n", v);
+//		writeb(0x0c,EXAR_PORT_BASE+6);
 
 		exar_port_serial_unlock();
-		v = readb(EXAR_PORT_RST_REG);
-		printk("rst reg val 0x%02x\r\n", v);
+		v = readb(EXAR_PORT_BASE+4);
+		printk("The Uart Type is 0x%02x\r\n", v);
 		v = v  &(~EXAR_PORT_RST);
 		writeb(v, EXAR_PORT_RST_REG);
-		exar_port_serial_lock();
+
 		printk("disable uart card rst(0x%02x)\r\n", v);
+
+		writeb(0x0,EXAR_PORT_BASE+8);
+		writeb(0x0,EXAR_PORT_BASE+9);
+		writeb(0x01,EXAR_PORT_BASE+10);
+		writeb(0x0,EXAR_PORT_BASE+11);
+		writeb(0x0,EXAR_PORT_BASE+12);
+		writeb(0x60,EXAR_PORT_BASE+13);										
+		writeb(0xf0,EXAR_PORT_BASE+14);
+		writeb(0x0,EXAR_PORT_BASE+15);
+		
+		exar_port_serial_lock();
 
 	}
 

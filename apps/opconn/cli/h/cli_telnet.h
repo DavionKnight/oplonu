@@ -32,6 +32,8 @@
 #ifndef __TELNET_H_
 #define __TELNET_H_ 1
 
+#include "vos_types.h"
+
 /*
  * Definitions for the TELNET protocol.
  */
@@ -235,7 +237,9 @@ extern char *slc_names[];
 #define ENV_ESC     2
 #define ENV_USERVAR 3
 
+
+//void * cliTelnetdRecvThread(int sock);
 extern uint32 cliTelnetdInit(void);
-extern uint32 cliTelnetdShutdown(void) ;
+extern uint32  cliTelnetdShutdown(void) ;
 
 #endif /* #ifndef __TELNET_H_ */ 
