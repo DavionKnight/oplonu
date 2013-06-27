@@ -1031,15 +1031,17 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     (FUNCPTR)cliCmdProductSerialSet,
 },
 {
-    "set hw-version {Major_version} {Release_version}",
+    "set hw-version {Major_version} {Release_version} {Build_version}",
 
 	"{set,0,information set},\
 	{hw-version,0,Hardware version},\
 	{Major_version,1,Major version},\
-	{Release_version,1,Release version}",
+	{Release_version,1,Release version},\
+	{Build_version,1,Build version}",
 
 	"{Major_version,CLI_UINT,1,9,1},\
-	{Release_version,CLI_UINT,1,9,1}",
+	{Release_version,CLI_UINT,1,9,1},\
+	{Build_version,CLI_UINT,1,9,1}",
     
 
     CLI_MODE_SUPER, 
@@ -6468,7 +6470,7 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     "controltype {gda-mac|gda-mac-vlan|gda-mac-sa-mac|gda-ip-vlan}",
 
     "{controltype, 0, Configure control type},\
-    {gda-mac, 0, GDA£¨Group Destination Address£© MAC£¨DA MAC only£©}, \
+    {gda-mac, 0, GDAï¿½ï¿½Group Destination Addressï¿½ï¿½ MACï¿½ï¿½DA MAC onlyï¿½ï¿½}, \
     {gda-mac-vlan, 0, GDA MAC and multicast vlan ID}, \
     {gda-mac-sa-mac, 0, GDA MAC+SA MAC}, \
     {gda-ip-vlan, 0, GDA IP and multicast vlan ID}",

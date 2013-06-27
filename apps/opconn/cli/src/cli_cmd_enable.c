@@ -1550,10 +1550,10 @@ STATUS cliCmdTsShow(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 	vosSprintf(buf,"cat %s",TERM_SERV_CFG_FILE);
 	system(buf);
 #else
-	char section[20];
+//	char section[20];
 	int ret=0;
 
-	strcpy(section,"ts.conf");
+//	strcpy(section,"ts.conf");
 //printf("section is %s ...\r\n",section);
 	vosConfigShowByModule(TERM_SERV_CFG_FILE,pstEnv->nWriteFd);
 #endif
@@ -1648,7 +1648,7 @@ STATUS cliCmdProductHwVerSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 	int ret=0;
 
 	strcpy(section,PRODCUT_INFO_SECTION);
-	vosSprintf(date_value, "V%d.%d",pstPt[1].u,pstPt[3].u);
+	vosSprintf(date_value, "V%d.%dB%d",pstPt[1].u,pstPt[3].u,pstPt[5].u);
 
 	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
 	{

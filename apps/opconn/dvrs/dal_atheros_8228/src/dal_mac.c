@@ -1254,8 +1254,8 @@ OPL_STATUS dalArlMacEntryShowAll(IN INT32 lFd,	IN UINT16 usType,
 	}
 
 	vosPrintf(lFd, "Port Map(CFFFF-G): Cpu Fe1 Fe2 Fe3 Fe4 - GE\r\n");
-	vosPrintf(lFd, "Mac Address		PortMap(CFFFFG)		Type	      SaFwdCmd\r\n");
-	vosPrintf(lFd, "----------------------------------------------------------------------\r\n");
+	vosPrintf(lFd, "Mac Address		PortMap(CFFFFG)		Type	      SaFwdCmd      Vid\r\n");
+	vosPrintf(lFd, "---------------------------------------------------------------------------------\r\n");
 
 	while(1)
 	{
@@ -1346,8 +1346,8 @@ OPL_STATUS dalArlMacEntryShowAll(IN INT32 lFd,	IN UINT16 usType,
 
 		cliMacToStr(entry.addr.uc, szMacaddress);
 
-		vosPrintf(lFd, "%18s\t%8s\t%12s\t%12s\r\n", szMacaddress, 
-			dalArlPortmap2Str(entry.port.id), szType, szSaFwdCmd);
+		vosPrintf(lFd, "%18s\t%8s\t%12s\t%12s%10d\r\n", szMacaddress,
+			dalArlPortmap2Str(entry.port.id), szType, szSaFwdCmd,entry.vid);
 		cnt++;
 	}
 

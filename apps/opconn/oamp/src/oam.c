@@ -677,7 +677,12 @@ void eopl_oam_pdu_process(u16_t framelen)
 
 
 #if 1
-memcpy(olt_mac_addr,p_hdr->src,GW_MACADDR_LEN);
+	/************* Here may have question should get olt mac by ctc oui ********/
+	if((p_hdr->src[0]==0x0)&&(p_hdr->src[1]==0x0c)&&(p_hdr->src[2]==0xd5))
+	{
+		memcpy(olt_mac_addr,p_hdr->src,GW_MACADDR_LEN);
+//		printf("p_hdr->src is 0x%x,0x%x,0x%x,0x%x,0x%x,0x%x..\r\n",p_hdr->src[0],p_hdr->src[1],p_hdr->src[2],p_hdr->src[3],p_hdr->src[4],p_hdr->src[5]);
+	}
 						host_inbound_hdr_t *pstInHeader = NULL;
 						char ucPort;
 
@@ -688,10 +693,18 @@ memcpy(olt_mac_addr,p_hdr->src,GW_MACADDR_LEN);
 #if 0
 int uiIdx=0;
 char *pucFrmTmp=in_data+4;
-if(*(pucFrmTmp+21)==0x14)
-{
+//printf("pucFrmTmp+18+4 is 0x%x,pucFrmTmp+21 is 0x%x\r\n",*(pucFrmTmp+18+4),*(pucFrmTmp+21));
+#if 0
 
-		printf("==========receive payload length2: ===========");
+if((*(pucFrmTmp+18+4+8)==0xc7)&&(*(pucFrmTmp+18+4+10)==0x21))
+{
+#else
+//	printf("*(pucFrmTmp+18) is 0x%x and *(pucFrmTmp+19) is 0x%x\r\n",*(pucFrmTmp+18),*(pucFrmTmp+19));
+if((*(pucFrmTmp+6)==0x0)&&(*(pucFrmTmp+7)==0x0f))
+{
+#endif
+
+		printf("==========receive payload length!!!!!!!!!: ===========");
 		for(uiIdx=0; uiIdx<framelen; uiIdx++)
 		{
 			if(0 == uiIdx%16)

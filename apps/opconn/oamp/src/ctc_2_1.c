@@ -322,8 +322,8 @@ static u32_t stub_voip_port_get(u8_t port_id, u8_t *voip_port)
 {
 	/*
 	Lock/Unlock
-	0x00¨D¨DPort disactivated or to disactivate the port
-	0x01¨D¨Dport activated or to activate the port
+	0x00ï¿½Dï¿½DPort disactivated or to disactivate the port
+	0x01ï¿½Dï¿½Dport activated or to activate the port
 	The default value of this field is 0x00
 	*/
     *voip_port = 0;
@@ -6185,6 +6185,22 @@ void eopl_ctc_get_req(u8_t* p_byte)
     vosMemSet(&key_val,0,sizeof(OAM_EV_CB_ID_t));
 #endif
 
+#if 0
+    printf("SSSSTart printf\r\n\n");
+int uiIdx=0;
+char *pucFrmTmp=in_data+4;
+		printf("==========receive payload length2: ===========");
+		for(uiIdx=0; uiIdx<55; uiIdx++)
+		{
+			if(0 == uiIdx%16)
+			{
+				printf("\n0x%08x\t", uiIdx);
+			}
+			printf(" 0x%02x", *pucFrmTmp++);
+		}
+		printf("\n--------------------------------------\n");
+//		while(1);
+#endif
 	while(1)
 	{
         if ((p_byte - p_src) >= OAM_MAXIMUM_PDU_SIZE)
@@ -12764,7 +12780,7 @@ int eopl_ctc_alarm_report(alarm_report_t *reportInfo)
 
 	//	p_ctc_alarm_entry->alarm_state = 0x00;
 	p_ctc_alarm_entry->timeStamp = 0;
-	/*±ê×¼¸ü¸ÄºóÈ¡·´*/
+	/*ï¿½ï¿½×¼ï¿½ï¿½Äºï¿½È¡ï¿½ï¿½*/
 	p_ctc_alarm_entry->alarm_state = reportInfo->alarmState;
 	g_usAlarmOutDataIdx += sizeof(ctc_alarm_entry_hdr_t);
 

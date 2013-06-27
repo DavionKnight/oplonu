@@ -208,8 +208,7 @@ void eopl_pkt_process(void * pkt, UINT16 len)
 
 //#define INTHERNET_DEBUG
 
-
-	 if(!memcmp(&oam_dest_mac[0], ((UINT8 *)pkt + sizeof(host_inbound_hdr_t)) ,ETH_MAC_ADDR_LEN))
+ if(!memcmp(&oam_dest_mac[0], ((UINT8 *)pkt + sizeof(host_inbound_hdr_t)) ,ETH_MAC_ADDR_LEN))
 	{
 		ptr_eth_oam_hdr =   (eth_header_none_tag_t *)((UINT8 *)pkt + sizeof(host_inbound_hdr_t));
 		type = *(UINT8 *)((UINT8 *)pkt + sizeof(host_inbound_hdr_t) + sizeof(eth_header_none_tag_t));
