@@ -1,0 +1,188 @@
+/* Create a terminal server and attach it with a given uart. */
+cs_status ts_enable(term_server_config_t* pTerm_serv_cfg)
+{
+    cs_status status;
+    cs_uint32 i = 0;
+    term_server_config_t *pTsCfg = NULL;
+    
+    if (NULL == pTerm_serv_cfg) {
+        return  CS_E_PARAM;
+    }
+    pTsCfg = TS_CFG_GET(pTerm_serv_cfg->uart_cfg.uart_id);
+    if(TERM_SERV_ENABLE_FLAG == pTsCfg->enable_flag){
+        cs_printf("Uart %d has been enabled\r\n",pTerm_serv_cfg->uart_cfg.uart_id);
+        return CS_E_CONFLICT;
+    }
+
+    if(CS_E_OK != check_uart_cfg(&pTerm_serv_cfg->uart_cfg)){
+        cs_printf("Wrong uart Configuration !\n");
+        return CS_E_PARAM;
+    }
+    
+    if(CS_E_OK != check_sock_cfg(pTerm_serv_cfg)){
+        cs_printf("Wrong TCP/IP Configuration !\n");
+        return CS_E_PARAM;
+    }
+    memcpy(pTsCfg, pTerm_serv_cfg, sizeof(term_server_config_t));
+
+    /* init IP receive ring buffer */
+    for(i=0; i<MAX_RING_BUF_NUM; i++){
+        if((pTsCfg->ip_rx_buf.pBuf[i] = iros_malloc(IROS_MID_SYS,TS_BUF_SIZE)) == NULL){
+            cs_printf("Terminal server enable failed for no memory\r\n");
+            return CS_E_RESOURCE;
+        }  
+    }
+    
+    ts_uart_init((uart_config_t *)&pTerm_serv_cfg->uart_cfg);
+
+    if(IPPROTO_TCP == pTerm_serv_cfg->proto_type){
+        status = ts_tcp_socket_setup(pTerm_serv_cfg);
+    }
+    else if(IPPROTO_UDP == pTerm_serv_cfg->proto_type){
+        status = ts_udp_socket_setup(pTerm_serv_cfg);
+    }
+
+    if(status == 0){
+        pTsCfg->enable_flag = TERM_SERV_ENABLE_FLAG;
+    }
+    return status;
+
+}
+
+/* Disable the service completely and free the related IP/UART */
+/* communication resource. */
+void ts_disable(cs_uint8 uart)
+{
+    cs_uint32 i;
+    term_server_config_t *pTsCfg = TS_CFG_GET(uart);
+    pTsCfg->enable_flag = 0;
+    /* Disable UART */
+    ts_onu_uart_disable(uart);
+    
+    
+     /* TCP socket: kick off client connection */
+    if(IPPROTO_TCP == pTsCfg->proto_type){
+        ts_client_fd_close(pTsCfg);
+    }
+    
+    ts_server_fd_close(pTsCfg);
+
+    for(i=0; i<MAX_RING_BUF_NUM; i++){
+        iros_free(pTsCfg->ip_rx_buf.pBuf[i]); 
+    }
+   
+    memset(pTsCfg,0,sizeof(term_server_config_t));
+    pTsCfg->client_fd = -1;
+    pTsCfg->server_fd = -1;
+    /* Client closed update flag */
+    pTsCfg->client_closed_flag = 1;
+}
+
+/* Terminate the current remote connect and reset the service to */
+/* wait for new connections. */
+void ts_reset(cs_uint8 uart)
+{
+    term_server_config_t *pTsCfg = TS_CFG_GET(uart);
+    /* TCP socket: kick off client connection */
+    if(IPPROTO_TCP == pTsCfg->proto_type){
+        ts_client_fd_close(pTsCfg);
+    }
+    /* Client closed update flag */
+    pTsCfg->term_serv_rx_ip_packets = 0;
+    pTsCfg->term_serv_tx_ip_packets = 0;
+    pTsCfg->term_serv_tx_lost_packets = 0;
+    pTsCfg->term_serv_rx_ip_cnt = 0;
+    pTsCfg->term_serv_tx_ip_cnt = 0;
+    pTsCfg->term_serv_tx_lost_cnt = 0;
+    /* clear the client information */
+    pTsCfg->client_closed_flag = 1;
+    pTsCfg->client_ip = 0;
+    pTsCfg->client_port = 0;
+
+    pTsCfg->uart_rx_char_cnt = 0;
+    pTsCfg->uart_tx_char_cnt = 0;
+    
+}
+
+/* Dump terminal server status (running or waiting), uart configure */
+/* parameters, rx/tx IP packets and remote IP & port numbers.*/
+void ts_show(cs_uint8 uart)
+{
+    cs_uint32 index = 0;
+    struct in_addr ipv4;
+    uart_config_t *pUart = NULL;
+    term_server_config_t *pTsCfg = TS_CFG_GET(uart);
+    
+    index = UART_TO_TERM_SERV(uart);
+    pUart = (uart_config_t *)&(pTsCfg->uart_cfg);
+    ipv4.s_addr = htonl(pTsCfg->client_ip);
+    if(TERM_SERV_ENABLE_FLAG !=pTsCfg->enable_flag) {
+        cs_printf("%-30s: %s\n", "Terminal Server Status", "Disabled");
+    }
+    else if(0 == pTsCfg->client_closed_flag)
+    {
+        cs_printf("%-30s: %s\n", "Terminal Server Status", "Running");
+        cs_printf("%-30s: %s\n", "Remote connect IP",  inet_ntoa(ipv4));
+        cs_printf("%-30s: %d\n", "Remote connect port", ntohs(pTsCfg->client_port));
+    }
+    else {
+        cs_printf("%-30s: %s %d\n", "Terminal Server Status", "Waiting at port",
+                                                                pTsCfg->proto_port);
+    }
+    cs_printf("%-30s: %d\n", "Term Server Rx IP packets", pTsCfg->term_serv_rx_ip_packets);
+    cs_printf("%-30s: %d\n", "Term Server Rx IP count", pTsCfg->term_serv_rx_ip_cnt);
+    cs_printf("%-30s: %d\n", "Term Server Tx IP packets", pTsCfg->term_serv_tx_ip_packets);
+    cs_printf("%-30s: %d\n", "Term Server Tx IP count", pTsCfg->term_serv_tx_ip_cnt);
+    cs_printf("%-30s: %d\n", "Term Server Tx lost packets", pTsCfg->term_serv_tx_lost_packets);
+    cs_printf("%-30s: %d\n", "Term Server ip_rx_buf.wr_count", pTsCfg->ip_rx_buf.wr_count);
+    cs_printf("%-30s: %d\n", "Term Server ip_rx_buf.rd_count", pTsCfg->ip_rx_buf.rd_count);
+    cs_printf("%-30s: %d\n", "Term Server ip_rx_buf.pIngress", pTsCfg->ip_rx_buf.pIngress);
+    cs_printf("%-30s: %d\n", "Term Server ip_rx_buf.pEgress", pTsCfg->ip_rx_buf.pEgress);
+
+
+    cs_printf("%-30s:\n", "Term Server Config");
+    cs_printf("%30s: %s%d\n", "Uart ID", "uart",pUart->uart_id);
+    cs_printf("%30s: %d\n", "Uart baudrate", pUart->baud_rate);
+    cs_printf("%30s: %d\n", "Uart databits", pUart->data_bits);
+    cs_printf("%30s: %ld\n", "Uart received bytes: ", pTsCfg->uart_rx_char_cnt);
+    cs_printf("%30s: %ld\n", "Uart transimitted bytes: ", pTsCfg->uart_tx_char_cnt);
+    switch(pUart->parity) {
+            case UART_PARITY_NONE:
+        {
+            cs_printf("%30s: %s\n", "Uart parity", "None");
+            break;
+        }
+            case UART_PARITY_ODD:
+        {
+            cs_printf("%30s: %s\n", "Uart parity", "Odd");
+            break;
+        }
+            case  UART_PARITY_EVEN:
+        {
+            cs_printf("%30s: %s\n", "Uart parity", "Even");
+            break;
+        }
+        default:
+            break;
+    }
+    if(pTsCfg->proto_type == IPPROTO_TCP) {
+        cs_printf("%30s: %s\n", "Connect protocol ","TCP");
+    }
+    else if(pTsCfg->proto_type == IPPROTO_UDP)  {
+        cs_printf("%30s: %s\n", "Connect protocol ","UDP");
+    }
+    else {
+        cs_printf("%30s: %s\n", "Connect protocol ","Not set");
+    }
+    cs_printf("%30s: %d\n", "Connect port", pTsCfg->proto_port);
+    cs_printf("%30s: %d s\n", "Connect timeout", pTsCfg->client_timeout);
+    cs_printf("%30s: %d \n", "Packet min payload", pTsCfg->min_payload);
+    cs_printf("%30s: %d\n", "Packet max payload", pTsCfg->max_payload);
+    cs_printf("%30s: %d ms\n", "Server max response time", pTsCfg->max_res_time);
+    cs_printf("%30s: %d \n", "Server fd", pTsCfg->server_fd);
+    cs_printf("%30s: %d \n", "client fd", pTsCfg->client_fd);
+    cs_printf("%-30s: %d\n", "Term Server wr_pos", ts_uart_ring[index].wr_pos);
+    cs_printf("%-30s: %d\n", "Term Server wr_count", ts_uart_ring[index].wr_count);
+    cs_printf("%-30s: %d\n", "Term Server rd_pos", ts_uart_ring[index].rd_pos);
+    cs_printf("%-30s: %d\n", "Term Server rd_count", ts_uart_ring[index].rd_count);
+}

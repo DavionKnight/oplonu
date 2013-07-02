@@ -1,0 +1,40 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+CPLD_OFFSET	opl_uart_mmap.c	20;"	d	file:
+IPMUX_REG_ADDR2ID	opl_hw_ops.h	96;"	d
+IPMUX_REG_BASE	opl_hw_ops.h	24;"	d
+IPMUX_REG_ID2ADDR	opl_hw_ops.h	95;"	d
+MODULE_NAME	Makefile	/^MODULE_NAME = opl_uart_mmap.ko$/;"	m
+OPL_UART_DEVICE	opl_uart_mmap.c	19;"	d	file:
+OPL_UART_MAJOR	opl_uart_mmap.c	18;"	d	file:
+PWD	Makefile	/^PWD := $(shell \/bin\/pwd)$/;"	m
+_OPL_HW_H_	opl_hw_ops.h	2;"	d
+__attribute_used__	opl_uart_mmap.mod.c	/^__attribute_used__$/;"	v	file:
+__this_module	opl_uart_mmap.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+debug	opl_uart_mmap.c	24;"	d	file:
+debug	opl_uart_mmap.c	30;"	d	file:
+ipMuxRegRead	opl_hw_ops.h	/^static inline int ipMuxRegRead(u32 regID, volatile u32 *pval)$/;"	f	signature:(u32 regID, volatile u32 *pval)
+ipMuxRegWrite	opl_hw_ops.h	/^static inline int ipMuxRegWrite(u32 regID, u32 val)$/;"	f	signature:(u32 regID, u32 val)
+module-objs	Makefile	/^module-objs = opl_uart_mmap.o$/;"	m
+obj-m	Makefile	/^obj-m= opl_uart_mmap.o$/;"	m
+opl_uart_exit	opl_uart_mmap.c	/^module_exit(opl_uart_exit);$/;"	v
+opl_uart_exit	opl_uart_mmap.c	/^static void __exit opl_uart_exit(void)$/;"	f	file:	signature:(void)
+opl_uart_fops	opl_uart_mmap.c	/^struct file_operations opl_uart_fops = {$/;"	v	typeref:struct:file_operations
+opl_uart_init	opl_uart_mmap.c	/^module_init(opl_uart_init);$/;"	v
+opl_uart_init	opl_uart_mmap.c	/^static int __init opl_uart_init(void)$/;"	f	file:	signature:(void)
+opl_uart_is_open	opl_uart_mmap.c	/^static u32 opl_uart_is_open = 0;$/;"	v	file:
+opl_uart_mmap	opl_uart_mmap.c	/^static int opl_uart_mmap(struct file * file, struct vm_area_struct * vma)$/;"	f	file:	signature:(struct file * file, struct vm_area_struct * vma)
+opl_uart_mmap	opl_uart_mmap.c	/^static int opl_uart_mmap(struct file * file, struct vm_area_struct * vma);$/;"	p	file:	signature:(struct file * file, struct vm_area_struct * vma)
+opl_uart_open	opl_uart_mmap.c	/^static int opl_uart_open(struct inode *inode, struct file *filp)         $/;"	f	file:	signature:(struct inode *inode, struct file *filp)
+opl_uart_open	opl_uart_mmap.c	/^static int opl_uart_open(struct inode *inode, struct file *filp);$/;"	p	file:	signature:(struct inode *inode, struct file *filp)
+opl_uart_open_count	opl_uart_mmap.c	/^static u32 opl_uart_open_count = 0;$/;"	v	file:
+opl_uart_read	opl_uart_mmap.c	/^static ssize_t opl_uart_read(struct file *filp,char *buffer,size_t length,loff_t *offset)$/;"	f	file:	signature:(struct file *filp,char *buffer,size_t length,loff_t *offset)
+opl_uart_read	opl_uart_mmap.c	/^static ssize_t opl_uart_read(struct file *filp,char *buffer,size_t length,loff_t *offset);$/;"	p	file:	signature:(struct file *filp,char *buffer,size_t length,loff_t *offset)
+opl_uart_release	opl_uart_mmap.c	/^static int opl_uart_release(struct inode *inode, struct file *filp)$/;"	f	file:	signature:(struct inode *inode, struct file *filp)
+opl_uart_release	opl_uart_mmap.c	/^static int opl_uart_release(struct inode *inode, struct file *filp);$/;"	p	file:	signature:(struct inode *inode, struct file *filp)
+opl_uart_write	opl_uart_mmap.c	/^static ssize_t opl_uart_write(struct file *filp, const char *buffer,size_t length, loff_t *offset)$/;"	f	file:	signature:(struct file *filp, const char *buffer,size_t length, loff_t *offset)
+opl_uart_write	opl_uart_mmap.c	/^static ssize_t opl_uart_write(struct file *filp, const char *buffer,size_t length, loff_t *offset);$/;"	p	file:	signature:(struct file *filp, const char *buffer,size_t length, loff_t *offset)
