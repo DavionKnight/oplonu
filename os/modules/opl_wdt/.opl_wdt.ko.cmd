@@ -1,0 +1,1 @@
+cmd_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.ko /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.o /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o

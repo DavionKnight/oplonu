@@ -1,0 +1,1 @@
+cmd_/home/gw/source_code/back-up/oplonu/os/modules/opl_minte/opl_minte.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/gw/source_code/back-up/oplonu/os/modules/opl_minte/opl_minte.ko /home/gw/source_code/back-up/oplonu/os/modules/opl_minte/opl_minte.o /home/gw/source_code/back-up/oplonu/os/modules/opl_minte/opl_minte.mod.o

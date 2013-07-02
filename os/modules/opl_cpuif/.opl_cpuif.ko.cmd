@@ -1,0 +1,1 @@
+cmd_/home/gw/source_code/back-up/oplonu/os/modules/opl_cpuif/opl_cpuif.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/gw/source_code/back-up/oplonu/os/modules/opl_cpuif/opl_cpuif.ko /home/gw/source_code/back-up/oplonu/os/modules/opl_cpuif/opl_cpuif.o /home/gw/source_code/back-up/oplonu/os/modules/opl_cpuif/opl_cpuif.mod.o

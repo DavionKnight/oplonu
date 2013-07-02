@@ -1,0 +1,1 @@
+cmd_/home/gw/source_code/back-up/oplonu/os/modules/opl_reg/opl_reg_mmap.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/gw/source_code/back-up/oplonu/os/modules/opl_reg/opl_reg_mmap.ko /home/gw/source_code/back-up/oplonu/os/modules/opl_reg/opl_reg_mmap.o /home/gw/source_code/back-up/oplonu/os/modules/opl_reg/opl_reg_mmap.mod.o
