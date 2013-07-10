@@ -805,6 +805,7 @@ OPL_STATUS dalArlMacEntryShowAll
 	UINT32 *auiPortlist
 )
 {
+	dalArlFlushAll();
 	UINT32 uiMacEntryId;
 	FDB_MAC_ENTRY_INFO_S stMacEntryInfo;
 	OPL_BOOL bFind;

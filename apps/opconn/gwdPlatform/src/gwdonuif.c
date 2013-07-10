@@ -30,10 +30,15 @@
 #include "fal_portvlan.h"
 #include "fal_fdb.h"
 #include "fal_mib.h"
+#include "run_led.h"
+#include "version.h"
+
+//#define GWDDEBUG
 
 u8_t 	overall_lanmac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 
 static libgwdonu_special_frame_handler_t g_onu_pkt_handler = NULL;
+static libgwdonu_syslog_heandler_t g_syslog_handler = NULL;
 extern int OamFrameSend(u8_t *pucFrame, u16_t usFrmLen);
 
 gw_status gwdonu_onu_llid_get(gw_uint32 *llid)
@@ -64,7 +69,7 @@ gw_status gwdonu_onu_sys_info_get(gw_uint8 * sysmac, gw_uint32 *uniportnum)
 		vosStrToMac(ip_point,sysmac);
 //		strncpy(sysmac,ip_point,6);
 	}
-		#if 1
+#ifdef GWDDEBUG
 	int i=0;
 	printf("local mac is ");
 	for(i=0;i<6;i++)
@@ -192,7 +197,7 @@ extern gw_macaddr_t olt_mac_addr;
 gw_status gwdonu_olt_mac_get(gw_uint8 * mac)
 {
 	memcpy(mac,olt_mac_addr,GW_MACADDR_LEN);
-#if 1
+#ifdef GWDDEBUG
 	int i=0;
 	printf("oltmac is ");
 	for(i=0;i<6;i++)
@@ -212,7 +217,7 @@ gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
 	u8_t	aucPkt[1518]={0};
 	host_outbound_hdr_t	*pstHdr;
 
-#if 1
+#ifdef GWDDEBUG
 	if((len>45)&&(*(buf+18+14+8)==0x03))
 	{
 	printf("********** payload length: %d ***********", len);
@@ -256,8 +261,9 @@ gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
 			vosMemCpy(&aucPkt[1], buf, len);
 
 			iStatus = eopl_host_send(aucPkt, len+1);
-
+#ifdef GWDDEBUG
 			printf("gwdonu_port_send portid is %d,and status is %d..\r\n",portid,iStatus);
+#endif
 			//		if(0 != iStatus)
 	//		{
         /*OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "send error!\n");*/
@@ -423,7 +429,9 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 
 gw_status gwdonu_port_isolate_get(gw_int32 portid, gw_int32 *en)
 {
+#ifdef GWDDEBUG
 	printf("in gwdonu_port_isolate_get fuction ,this function is not defined .......\r\n");
+#endif
 	return 0;
 }
 
@@ -573,7 +581,9 @@ gw_status gwdonu_vlan_entry_getnext(gw_uint32 index, gw_uint16 *vlanid, gw_uint3
 					}
 				}
 			}
+#ifdef GWDDEBUG
 			printf("\nvlanid is 0x%x, tag_portlist is 0x%x ,untag_portlist is 0x%x...\r\n\n",*vlanid,*tag_portlist,*untag_portlist);
+#endif
 		}
 		else
 			return GW_ERROR;
@@ -657,7 +667,9 @@ gw_status gwdonu_vlan_entry_get(gw_uint32 vlanid, gw_uint32 *tag_portlist, gw_ui
 				}
 			}
 		}
+#ifdef GWDDEBUG
 		printf("\nGwdonu_vlan_entry_get vlanid is 0x%x, tag_portlist is 0x%x ,untag_portlist is 0x%x...\r\n\n",vlanid,*tag_portlist,*untag_portlist);
+#endif
 	}
 	else
 		return GW_ERROR;
@@ -669,7 +681,9 @@ gw_status gwdonu_fdb_entry_get(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *eg_
 {
 	fal_fdb_entry_t entry;
 	a_uint32_t  iterator = 0;
-	int rv;
+	unsigned int tag_ports , untag_ports;
+	unsigned int rv,i=0,uiPortVect=0;
+
 
 	if(NULL == macaddr)
 	{
@@ -680,25 +694,53 @@ gw_status gwdonu_fdb_entry_get(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *eg_
 		rv = shiva_fdb_iterate(0, &iterator, &entry);
 		if (GW_OK != rv)
 		{
-			break;
+			return GW_ERROR;
 		}
+#ifdef GWDDEBUG
 		printf("gwdonu_fdb_entry_get rv is %d, entry.vid is %d,vid is %d,eg_portlist is %d\r\n",rv,entry.vid,vid,*eg_portlist);
 		printf("gwdonu_fdb_entry_get entry.fid_en is %d\r\n",entry.fid_en);
 		printf("gwdonu_fdb_entry_get entry.portmap_en is %d\r\n",entry.portmap_en);
 		printf("gwdonu_fdb_entry_get entry.port.id is %d\r\n",entry.port.id);
-
+#endif
 		if(!memcmp(entry.addr.uc,macaddr,6))
 		{
-			*eg_portlist = (entry.port.id>>1)&0x0f;
-//			strncpy(macaddr,entry.addr.uc,6);
-#if 1
+			gwdonu_vlan_entry_get(vid,&tag_ports,&untag_ports);
+			*eg_portlist = ((int)dalArlPortmapReverse(entry.port.map)>>1)&0x0f;
+			if(0 == *eg_portlist)
+				continue;
+			else
+			{
+				for(i=0;i<4;i++)
+				{
+					uiPortVect = 0x1 << i;
+					if (*eg_portlist & uiPortVect)
+					{
+						if((0 == (tag_ports & uiPortVect)) &&
+						   (0 == (untag_ports & uiPortVect)) )
+						{
+#ifdef GWDDEBUG
+							printf("FDB ENTRY Mac found in wrong vlan %d\r\n",vid);
+#endif
+						}
+						else
+						{
+#ifdef GWDDEBUG
+							printf("FDB ENTRY Mac found in Right vlan %d\r\n",vid);
+#endif
+							return GW_OK;
+						}
+					}
+				}
+				continue;
+			}
+		}
+				//			strncpy(macaddr,entry.addr.uc,6);
+#ifdef GWDDEBUG
 			char macStr[32];
 			vosMacToStr(entry.addr.uc, macStr);
-			printf("eg_portlist is %d...\r\n",*eg_portlist);
+			printf("port id  is 0x%x...\r\n",(int)dalArlPortmapReverse(entry.port.map));
 			printf("Mac is %s..\r\n\n",macStr);
 #endif
-			return GW_OK;
-		}
 	}
 		return GW_ERROR;
 }
@@ -733,7 +775,7 @@ gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 
 			}
 			if(vid == entry.vid)
 			{
-	#if 1
+	#ifdef GWDDEBUG
 				char macStr[32];
 				vosMacToStr(entry.addr.uc, macStr);
 				printf("\n gwdonu_fdb_entry_getnext  vid is %d...\r\n",entry.vid);
@@ -760,7 +802,9 @@ gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 
 
 gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * mac)
 {
+#ifdef GWDDEBUG
 	printf("in gwdonu_fdb_mgt_mac_set fuction ,this function is not defined .......\r\n");
+#endif
 	return 0;
 }
 
@@ -774,7 +818,9 @@ gw_status gwdonu_atu_learn_get(gw_int32 portid, gw_int32 *en)
 		*en = *enable;
 		return GW_OK;
 	}
+#ifdef GWDDEBUG
 	printf("gwdonu_atu_learn_get error the enable is %d\r\n",enable);
+#endif
 	return GW_ERROR;
 
 }
@@ -931,7 +977,7 @@ gw_status gwdonu_laser_get(gw_EponTxLaserStatus * state)
 		*state = GwEponTxLaserDisable;
 	else
 	{
-		printf("The pon state is %d\r\n",data);
+		printf("gwdonu_laser_get error..The pon state is %d\r\n",data);
 		return GW_ERROR;
 	}
 	return GW_OK;
@@ -1074,13 +1120,28 @@ gw_status gwdonu_onu_localtime_get(localtime_tm *gw_tm)
 
 gw_status gwdonu_onu_static_mac_add(gw_int8* gw_mac,gw_uint32 gw_port,gw_uint32 gw_vlan)
 {
+	int ret = 0 ;
+#if 0
+	fal_fdb_entry_t entry;
+
+	memset(&entry,0,sizeof(fal_fdb_entry_t));
+	memcpy(entry.addr.uc,gw_mac,6);
+	entry.dacmd
+	entry.port.id = gw_port<<1;
+	entry.vid = gw_vlan;
+#else
+	ret = dalArlMacAdd(gw_port,gw_mac,gw_vlan);
+#endif
+return ret;
 
 }
 
 
 gw_status gwdonu_onu_static_mac_del(gw_int8* gw_mac,gw_uint32 gw_vlan)
 {
-
+	int ret=0;
+	ret = dalArlMacDel(0,gw_mac,gw_vlan);
+	return ret;
 }
 
 
@@ -1102,24 +1163,31 @@ gw_status gwdonu_onu_reset(gw_int32 a)
 }
 #endif
 
-/**** This onu do not have  loopalm led ****/
+/**** This onu does not have  loopalm led ****/
 void gwdonu_onu_set_loopalm_startled()
 {
+	loopdetect_en = 1;
+	printf("Loop Alarm On..\r\n");
 }
 
 void gwdonu_onu_set_loopalm_stopled()
 {
+	loopdetect_en = 0;
+	printf("Loop Alarm Off..\r\n");
 }
 
 gw_status gwdonu_ver_get(char * sw_ver, const int sw_ver_len)
 {
-
+	memset(sw_ver,0,sw_ver_len);
+	sprintf(sw_ver,"V%dR%02dB%03d",MAJOR_VERSION,MINOR_VERSION,BUILD_NUMBER);
+	return GW_OK;
 }
 
 
 gw_status gwdonu_syslog_register_heandler(libgwdonu_syslog_heandler_t handler)
 {
-
+	g_syslog_handler = handler;
+	return GW_OK;
 }
 
 

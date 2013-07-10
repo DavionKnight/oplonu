@@ -1033,7 +1033,7 @@ dalArlPortmap2Str(UINT32 portMap)
 
 	vosMemSet(tmpStr,0, 10);
 /***  Modified by zhangjj 2013-6-27 ****/
-#if 0
+#if 1
 	for(i = 0; i < 7; i++)
 	{
 		if (1 & (portMap >> i))
@@ -1066,8 +1066,11 @@ dalArlPortmap2Str(UINT32 portMap)
 			case 0x20:
 				vosMemCpy(tmpStr,"GE",3);
 				break;
+			case 0x40:
+				vosMemCpy(tmpStr,"WAN",4);
 			default:
-				printf("dalArlPortmap2Str Translate ---1-- to port ERROR..portMap is 0x%x\r\n",portMap);
+				printf("portMap is 0x%x\r\n",portMap);
+				break;
 	}
 #endif
 

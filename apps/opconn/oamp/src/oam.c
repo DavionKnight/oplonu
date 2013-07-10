@@ -694,7 +694,7 @@ void eopl_oam_pdu_process(u16_t framelen)
 int uiIdx=0;
 char *pucFrmTmp=in_data+4;
 //printf("pucFrmTmp+18+4 is 0x%x,pucFrmTmp+21 is 0x%x\r\n",*(pucFrmTmp+18+4),*(pucFrmTmp+21));
-#if 0
+#if 1
 
 if((*(pucFrmTmp+18+4+8)==0xc7)&&(*(pucFrmTmp+18+4+10)==0x21))
 {

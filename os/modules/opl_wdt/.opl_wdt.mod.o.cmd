@@ -1,7 +1,7 @@
-cmd_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o := mips-linux-uclibc-gcc -Wp,-MD,/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/.opl_wdt.mod.o.d  -nostdinc -isystem /opt/openwrt/bin/../lib/gcc/mips-linux-uclibc/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding  -march=mips32 -Wa,-mips32 -Wa,--trap -Iinclude/asm-mips/mach-onu -Iinclude/asm-mips/mach-generic -fomit-frame-pointer  -fno-stack-protector -funit-at-a-time -Wdeclaration-after-statement -Wno-pointer-sign    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(opl_wdt.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(opl_wdt)" -DMODULE -mlong-calls -c -o /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.c
+cmd_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o := mips-linux-uclibc-gcc -Wp,-MD,/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/.opl_wdt.mod.o.d  -nostdinc -isystem /opt/openwrt/bin/../lib/gcc/mips-linux-uclibc/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding  -march=mips32 -Wa,-mips32 -Wa,--trap -Iinclude/asm-mips/mach-onu -Iinclude/asm-mips/mach-generic -fomit-frame-pointer  -fno-stack-protector -funit-at-a-time -Wdeclaration-after-statement -Wno-pointer-sign    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(opl_wdt.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(opl_wdt)" -DMODULE -mlong-calls -c -o /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.c
 
-deps_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o := \
-  /home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.c \
+deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o := \
+  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.c \
     $(wildcard include/config/module/unload.h) \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
@@ -266,6 +266,6 @@ deps_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o := \
   include/linux/vermagic.h \
   include/linux/utsrelease.h \
 
-/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o: $(deps_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o)
+/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o: $(deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o)
 
-$(deps_/home/gw/source_code/back-up/oplonu/os/modules/opl_wdt/opl_wdt.mod.o):
+$(deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_wdt/opl_wdt.mod.o):

@@ -9,7 +9,7 @@ void powerStatus_check();
 int cpldRead(int offset,unsigned char *setData);
 int cpldWrite(int offset,unsigned char setData);
 int SetAlarmEnable(int enable);
-
+extern int loopdetect_en;
 
 
 #define CS1_CPLD_VERSION 0x00

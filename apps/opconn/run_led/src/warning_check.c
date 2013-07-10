@@ -3,6 +3,7 @@
 #include "warning_check.h"
 #include "run_led.h"
 
+int loopdetect_en=0;
 void warning_check()
 {
 	char led_status,light_warning,rack_warning,voice_port_warning;
@@ -15,7 +16,7 @@ void warning_check()
 	if(0x01 == ((0x0 == (light_warning & 0x01)) && (0x0 == ((light_warning & 0x02)>>1)) || (voice_port_warning & 0x01)| 
 			((voice_port_warning & 0x02)>>1)	|| (rack_warning & 0x01)))
 #else
-	if(((0x0 == (light_warning & 0x01)) && (0x0 == (light_warning & 0x02))) || (rack_warning & 0x01))
+	if(((0x0 == (light_warning & 0x01)) && (0x0 == (light_warning & 0x02))) || (rack_warning & 0x01)||(loopdetect_en))
 #endif
 	{
 		led_status = (led_status & 0xfd);	//warning_led  on
