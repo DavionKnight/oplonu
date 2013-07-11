@@ -46,6 +46,9 @@
 
 #include "8250.h"
 
+#include <linux/timer.h>
+
+
 /*
  * Configuration:
  *   share_irqs - whether we pass IRQF_SHARED to request_irq().  This option
@@ -3135,6 +3138,49 @@ void serial8250_unregister_by_port(struct uart_port *port)
 	if (uart)
 		serial8250_unregister_port(uart->port.line);
 }
+
+static struct timer_list my_timer ;
+void timer_handler( unsigned long data )        // 形参中要加入unsigned long data，否则会出现警告1
+{
+	unsigned char v;
+	printk("Timer stop serial buzzing.\n");
+
+	exar_port_serial_unlock();
+	v = readb(EXAR_PORT_BASE+3);
+	v&=(~(1<<6));
+	writeb(v, EXAR_PORT_RST_REG);
+	exar_port_serial_lock();
+/*
+	my_timer.data = 0 ;
+	my_timer.expires = jiffies + 100;
+	my_timer.function = timer_handler ;
+	add_timer( &my_timer );                   // 继续将任务添加到定时器队列
+*/
+	return;
+}
+
+
+void timer1(void)                    // 如果函数参数中不加void，则出现警告：函数声明不是一个原型
+{
+
+//	writeb(0x0,EXAR_PORT_BASE+3);
+
+    init_timer( &my_timer );
+
+    my_timer.data = 0 ;
+    my_timer.expires = jiffies + 100 ;
+    my_timer.function = timer_handler ;        // 警告1： 从不兼容的指针类型赋值
+
+    add_timer( &my_timer );
+
+    return  ;
+
+}
+
+
+
+
+
 EXPORT_SYMBOL(serial8250_unregister_by_port);
 
 static int __init serial8250_init(void)
@@ -3221,6 +3267,8 @@ static int __init serial8250_init(void)
 
 #ifdef GT873A
 	{
+		timer1();		//Add Timer for serial init buzzing
+
 		unsigned char v =0;
 		writel(0x80000000, (OPL_BASE+OPL_CS2_CFG));
 		printk("set cs2 bus 8bit size\r\n");
@@ -3231,6 +3279,7 @@ static int __init serial8250_init(void)
 		v = readb(EXAR_PORT_BASE+4);
 		printk("The Uart Type is 0x%02x\r\n", v);
 		v = v  &(~EXAR_PORT_RST);
+		v |= (1<<6);   //buzzing
 		writeb(v, EXAR_PORT_RST_REG);
 
 		printk("disable uart card rst(0x%02x)\r\n", v);

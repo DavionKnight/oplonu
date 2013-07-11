@@ -271,7 +271,7 @@ gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
     }
 	else
 	{
-		printf("gwdonu_port_send other GW_UNI_PORT_ID...\r\n");
+//		printf("gwdonu_port_send other GW_UNI_PORT_ID...\r\n");
 	}
 	return GW_OK;
 
