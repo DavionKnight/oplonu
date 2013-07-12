@@ -83,85 +83,147 @@ gw_status gwdonu_onu_sys_info_get(gw_uint8 * sysmac, gw_uint32 *uniportnum)
 
 gw_uint32 gwdonu_sys_conf_save(gw_uint8 * info, gw_uint32 len)
 {
-	FILE *p;
-	if((p = fopen("/cfg/gwdonusysconf","wb"))!=NULL)
+
+	ONU_SYS_INFO_TOTAL *buff = (ONU_SYS_INFO_TOTAL*)info;
+	char section[20];
+	char date_value[15];
+	int ret=0;
+
+	strcpy(section,PRODCUT_INFO_SECTION);
+
+#if 0
+	printf("hw_manufature_date is %s\r\n",buff->hw_manufature_date);
+	printf("serial number is %s\r\n",buff->serial_no);
+	printf("device_name is %s\r\n",buff->device_name);
+	printf("Hardware version is %s\r\n",buff->hw_version);
+#endif
+
+	vosSprintf(date_value, "%s",buff->hw_manufature_date);
+
+	/******** Save manufature date *******/
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Manufature date",date_value)) != 0)
 	{
-		fwrite(info,1,len,p);
+			printf("save error\n");
+		    return ERROR;
+	}
+
+	/******** Save serial num ************/
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Serial number",buff->serial_no)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	/******** Save devicename *************/
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"DeviceName",buff->device_name)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	/******** Save Hardware version ********/
+	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"Hardware version",buff->hw_version)) != 0)
+	{
+			printf("save error\n");
+		    return ERROR;
+	}
+	/*********** Save PON MAC **************/
+
+
+    cliTextConfigSave();
+    vosConfigSave(NULL);
+    return GW_OK;
+#if 0
+
+	FILE *p;
+	if((p = fopen("/cfg/gwdonusys.conf","wb"))!=NULL)
+	{
+#if 1
+		unsigned char i=0;
+		printf("gwdonu sys conf save :");
+		for(i=0;i<len;i++)
+			printf("%c",info[i]);
+		printf("\r\n");
+#endif
+		fwrite(info,len,1,p);
+		fclose(p);
+		printf("before cat\r\n");
+		system("cat /cfg/gwdonusys.conf");
 		vosConfigSave(NULL);
 		return GW_OK;
 	}
 	else
 		printf("gwdonu_sys_conf_save error!\r\n");
 	return GW_ERROR;
+#endif
 }
 
 
 gw_uint32 gwdonu_sys_conf_restore(gw_uint8 *info, gw_uint32 len)
 {
-#if 1
+#if 0
 FILE *p;
-if((p = fopen("/cfg/gwdonusysconf","rb"))!= NULL)
+if((p = fopen("/cfg/gwdonusys.conf","rb"))!= NULL)
 {
-	fread(info,1,len,p);
+	fread(info,len,1,p);
+	fclose(p);
 	return GW_OK;
 }
 else
 	printf("There is no gwdonusysconf file\r\n");
 return GW_OK;
 #else
-//	printf("in sysconfrestore fuction ,this function is not defined .......\r\n");
-
-	char *serial_num = NULL;
-	char *hw_version = NULL;
-	char *hw_manufature_date = NULL;
-	char *pointer = info;
+ONU_SYS_INFO_TOTAL *buff=(ONU_SYS_INFO_TOTAL *)info;
+memset(buff,0,sizeof(ONU_SYS_INFO_TOTAL));
+	char deviceName[132]={0};
+	char serial_num[18] = {0};
+	char hw_version[7] = {0};
+	char hw_manufature_date[12] = {0};
 	char section[20] ={0};
-	int ret = -1;
+	int ret = GW_ERROR;
 
-	pointer +=4;
-
-	/*** device name ***/
-	vosStrCpy(pointer,"GT873_A");
-
-	/*** serial number ***/
 	vosStrCpy(section,"Product Information");
-	if((serial_num = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Serial number",NULL)) == NULL)
+	/*** device name ***/
+	if(!strcmp(strcpy(deviceName,vosConfigValueGet(PRODUCT_CFG_FILE,section,"DeviceName","00")),"00"))
+	{
+		printf("Get DeviceName error..\r\n");
+//		return ret;
+	}
+	else
+	{
+		vosStrCpy(buff->device_name,deviceName);
+	}
+	/*** serial number ***/
+	if(!strcmp(strcpy(serial_num,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Serial number","000000")),"000000"))
 	{
 		printf("Get Serial number error..\r\n");
-		return ret;
+//		return ret;
 	}
 	else
 	{
-		pointer +=76;
-		vosStrCpy(pointer,serial_num);
+		vosStrCpy(buff->serial_no,serial_num);
 	}
-
 	/*** hardware version ***/
-	if((hw_version = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Hardware version",NULL)) == NULL)
+	if(!strcmp(strcpy(hw_version,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Hardware version","V1.0R0")),"V1.0R0"))
 	{
 		printf("Get Hardware version error ...\r\n");
-		return ret;
+//		return ret;
 	}
 	else
 	{
-		pointer +=18;
-		vosStrCpy(pointer,hw_version);
+		vosStrCpy(buff->hw_version,hw_version);
 	}
-
 	/*** Manufacture date ***/
-	if((hw_manufature_date = vosConfigValueGet(PRODUCT_CFG_FILE,section,"Manufature date",NULL)) == NULL)
+	if(!strcmp(strcpy(hw_manufature_date,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Manufature date","1970")),"1970"))
 	{
 		printf("Get Manufature data error ...\r\n");
-		return ret;
+//		return ret;
 	}
 	else
 	{
-		pointer += 6;
-		printf("manufacture date is %s...\r\n",hw_manufature_date);
-		vosStrCpy(pointer,hw_manufature_date);
+		vosStrCpy(buff->hw_manufature_date,hw_manufature_date);
 	}
+	buff->valid_flag = 'E';
 #endif
-	return 0;
+	return GW_OK;
 }
 
 
@@ -170,8 +232,9 @@ gw_uint32 gwdonu_sw_conf_save(gw_uint8 * info, gw_uint32 len)
 	FILE *p;
 	if((p = fopen("/cfg/gwdonuswconf","wb"))!=NULL)
 	{
-		fwrite(info,1,len,p);
-		vosConfigSave(NULL);
+		fwrite(info,len,1,p);
+		fclose(p);
+//		vosConfigSave(NULL);
 		return GW_OK;
 	}
 	else
@@ -185,7 +248,7 @@ gw_uint32 gwdonu_sw_conf_restore(gw_uint8 *info, gw_uint32 len)
 	FILE *p;
 	if((p = fopen("/cfg/gwdonuswconf","rb"))!= NULL)
 	{
-		fread(info,1,len,p);
+		fread(info,len,1,p);
 		return GW_OK;
 	}
 	else
@@ -1024,7 +1087,6 @@ gw_status gwdonu_port_loop_event_post(gw_uint32 status)
 		port_end = port_num;
 	}
 	state = status;
-printf("gwdonu_port_loop_event_post\r\n");
 #if 1  /* modified by Gan Zhiheng - 2009/12/18 */
 	for(i = port_start; i <= port_end; i++)
 	{

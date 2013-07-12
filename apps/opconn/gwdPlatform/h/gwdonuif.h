@@ -250,4 +250,48 @@ typedef struct gwdonu_im_if_s{
 
 gw_status reg_gwdonu_im_interfaces(gwdonu_im_if_t * ifs, gw_int32 size);
 
+//add from gwdonu/oam.h
+typedef struct onu_system_information_total
+{
+	unsigned short 	product_serial;					/* 2 */
+	unsigned short	product_type;					/* 2 */
+	unsigned char	device_name[132];				/* 64 */
+	unsigned char	sw_version[12];					/* 12 */
+	unsigned char	serial_no[18];					/* 18 */
+	unsigned char	hw_version[7];					/* 6 */
+	unsigned char	hw_manufature_date[12];			/* 12 */
+														/* 68 */
+	struct	_pon_transceiver_info_
+	{
+		unsigned char 	available	: 1;
+		unsigned char	reach 		: 1;
+		unsigned char	package 	: 1;
+		unsigned char	protectEn 	: 1;
+		unsigned char	manufacturer 	: 4;
+	}pon_transceiver_info;							/* 1 */
+
+	unsigned char	TDM_module_info;				/* 1 */
+	unsigned char 	VoIP_module_info;				/* 1 */
+	unsigned char	reserved_1;						/* 1 */
+														/* 72 */
+	unsigned char	mac_addr_primary[6];			/* 6 */
+	unsigned char  	mac_addr_second[6];				/* 6 */
+														/* 84 */
+	unsigned long	ip_addr;						/* 4 */
+	unsigned long  	net_mask;						/* 4 */
+														/* 92 */
+	unsigned long	vos_image_size;					/* 4 */
+														/* 96 */
+	unsigned char	loadstartupconfig;				/* 1 */
+	unsigned char	hardwarediagnosis;				/* 1 */
+//	unsigned char	reserved_2[2];					/* 2 */ hw-ver added 2 chars by wangxy 2012-04-28
+														/* 100 */
+//	unsigned long	reserved_3[47];					/* 256 */  device_name increased to 132 bytes by wangxy 013-05-06
+														/* 356 */
+	unsigned char 	reserved_4[2];					/* 2 */
+	unsigned char 	reboot;							/* 1 */
+	unsigned char	valid_flag;						/* 1 */ /* Total: 360 */
+}ONU_SYS_INFO_TOTAL;
+
+
 #endif /* GWDONUIF_H_ */
