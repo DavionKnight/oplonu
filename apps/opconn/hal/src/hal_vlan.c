@@ -252,7 +252,6 @@ void halVlanLocalSwitchSet(void *p1)
 
     vlan = (HAL_VLAN_LOCAL_SWITCH_DEL_PAR_t *)p1;
     ret = dalSetLocalSwitch(vlan->port,vlan->enable);
-    
  exit:
     vlan->ret = ret;
     return ;

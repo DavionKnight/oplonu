@@ -149,7 +149,6 @@ OPL_RESULT halAppApiCallSync(OPL_API_DATA_t *pstData)
         DEVICE_DRV_UNLOCK;
         return ERROR;
     }
-
 	if (1 != pstData->apiId) {
 		OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "call api %d, addr %p.\n", pstData->apiId, pFunc);
 	}

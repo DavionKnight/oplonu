@@ -73,7 +73,6 @@ OPL_STATUS odmSetLocalSwitch
     stData.param = (void *)&stvlan;
     ret = halAppApiCallSync(&stData);
     ret += stvlan.ret;
-
     if(ret == OPL_OK)
     {
         /*port local switch flag bit map*/

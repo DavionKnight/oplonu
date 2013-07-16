@@ -504,7 +504,21 @@ gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
 {
 //	printf("in gwdonu_port_isolate_set fuction ,this function is not defined .......\r\n");
   int ret = 0;
-	ret = odmSetLocalSwitch(portid,en);
+  int i = 0;
+
+  if((portid>0)&&(portid<5))
+	  ret = odmSetLocalSwitch(portid,en);
+  else if(0xff == portid)
+	  {
+		  for(i=1;i<5;i++)
+			  {
+				  ret = odmSetLocalSwitch(i,en);
+				  if(GW_OK != ret)
+					  return ret;
+			  }
+	  }
+  else
+	  return GW_ERROR;
 	return ret;
 }
 
@@ -513,7 +527,7 @@ gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
 extern OPL_CNT_t g_astCntSwhPort[SWITCH_PORT_NUM][CNT_SW_AR8306];
 gw_uint64 struct2uint64(char ucPortId,char ucCnt)
 {
-	gw_uint64 value;
+	gw_uint64 value=0;
 
 	value = g_astCntSwhPort[ucPortId][ucCnt].stAdded.uiHigh;
 	value<<=32;
@@ -1175,7 +1189,7 @@ gw_status gwdonu_port_loop_event_post(gw_uint32 status)
 		port_end = port_num;
 	}
 	state = status;
-#if 1  /* modified by Gan Zhiheng - 2009/12/18 */
+#if 1
 	for(i = port_start; i <= port_end; i++)
 	{
 		if ((1 == state ) || ( 2 == state))
