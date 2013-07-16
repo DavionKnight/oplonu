@@ -32,6 +32,7 @@
 #include "fal_mib.h"
 #include "run_led.h"
 #include "version.h"
+#include "stats.h"
 
 //#define GWDDEBUG
 
@@ -184,7 +185,7 @@ memset(buff,0,sizeof(ONU_SYS_INFO_TOTAL));
 	/*** device name ***/
 	if(!strcmp(strcpy(deviceName,vosConfigValueGet(PRODUCT_CFG_FILE,section,"DeviceName","00")),"00"))
 	{
-		printf("Get DeviceName error..\r\n");
+		printf("DeviceName may be not existing..\r\n");
 //		return ret;
 	}
 	else
@@ -194,7 +195,7 @@ memset(buff,0,sizeof(ONU_SYS_INFO_TOTAL));
 	/*** serial number ***/
 	if(!strcmp(strcpy(serial_num,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Serial number","000000")),"000000"))
 	{
-		printf("Get Serial number error..\r\n");
+		printf("Serial number may be not existing..\r\n");
 //		return ret;
 	}
 	else
@@ -204,7 +205,7 @@ memset(buff,0,sizeof(ONU_SYS_INFO_TOTAL));
 	/*** hardware version ***/
 	if(!strcmp(strcpy(hw_version,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Hardware version","V1.0R0")),"V1.0R0"))
 	{
-		printf("Get Hardware version error ...\r\n");
+		printf("Hardware may be not existing ...\r\n");
 //		return ret;
 	}
 	else
@@ -214,7 +215,7 @@ memset(buff,0,sizeof(ONU_SYS_INFO_TOTAL));
 	/*** Manufacture date ***/
 	if(!strcmp(strcpy(hw_manufature_date,vosConfigValueGet(PRODUCT_CFG_FILE,section,"Manufature date","1970")),"1970"))
 	{
-		printf("Get Manufature data error ...\r\n");
+		printf("Manufature may be not existing ...\r\n");
 //		return ret;
 	}
 	else
@@ -508,9 +509,22 @@ gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
 }
 
 
-gw_status gwdonu_port_statistic_get(gw_int32 portid, gw_int8 * data, gw_int32 * len)
+#define CNT_SW_AR8306	39
+extern OPL_CNT_t g_astCntSwhPort[SWITCH_PORT_NUM][CNT_SW_AR8306];
+gw_uint64 struct2uint64(char ucPortId,char ucCnt)
 {
-//	printf("in gwdonu_port_statistic_get fuction ,this function is not defined .......\r\n");
+	gw_uint64 value;
+
+	value = g_astCntSwhPort[ucPortId][ucCnt].stAdded.uiHigh;
+	value<<=32;
+	value += g_astCntSwhPort[ucPortId][ucCnt].stAdded.uiLow;
+
+	return value;
+}
+
+gw_status gwdonu_port_statistic_get(gw_int32 ucPortId, gw_int8 * data, gw_int32 * len)
+{
+#if 0
 	fal_mib_info_t mib_info;
 	gw_onu_port_counter_t * pd = (gw_onu_port_counter_t*) data;
 
@@ -566,6 +580,67 @@ gw_status gwdonu_port_statistic_get(gw_int32 portid, gw_int8 * data, gw_int32 * 
 	pd->counter.TxPause = mib_info.TxPause;
 	pd->counter.TxOctetsOk = 0;
 	pd->counter.TxError = 0;
+#else
+	/************* This is four FE ONU **************/
+	if((ucPortId>4)||(ucPortId<1))
+		return GW_ERROR;
+	ucPortId--;
+	stats_getArx8306(ucPortId);
+	gw_onu_port_counter_t * pd = (gw_onu_port_counter_t*) data;
+
+	pd->rxrate = 0;
+	pd->txrate = 0;
+	pd->counter.RxFramesOk = struct2uint64(ucPortId,15);			//RxGoodByte
+	pd->counter.RxUnicasts = 0;
+	pd->counter.RxMulticasts = struct2uint64(ucPortId,2);			//RxMulti
+	pd->counter.RxBroadcasts = struct2uint64(ucPortId,0);			//RxBroad
+	pd->counter.Rx64Octets = 0;
+	pd->counter.Rx127Octets = 0;
+	pd->counter.Rx255Octets = 0;
+	pd->counter.Rx511Octets = 0;
+	pd->counter.Rx1023Octets = 0;
+	pd->counter.RxMaxOctets = struct2uint64(ucPortId,13);			//RxMaxByte
+	pd->counter.RxJumboOctets = 0;
+	pd->counter.RxUndersize = struct2uint64(ucPortId,5);			//RxRunt
+	pd->counter.RxOversize = struct2uint64(ucPortId,14);			//RxTooLong
+	pd->counter.RxFragments = struct2uint64(ucPortId,6);
+	pd->counter.RxJabber = 0;
+	pd->counter.RxFCSErrors = struct2uint64(ucPortId,3);			//RxFcsErr
+	pd->counter.RxDiscards = struct2uint64(ucPortId,18);			//Filtered
+	pd->counter.RxAlignErrors = struct2uint64(ucPortId,4);
+	pd->counter.RxIntMACErrors = 0;
+	pd->counter.RxPppoes = 0;
+	pd->counter.RxQueueFull = 0;
+	pd->counter.RxPause = struct2uint64(ucPortId,1);
+	pd->counter.RxOctetsOkMsb = 0;
+	pd->counter.RxOctetsOKLsb = 0;
+	pd->counter.RxError = struct2uint64(ucPortId,16);			//RxBadByte
+	pd->counter.TxFramesOk = struct2uint64(ucPortId,31);			//TxByte
+	pd->counter.TxUnicasts = 0;
+	pd->counter.TxMulticasts = struct2uint64(ucPortId,21);			//TxMulti
+	pd->counter.TxBroadcasts = struct2uint64(ucPortId,19);			//TxBroad
+	pd->counter.Tx64Octets = 0;
+	pd->counter.Tx127Octets = 0;
+	pd->counter.Tx255Octets = 0;
+	pd->counter.Tx511Octets = 0;
+	pd->counter.Tx1023Octets = 0;
+	pd->counter.TxMaxOctets = struct2uint64(ucPortId,29);			//TxMaxByte
+	pd->counter.TxJumboOctets = 0;
+	pd->counter.TxDeferred = struct2uint64(ucPortId,36);			//TxExcDefer
+	pd->counter.TxTooLongFrames = struct2uint64(ucPortId,30);			//TxOverSize
+	pd->counter.TxCarrierErrFrames = 0;
+	pd->counter.TxSqeErrFrames = 0;
+	pd->counter.TxSingleCollisions = struct2uint64(ucPortId,35);			//TxSingleCol
+	pd->counter.TxMultipleCollisions = struct2uint64(ucPortId,34);			//TxMultiCol
+	pd->counter.TxExcessiveCollisions = 0;
+	pd->counter.TxLateCollisions = struct2uint64(ucPortId,38);			//TXLateCol
+	pd->counter.TxMacErrFrames = 0;
+	pd->counter.TxQueueFull = 0;
+	pd->counter.TxPause = struct2uint64(ucPortId,20);			//TxPause
+	pd->counter.TxOctetsOk = 0;
+	pd->counter.TxError = 0;
+
+#endif
 	return GW_OK;
 }
 
@@ -782,13 +857,13 @@ gw_status gwdonu_fdb_entry_get(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *eg_
 						   (0 == (untag_ports & uiPortVect)) )
 						{
 #ifdef GWDDEBUG
-							printf("FDB ENTRY Mac found in wrong vlan %d\r\n",vid);
+							printf("FDB ENTRY MAC found in wrong vlan %d\r\n",vid);
 #endif
 						}
 						else
 						{
 #ifdef GWDDEBUG
-							printf("FDB ENTRY Mac found in Right vlan %d\r\n",vid);
+							printf("FDB ENTRY MAC found in Right vlan %d\r\n",vid);
 #endif
 							return GW_OK;
 						}
@@ -808,58 +883,71 @@ gw_status gwdonu_fdb_entry_get(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *eg_
 		return GW_ERROR;
 }
 
-
-gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *nextvid, gw_uint8 *nextmac, gw_uint32 * eg_portlist,gw_uint32*statics)
+int portmaptrans(int portmap)
+{
+	int result=-1;
+	switch(portmap)
+	{
+	case 0x01:
+		result = 0;
+		break;
+	case 0x02:
+		result = 1;
+		break;
+	case 0x04:
+		result = 2;
+		break;
+	case 0x08:
+		result = 3;
+		break;
+	case 0x10:
+		result = 4;
+		break;
+	case 0x20:
+		result = 5;
+		break;
+	case 0x40:
+		result = 6;
+		break;
+	default:
+		printf("portmap error...\r\n");
+	}
+	return result;
+}
+gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *nextvid, gw_uint8 *nextmac, gw_uint32 * eg_portlist,gw_uint32* statics)
 {
 	fal_fdb_entry_t entry;
-	a_uint32_t  iterator = 0;
+	static a_uint32_t  iterator = 0;
 	int rv;
+	int ret;
+
 	if(0 == vid)
+		iterator = 0;
+
+	rv = shiva_fdb_iterate(0, &iterator, &entry);
+	if (GW_OK != rv)
 	{
-		rv = shiva_fdb_first(0,&entry);
-		if (GW_OK != rv)
-		{
-			return GW_ERROR;
-		}
-		*nextvid = entry.vid;
-		strncpy(macaddr,entry.addr.uc,6);
-		strncpy(nextmac,entry.addr.uc,6);
-		*eg_portlist = entry.port.map;
-		*statics = entry.static_en;
-	}
-	else
-	{
-		while(1)
-		{
-			rv = shiva_fdb_iterate(0, &iterator, &entry);
-			if (GW_OK != rv)
-			{
-				return GW_ERROR;
-			}
-			if(vid == entry.vid)
-			{
-	#ifdef GWDDEBUG
-				char macStr[32];
-				vosMacToStr(entry.addr.uc, macStr);
-				printf("\n gwdonu_fdb_entry_getnext  vid is %d...\r\n",entry.vid);
-				printf("portmap is %d...\r\n",entry.port.map);
-				printf(" gwdonu_fdb_entry_getnext  Mac is %s..\r\n\n",macStr);
-	#endif
-				rv = shiva_fdb_iterate(0, &iterator, &entry);
-				if (GW_OK != rv)
-				{
-					break;
-				}
-				*nextvid = entry.vid;
-				memcpy(macaddr,entry.addr.uc,6);
-				memcpy(nextmac,entry.addr.uc,6);
-				*eg_portlist = entry.port.map;
-				*statics = entry.static_en;
-				return GW_OK;
-			}
-		}
 		return GW_ERROR;
 	}
+#ifdef GWDDEBUG
+		char macStr[32];
+		vosMacToStr(entry.addr.uc, macStr);
+		printf("\n gwdonu_fdb_entry_getnext  vid is %d...\r\n",entry.vid);
+		printf("portmap is %d...\r\n",entry.port.map);
+		printf(" gwdonu_fdb_entry_getnext  Mac is %s..\r\n\n",macStr);
+#endif
+		*nextvid = 1;
+		memcpy(macaddr,entry.addr.uc,6);
+		memcpy(nextmac,entry.addr.uc,6);
+		if(-1 != (ret = portmaptrans(entry.port.map)))
+			*eg_portlist = ret;
+//		else
+//			return GW_ERROR;
+		if(entry.static_en)
+			*statics = 2;
+		else
+			*statics = 1;
+	return GW_OK;
 }
 
 
