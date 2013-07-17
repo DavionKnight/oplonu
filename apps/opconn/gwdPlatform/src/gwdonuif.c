@@ -995,18 +995,21 @@ gw_status gwdonu_atu_learn_set(gw_int32 portid, gw_int32 en)
 {
 	UINT32 ulRet;
 
-	if((en == A_FALSE)||(en == A_TRUE))
+	if((portid >0)&&(portid <5))
 	{
-	ulRet = shiva_fdb_port_learn_set(0, portid, en);
-  if (GW_OK != ulRet)
-    {
-     printf("gwdonu_atu_learn_set error!The ulRet is %d\r\n",ulRet);
-        return GW_ERROR;
-    }
-  return GW_OK;
+		if((en == A_FALSE)||(en == A_TRUE))
+		{
+		ulRet = shiva_fdb_port_learn_set(0, portid, en);
+	  if (GW_OK != ulRet)
+		{
+		 printf("gwdonu_atu_learn_set error!The ulRet is %d\r\n",ulRet);
+			return GW_ERROR;
+		}
+	  return GW_OK;
+		}
+		else
+			printf("gwdonu_atu_learn_set error,because en is not bool,en is %d\r\n",en);
 	}
-	else
-		printf("gwdonu_atu_learn_set error,because en is not bool,en is %d\r\n",en);
 return GW_ERROR;
 }
 
@@ -1232,6 +1235,10 @@ gw_status gwdonu_onu_console_cli_register(void * handler)
 gw_status gwdonu_onu_current_timer_get(gw_uint32* gw_time)
 {
 	struct timeval tv;
+
+	if(NULL == gw_time)
+		return GW_ERROR;
+
 	gettimeofday(&tv, NULL);
 	*gw_time=tv.tv_sec*100 + tv.tv_usec/10000;
 	return GW_E_OK;
@@ -1281,30 +1288,82 @@ gw_status gwdonu_onu_localtime_get(localtime_tm *gw_tm)
     return GW_E_OK;
 }
 
+/*****This function is used to trans xxxx.xxxx.xxxx to xx:xx:xx:xx:xx:xx****/
+int dotMac2xMac(char *src,char *des)
+{
+	int ret=GW_ERROR;
+	unsigned char length=0,i=0,j=0;
 
+	if((NULL == src)||(NULL == des))
+		return ret;
+	length = strlen(src);
+	if(14 == length)
+	{
+		for(i=0;i<17;i++)
+		{
+			if((0==(i+1)%3)&&(i!=0))
+				des[i] = ':';
+			else
+			{
+				if('.' == src[j])
+					j++;
+				des[i] = src[j++];
+			}
+		}
+		return  GW_OK;
+	}
+	printf("src length error ,length is %d\r\n",length);
+	return ret;
+}
 gw_status gwdonu_onu_static_mac_add(gw_int8* gw_mac,gw_uint32 gw_port,gw_uint32 gw_vlan)
 {
-	int ret = 0 ;
-#if 0
-	fal_fdb_entry_t entry;
+	int ret = GW_ERROR ;
+	char destMac[18];
+	char digitalMac[6];
+	UINT32 auiPortlist[4];     //4 is port num  this array is used for the function
 
-	memset(&entry,0,sizeof(fal_fdb_entry_t));
-	memcpy(entry.addr.uc,gw_mac,6);
-	entry.dacmd
-	entry.port.id = gw_port<<1;
-	entry.vid = gw_vlan;
-#else
-	ret = dalArlMacAdd(gw_port,gw_mac,gw_vlan);
-#endif
-return ret;
+//printf("gwdonu_onu_static_mac_add...gw_port is %d\r\n");
+	if((NULL == gw_mac)||(gw_port<1)||(gw_port>4))
+		return GW_ERROR;
+	memset(destMac,0,18);
+	memset(digitalMac,0,6);
+
+	/*-----cann't configure multicast mac -------*/
+	if(((vosMacCharToDigit(gw_mac[1]))%2)==1)
+	{
+		printf("\nerror:cann't configure multicast mac\n");
+		return GW_ERROR;
+	}
+	if(GW_OK == dotMac2xMac(gw_mac,destMac))
+	{
+		ret = vosStrToMac(destMac, digitalMac);
+		if (GW_OK == ret)
+		{
+			auiPortlist[0] = gw_port;
+			ret = odmFdbMacPortAdd(1,auiPortlist, digitalMac, 0);
+		}
+		else
+			ret = GW_ERROR;
+	}
+	return ret;
 
 }
 
-
 gw_status gwdonu_onu_static_mac_del(gw_int8* gw_mac,gw_uint32 gw_vlan)
 {
-	int ret=0;
-	ret = dalArlMacDel(0,gw_mac,gw_vlan);
+	int ret=GW_ERROR;
+	char destMac[18];
+	char digitalMac[6];
+
+	if(GW_OK == dotMac2xMac(gw_mac,destMac))
+	{
+		printf("destMac is %s\r\n",destMac);
+		ret = vosStrToMac(destMac, digitalMac);
+		if (GW_OK == ret)
+		{
+			ret = odmFdbMacDel(digitalMac, 0);
+		}
+	}
 	return ret;
 }
 
@@ -1394,6 +1453,8 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_port_loop_event_post,
 
  		gwdonu_register_special_pkt_handler,
+
+
  		gwdonu_onu_hw_ver_get,
  		gwdonu_onu_console_cli_register,
 
@@ -1411,8 +1472,8 @@ gwdonu_im_if_t g_onu_im_ifs = {
 
 		gwdonu_olt_mac_get,
 		gwdonu_ver_get,
-
 		gwdonu_syslog_register_heandler,
+
 } ;
 
 

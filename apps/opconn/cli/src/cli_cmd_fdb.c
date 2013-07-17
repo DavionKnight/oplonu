@@ -156,6 +156,7 @@ STATUS cliCmdFdbAddFdbEntry(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 	#endif
 
 	/* add one mac Entry */
+//	printf("uiPortNum is %d,portlist is %d,usvlanid is %x\r\n",uiPortNum,auiPortlist[0],usVlanId);
 	iRet = odmFdbMacPortAdd(uiPortNum, auiPortlist, aucMacAddress, usVlanId);
 	if (NO_ERROR != iRet)
 	{
