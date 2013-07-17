@@ -1288,8 +1288,8 @@ gw_status gwdonu_onu_localtime_get(localtime_tm *gw_tm)
     return GW_E_OK;
 }
 
-/*****This function is used to trans xxxx.xxxx.xxxx to xx:xx:xx:xx:xx:xx****/
-int dotMac2xMac(char *src,char *des)
+/*------ This function is used to trans xxxx.xxxx.xxxx to xx:xx:xx:xx:xx:xx -----*/
+int dotMac2colonMac(char *src,char *des)
 {
 	int ret=GW_ERROR;
 	unsigned char length=0,i=0,j=0;
@@ -1334,7 +1334,7 @@ gw_status gwdonu_onu_static_mac_add(gw_int8* gw_mac,gw_uint32 gw_port,gw_uint32 
 		printf("\nerror:cann't configure multicast mac\n");
 		return GW_ERROR;
 	}
-	if(GW_OK == dotMac2xMac(gw_mac,destMac))
+	if(GW_OK == dotMac2colonMac(gw_mac,destMac))
 	{
 		ret = vosStrToMac(destMac, digitalMac);
 		if (GW_OK == ret)
@@ -1355,7 +1355,7 @@ gw_status gwdonu_onu_static_mac_del(gw_int8* gw_mac,gw_uint32 gw_vlan)
 	char destMac[18];
 	char digitalMac[6];
 
-	if(GW_OK == dotMac2xMac(gw_mac,destMac))
+	if(GW_OK == dotMac2colonMac(gw_mac,destMac))
 	{
 		printf("destMac is %s\r\n",destMac);
 		ret = vosStrToMac(destMac, digitalMac);

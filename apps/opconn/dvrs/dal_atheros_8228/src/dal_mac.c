@@ -1032,8 +1032,8 @@ dalArlPortmap2Str(UINT32 portMap)
 	UINT32 i;
 
 	vosMemSet(tmpStr,0, 10);
-/***  Modified by zhangjj 2013-6-27 ****/
-#if 1
+/*-------- Modified by zhangjj 2013-6-27 -------*/
+#if 0
 	for(i = 0; i < 7; i++)
 	{
 		if (1 & (portMap >> i))
@@ -1045,36 +1045,39 @@ dalArlPortmap2Str(UINT32 portMap)
 			tmpStr[atherosToDalPortMap[i]] = '-';
 		}		
 	}
-#else
-	switch(portMap)
-	{
-			case 0x1:
-				vosMemCpy(tmpStr,"Cpu",4);
-				break;
-			case 0x2:
-				vosMemCpy(tmpStr,"1",2);
-				break;
-			case 0x4:
-				vosMemCpy(tmpStr,"2",2);
-				break;
-			case 0x8:
-				vosMemCpy(tmpStr,"3",2);
-				break;
-			case 0x10:
-				vosMemCpy(tmpStr,"4",2);
-				break;
-			case 0x20:
-				vosMemCpy(tmpStr,"GE",3);
-				break;
-			case 0x40:
-				vosMemCpy(tmpStr,"WAN",4);
-			default:
-				printf("portMap is 0x%x\r\n",portMap);
-				break;
-	}
-#endif
-
 	return tmpStr;
+#else
+	UINT32 j=0;
+	UINT8 flag = 0;
+	UINT8 portmap[15];
+
+	memset(portmap,0,15);
+	for(i=0;i<7;i++)
+	{
+		if(1 & (portMap >> i))
+		{
+			if(j+2 < 15)
+			{
+				if(0 != flag)
+				{
+					portmap[j++] = ',';
+					portmap[j++] = i + '0';
+				}
+				else
+				{
+					flag = 1;
+					portmap[j++] = i + '0';
+				}
+			}
+			else
+			{
+				printf("dalArlPortmap2Str array overflow...\r\n");
+			}
+		}
+	}
+
+return portmap;
+#endif
 }
 
 UINT32 dalArlPortmapReverse(UINT32 portMap)
