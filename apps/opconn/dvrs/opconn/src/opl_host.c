@@ -202,6 +202,24 @@ void eopl_pkt_process(void * pkt, UINT16 len)
 	}*/
  #endif
 
+
+#if 0
+	host_inbound_hdr_t *pstInHeader_t = NULL;
+	char ucPort_t;
+
+	pstInHeader_t = (host_inbound_hdr_t *)pkt;
+	ucPort_t = (char)pstInHeader_t->iport;
+//printf("come in gwd oam process  and port is %x........\r\n",ucPort);
+	gwlib_sendPktToQueue(pkt+4, len-4, ucPort_t);
+#else
+	gwdonu_special_pkt_handler(pkt,len);
+#endif
+
+
+
+
+
+
 	 /* OAM packet processing */
 
  	/*if the protocol and type is right ,then it is  an oam pkt and do pud_receive function   --add by zhangjj 2013-3.14 */

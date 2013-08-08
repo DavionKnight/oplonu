@@ -520,6 +520,7 @@ int SwVersionGet(u8_t *pucVerStr)
 }
 #endif
 /*** checked ok ***/
+extern gwdonu_onu_hw_ver_get(void * handler);
 void eopl_get_onu_sn_rsp(void)
 {
 	int				iStatus=0;
@@ -546,7 +547,14 @@ void eopl_get_onu_sn_rsp(void)
 	vosMemCpy(p_sn->vendor_id, oam_onu_vendor, 4);
 	vosMemCpy(p_sn->model, oam_onu_model, 4);
 	vosMemCpy(p_sn->onu_id, oam_src_mac, 6);
+#if 0 /*------- Modified by zhangjj 2013-7-19 --------*/
 	vosMemCpy(p_sn->hware_ver,oam_onu_hwarever, 8);
+#else
+	if(gwdonu_onu_hwver_get(oam_onu_hwarever, 8) != 0)
+	{
+		vosMemCpy(p_sn->hware_ver,oam_onu_hwarever, 8);
+	}
+#endif
 	iStatus = SwVersionGet(oam_onu_swarever);
 	if(0 != iStatus)
 	{

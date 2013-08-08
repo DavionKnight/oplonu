@@ -683,13 +683,7 @@ void eopl_oam_pdu_process(u16_t framelen)
 		memcpy(olt_mac_addr,p_hdr->src,GW_MACADDR_LEN);
 //		printf("p_hdr->src is 0x%x,0x%x,0x%x,0x%x,0x%x,0x%x..\r\n",p_hdr->src[0],p_hdr->src[1],p_hdr->src[2],p_hdr->src[3],p_hdr->src[4],p_hdr->src[5]);
 	}
-						host_inbound_hdr_t *pstInHeader = NULL;
-						char ucPort;
 
-						pstInHeader = (host_inbound_hdr_t *)in_data;
-						ucPort = pstInHeader->iport;
-//						printf("come in gwd oam process  and port is %x........\r\n",ucPort);
-												gwlib_sendPktToQueue(p_byte, in_data_len, ucPort);
 #if 0
 int uiIdx=0;
 char *pucFrmTmp=in_data+4;
