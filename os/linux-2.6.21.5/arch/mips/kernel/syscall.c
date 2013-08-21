@@ -436,6 +436,7 @@ int kernel_execve(const char *filename, char *const argv[], char *const envp[])
 	return -__v0;
 }
 
+#define CONFIG_ONU_F23P_VOIP_BOARD /*-- Add by ZhangJiajie 2013-8-19 --*/
 
 #if defined(CONFIG_ONU_F13S_VOIP_BOARD) \
     || defined(CONFIG_ONU_F13P_VOIP_BOARD) \
@@ -464,7 +465,8 @@ asmlinkage int test_getdata(char *pbuf, int* plen)
 asmlinkage int test_setdata(char *appbuf, int len)
 {
   int tmp;
-  
+//  printf("app buf head is 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\r\n",appbuf[0],appbuf[1],appbuf[2],appbuf[3],appbuf[4],appbuf[5]);
+//  printk("app buf head is 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\r\n",appbuf[0],appbuf[1],appbuf[2],appbuf[3],appbuf[4],appbuf[5]);
   tmp = set_ipmux_dma1_tx_buf_data(appbuf, len);
   return tmp;
 }
@@ -488,7 +490,7 @@ asmlinkage void test_waitinterrupt(void)
 asmlinkage int test_getdata(char *pbuf, int* plen)
 {
   int tmp;
-  
+
   //tmp = get_ipmux_dma1_rx_buf_data(pbuf, plen);
   return tmp;
 }

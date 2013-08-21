@@ -35,6 +35,7 @@
 #include <opl_host.h>
 #include <unistd.h>
 #include "odm_port.h"
+#include "gwdonuif.h"
 
 extern void wait_for_host_test_interrupt(void);
 extern int get_ipmux_el_rx_buf_data(char *pbuf, int* plen);
@@ -74,11 +75,19 @@ static void halDma1Thread(void)
 
     while (1)
     {
+//    	printf("\r\nhalDma1Thread...\r\n");
 #if defined(ONU_4PORT_AR8306)||defined(ONU_4PORT_AR8228)
         syscall(NR_TEST_WAITINTERRUPT);
         while (0 != syscall(NR_TEST_GETDATA, &g_acDma1RecvBuf[0], &g_acDma1RecvLen) &&
             0 < g_acDma1RecvLen)
         {
+ //           printf("\r\n\n\n\nRcv Pkt from atheros, len=%uaaaa\r\n\n\n\n",g_acDma1RecvLen);
+#if 0
+
+#else
+//	GwDumpPkt(pkt+4,len-4);
+gwdonu_special_pkt_handler_fe(&g_acDma1RecvBuf[0],g_acDma1RecvLen);
+#endif
             /* begin added by jiangmingli for host debug */
             if (OPL_TRUE == g_bHostUsDbgEn)
             {
@@ -124,6 +133,7 @@ static void halDma1Thread(void)
 
             if (!vosMemCmp(&g_acDma1RecvBuf[0], stpMac, 6))
             {
+            	printf("halDma1Thread stpMac is matched..\r\n");
                 pktType = STP_PKT_TYPE;
                 g_acDma1DispatchLen = g_acDma1RecvLen - 2;
                 if (withTag)
@@ -139,6 +149,7 @@ static void halDma1Thread(void)
             }
             else if (!vosMemCmp(&g_acDma1RecvBuf[0], igmpMac, 3))
             {
+            	printf("halDma1Thread igmpMac is matched..\r\n");
 			    pktType = IGMP_PKT_TYPE;
 
                 /* add inbound header for hacking AR8306/AR8228 to sync 88E6045/88E6046/88E6097 */

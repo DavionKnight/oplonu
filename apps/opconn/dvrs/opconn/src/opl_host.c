@@ -36,6 +36,7 @@
 #include "rstp_in.h"
 #include "rstp_bpdu.h"
 #include "vos.h"
+#include "gwdonuif.h"
 
 hostCntS hostCnt = {0,0,0,0,0,0};
 
@@ -212,7 +213,12 @@ void eopl_pkt_process(void * pkt, UINT16 len)
 //printf("come in gwd oam process  and port is %x........\r\n",ucPort);
 	gwlib_sendPktToQueue(pkt+4, len-4, ucPort_t);
 #else
-	gwdonu_special_pkt_handler(pkt,len);
+	char *buf=pkt+4;
+
+//if((0x01 != buf[0])||(0x80 == buf[1])||(0xc2 == buf[2]))
+//	printf("======buf is 0x%x,0x%x,0x%x,0x%x,0x%x,0x%x\r\n",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5]);
+//	GwDumpPkt(pkt+4,len-4);
+gwdonu_special_pkt_handler_pon(pkt,len);
 #endif
 
 

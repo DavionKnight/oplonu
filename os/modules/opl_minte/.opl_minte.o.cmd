@@ -1,7 +1,7 @@
-cmd_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o := mips-linux-uclibc-gcc -Wp,-MD,/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/.opl_minte.o.d  -nostdinc -isystem /opt/openwrt/bin/../lib/gcc/mips-linux-uclibc/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding  -march=mips32 -Wa,-mips32 -Wa,--trap -Iinclude/asm-mips/mach-onu -Iinclude/asm-mips/mach-generic -fomit-frame-pointer  -fno-stack-protector -funit-at-a-time -Wdeclaration-after-statement -Wno-pointer-sign   -DMODULE -mlong-calls -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(opl_minte)"  -D"KBUILD_MODNAME=KBUILD_STR(opl_minte)" -c -o /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/.tmp_opl_minte.o /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.c
+cmd_/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o := mips-linux-uclibc-gcc -Wp,-MD,/home/fengzhishang/oplonu/os/modules/opl_minte/.opl_minte.o.d  -nostdinc -isystem /opt/openwrt/bin/../lib/gcc/mips-linux-uclibc/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding  -march=mips32 -Wa,-mips32 -Wa,--trap -Iinclude/asm-mips/mach-onu -Iinclude/asm-mips/mach-generic -fomit-frame-pointer  -fno-stack-protector -funit-at-a-time -Wdeclaration-after-statement -Wno-pointer-sign   -DMODULE -mlong-calls -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(opl_minte)"  -D"KBUILD_MODNAME=KBUILD_STR(opl_minte)" -c -o /home/fengzhishang/oplonu/os/modules/opl_minte/.tmp_opl_minte.o /home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.c
 
-deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o := \
-  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.c \
+deps_/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o := \
+  /home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.c \
   include/linux/init.h \
     $(wildcard include/config/modules.h) \
     $(wildcard include/config/hotplug.h) \
@@ -376,12 +376,12 @@ deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o := \
   include/asm/fcntl.h \
   include/asm-generic/fcntl.h \
   include/linux/err.h \
-  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/../include/opl_minte.h \
-  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/../include/ipmux_interrupt.h \
-  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/ipmux_interrupt.c \
+  /home/fengzhishang/oplonu/os/modules/opl_minte/../include/opl_minte.h \
+  /home/fengzhishang/oplonu/os/modules/opl_minte/../include/ipmux_interrupt.h \
+  /home/fengzhishang/oplonu/os/modules/opl_minte/ipmux_interrupt.c \
   include/linux/irqreturn.h \
-  /home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/../include/opl_hw_ops.h \
+  /home/fengzhishang/oplonu/os/modules/opl_minte/../include/opl_hw_ops.h \
 
-/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o: $(deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o)
+/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o: $(deps_/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o)
 
-$(deps_/home/fengzhishang/gwdWorks/oplonu/os/modules/opl_minte/opl_minte.o):
+$(deps_/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o):

@@ -905,7 +905,7 @@ void dma_rx_receive_kernel(int dmaflg, void *dma_buf, int pkt_len, struct net_de
   with_qinq = 0;
   if (with_vlan)
   {
-  dprintk_rx("###############  with vlan ###############\n");
+	  dprintk_rx("###############  with vlan ###############\n");
     if (0 == dmaflg)
     {
 
@@ -951,7 +951,7 @@ void dma_rx_receive_kernel(int dmaflg, void *dma_buf, int pkt_len, struct net_de
   }
   else
   {
-   dprintk_rx("$$$$$$$$$$$$$$$$$  no vlan $$$$$$$$$$$$$$$$$ \n");
+	  dprintk_rx("$$$$$$$$$$$$$$$$$  no vlan $$$$$$$$$$$$$$$$$ \n");
     if (0 == dmaflg)
     {
       memcpy(skb_put(skb,pkt_len-4), (u8 *)(dma_buf+4), pkt_len-4);
@@ -1043,11 +1043,17 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
       
       if (0 == dmaflg)
       {
+//    	  printk("dma_buf[3] is 0x%x\r\n",((u8 *)dma_buf)[3]);
       #if defined  (CONFIG_ONU_FE_RESPIN_C13_ETH )||defined  (CONFIG_ONU_FE_RESPIN_F23_ETH )||defined(CONFIG_ONU_FE_VOIP_F23_ETH)
         if (((u8 *)dma_buf)[3] == 0x0)
         {
+#if 1  /*--- Modified by KnightDavion 2013-8-7 ---*/
           devstartnum = 0;  
           devendnum = 0;    /**  ignor pkt from ge to cpu **/
+#else
+          devstartnum = MAX_INTETFACE_NUM / 2;
+          devendnum = MAX_INTETFACE_NUM;    /**  let pkt from ge to cpu **/
+#endif
         }
         else
         {
@@ -1071,7 +1077,21 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
       }
       else   /**when use dma1 as fe interface**/
       {
-        dprintk_rx("444-----------------dmaflg =%d\n", dmaflg );
+    	  dprintk_rx("444-----------------dmaflg =%d\n", dmaflg );
+#if 1
+    	int i=0;
+    	if((((unsigned char *)dma_buf)[0] == 0x0)&&	(((unsigned char *)dma_buf)[1] == 0x0f)&&
+    			(((unsigned char *)dma_buf)[2] == 0xe9))
+    	{
+    for(i=0;i<20;i++)
+    	{
+    		if(i%16 == 0)
+    			printk("\r\n");
+    		printk("0x%02x ",((unsigned char *)dma_buf)[i]);
+    	}
+    printk("\r\n\n");
+    	}
+#endif
         devstartnum = 0;
         devendnum = MAX_DMA1_INTERFACE;
         offset0 = 0;
@@ -1081,7 +1101,22 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
         offset1 = 0;     /**c13 need not **/
 #endif
       }
-      
+#if 0
+if((((unsigned char *)dma_buf)[offset0] == 0x0)&&	(((unsigned char *)dma_buf)[offset0+1] == 0x0f)&&
+		(((unsigned char *)dma_buf)[offset0+2] == 0xe9))
+{
+	int i=0;
+	printk("((char *)dma_buf+offset0)[0] is  0x%x...\r\n",((char *)dma_buf+offset0)[0]);
+	for(i=0;i<20;i++)
+	{
+		if(i%16 == 0)
+			printk("\r\n");
+		printk("0x%02x ",((unsigned char *)dma_buf)[i]);
+	}
+    printk("\r\n\npkt_len=%d, dmaflg=%d, with_vlan=%d, offset0=%d, offset1=%d, offset2=%d, devstartnum=%d, devendnum=%d, devnownum=%d\n",
+                pkt_len, dmaflg, with_vlan, offset0, offset1, offset2, devstartnum, devendnum, devnownum);
+}
+#endif
       devnownum = 0xFF;
       
       if ((((u8 *)dma_buf)[12+offset0+offset1] == 0x81) && (((u8 *)dma_buf)[13+offset0+offset1] == 0x00))
@@ -1124,14 +1159,50 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
         offset2 = 0;
         with_vlan = 0;
       }
-      dprintk_rx("pkt_len=%d, dmaflg=%d, with_vlan=%d, offset0=%d, offset1=%d, offset2=%d, devstartnum=%d, devendnum=%d, devnownum=%d\n", 
+      dprintk_rx("pkt_len=%d, dmaflg=%d, with_vlan=%d, offset0=%d, offset1=%d, offset2=%d, devstartnum=%d, devendnum=%d, devnownum=%d\n",
                   pkt_len, dmaflg, with_vlan, offset0, offset1, offset2, devstartnum, devendnum, devnownum);
       print_mem(dma_buf+offset0, pkt_len, 1);
 
 process_pon_data:
       /* Processing PON related data first */
-      if (((char *)dma_buf+offset0)[0] == 0x01)   /**pkt from pon **/
+#if 0
+if((((unsigned char *)dma_buf)[offset0] == 0x0)&&	(((unsigned char *)dma_buf)[offset0+1] == 0x0f)&&
+		(((unsigned char *)dma_buf)[offset0+2] == 0xe9))
+{
+	int i=0;
+	printk("((char *)dma_buf+offset0)[0] is  0x%x...\r\n",((char *)dma_buf+offset0)[0]);
+	for(i=0;i<20;i++)
+	{
+		if(i%16 == 0)
+			printk("\r\n");
+		printk("0x%02x ",((unsigned char *)dma_buf)[i]);
+	}
+    printk("\r\n\npkt_len=%d, dmaflg=%d, with_vlan=%d, offset0=%d, offset1=%d, offset2=%d, devstartnum=%d, devendnum=%d, devnownum=%d\n",
+                pkt_len, dmaflg, with_vlan, offset0, offset1, offset2, devstartnum, devendnum, devnownum);
+}
+#endif
+/*oam pkt
+00 00 00 01 01 80 c2 00 00 02 00 0c d5 00 01 10
+88 09 03 00 50 00 01 10 01 00 00 00 0d 05 ee 11
+11 11 52 01 00 01 02 10 01 00 08 00 14 05 ee 11
+11 11 47 57 44 4c 00 00 00 00 00 00 00 00 00 00
+1d 01 80 c2 00 00 02 00 0f e9 11 22 33 88 09 03
+00 50 00 01 10 01 00 08 00 14 05 ee 11 11 11 47
+57 44 4c 02 10 01 00 00 00 0d 05 ee 11 11 11 52
+01     00    01    00    00    00    00    00    00    00    00    00    00 */
+//printk("8809=== 0x%02x  0x%02x  0x%02x  0x%02x  \r\n",((unsigned char *)dma_buf)[offset0+12],
+	//	((char *)dma_buf)[offset0+13],((char *)dma_buf)[offset0+14],((char *)dma_buf)[offset0+15]);
+#if 0
+		if (((char *)dma_buf+offset0)[0] == 0x01)   /**pkt from pon **/
+#else   /*------ send pkt OAM and LoopBack PKT(from PON and UNI) to app modified by KnightDavion 2013-8-14 ------*/
+    if (((((unsigned char *)dma_buf)[offset0+12] == 0x88)&&(((unsigned char *)dma_buf)[offset0+13] == 0x09))||
+    		((((unsigned char *)dma_buf)[offset0+offset1+12] == 0x08)&&	(((unsigned char *)dma_buf)[offset0+offset1+13] == 0x0)&&
+    		(((unsigned char *)dma_buf)[offset0+offset1+14] == 0x0)&&(((unsigned char *)dma_buf)[offset0+offset1+15] == 0x80))||
+    		((((unsigned char *)dma_buf)[offset0+offset1+12+4] == 0x08)&&	(((unsigned char *)dma_buf)[offset0+offset1+13+4] == 0x0)&&
+    	    		(((unsigned char *)dma_buf)[offset0+offset1+14+4] == 0x0)&&(((unsigned char *)dma_buf)[offset0+offset1+15+4] == 0x80)))
+#endif
       {
+//    	  printk("aaaaaaaa33\r\n");
         el_appdma_t *p_s_appdma = NULL;
         
         if ((p_s_appdma=getdmabufaddress(dmaflg)) != NULL)
@@ -1189,17 +1260,18 @@ process_pon_data:
             if ((((u8 *)dma_buf)[12+offset]==0x08) && 
               (((u8 *)dma_buf)[13+offset]==0x00))
             {
+            	dprintk_rx("onu_voip_fe 0800\r\n");
               if (((((u8 *)dma_buf)[34+offset] == 0x00) &&
                 (((u8 *)dma_buf)[35+offset] == 0x43)) || 
                 ((((u8 *)dma_buf)[34+offset] == 0x00) &&
                 (((u8 *)dma_buf)[35+offset] == 0x44)))
               {
-                dprintk_rx("dhcp offer package\n");
+            	  dprintk_rx("dhcp offer package\n");
                 dma_rx_receive_kernel(dmaflg, dma_buf, pkt_len, devtmp, with_vlan, fep);
               }
               else
               {
-                dprintk_rx("ip package\n");
+            	  dprintk_rx("ip package\n");
                 piphead = (struct iphdr *)((u8 *)dma_buf+14+offset);
                 if (ipout != NULL)
                 {
@@ -1222,6 +1294,7 @@ process_pon_data:
             }
             else if ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x06))
             {
+            	dprintk_rx("in onu_voip_fe 0806\r\n");
               struct in_device *ipout=devtmp->ip_ptr;
               struct in_ifaddr *iplist;
               u32 iptmp, ipin;
@@ -1889,7 +1962,8 @@ int get_ipmux_dma_rx_buf_data(u8 dmanum, char *pbuf, int* plen)
 int set_ipmux_dma_tx_buf_data(u8 dmanum, char *appbuf, int len)
 {
   struct net_device *ndev;
-  
+//  if(dmanum == 1)
+//  printk("Yeah!!!come on!!!\r\n");
 #if defined  (CONFIG_ONU_FE_RESPIN_C13_ETH )||defined  (CONFIG_ONU_FE_RESPIN_F23_ETH )||defined(CONFIG_ONU_FE_VOIP_F23_ETH)
   if (1 == dmanum)
   {

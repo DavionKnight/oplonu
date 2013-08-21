@@ -693,6 +693,7 @@ INT16 eopl_dma_recv(volatile INT8 **packet, UINT8 pckCopied)
   {
     return OPL_OK;
   }
+//	printf("eopl_dma_recv !!!!\r\n");
   read_from_dma_rxbuf(0, 0, (void *)RX_BUF_ADDR(0), &length);
   *packet = (char *)(RX_BUF_ADDR(0));
 	return (INT16)length;
@@ -700,7 +701,7 @@ INT16 eopl_dma_recv(volatile INT8 **packet, UINT8 pckCopied)
 	UINT32 bdData;
 	UINT32 length;
 	UINT32 offset;
-    
+
 	/* packet copied, clear the bd */
 	if (pckCopied) 
 	{

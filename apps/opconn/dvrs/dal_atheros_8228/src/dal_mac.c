@@ -1644,6 +1644,19 @@ OPL_STATUS dalArlMgmRdtCpu(void)
 
 	shiva_fdb_add(0, &entry);
 #endif
+#if 0
+	UINT8	sMac[6] = {0x00,0x0f,0xe9,0xaa,0xbb,0xcc};
+	aos_mem_zero(&entry, sizeof(fal_fdb_entry_t));
+	aos_mem_copy((void *)entry.addr.uc, sMac, 6);
+	entry.static_en = 1;
+    entry.sacmd = FAL_MAC_FRWRD;
+	entry.dacmd = FAL_MAC_RDT_TO_CPU;
+	entry.port.map = 0x1;
+	entry.portmap_en = 1;
+    entry.cross_pt_state = 1;
+
+	shiva_fdb_add(0, &entry);
+#endif
 
 	vosHWAddrGet("eth0", &hwAddr[0]);
 	aos_mem_zero(&entry, sizeof(fal_fdb_entry_t));

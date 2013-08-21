@@ -2783,6 +2783,9 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
     UINT32  atherosPort = dalToAtherosPortMap[portId];
 	UINT32 entryIndex;
 	UINT32 i;
+	int port = atherosPort;
+	int flag = 1;
+
 
 	if(PORT_IS_OUT_OF_RANTE(atherosPort))
 	{
@@ -2975,6 +2978,9 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			
 			break;
 		case VLAN_TRUNK:
+
+//			while(flag != 0)/*--- add atheros port 0 portvlan mode(Trunk) Modified by zhangjj 2013-7-30 ---*/
+//			{											/*----- Solve the bug :if dot1q enabled ICMP to CPU unreached----*/
 			iStatus = shiva_port_1qmode_set(0,atherosPort,FAL_1Q_SECURE);//has changed by zhangjj
 			if(OPL_OK != iStatus)
 			{
@@ -2992,7 +2998,6 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			{
 				return iStatus;
 			}
-		
 			iStatus = shiva_port_force_default_vid_set(0, atherosPort, 0);
 			if(OPL_OK != iStatus)
 			{
@@ -3088,7 +3093,14 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 
 			/* added by cylan for bug3027*/
 			dalToTrunkModeHandle(portId);
-			
+//			if(atherosPort)
+	//			atherosPort = 0;
+//			else
+//			{
+//				flag = 0;
+//				atherosPort = port;
+//			}
+//			}
 			break;
 		case VLAN_AGGREGATION:
 			dalArlMacPortLockCpuEn(portId, TRUE);

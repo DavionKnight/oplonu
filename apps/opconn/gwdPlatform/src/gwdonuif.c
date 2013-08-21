@@ -33,6 +33,8 @@
 #include "run_led.h"
 #include "version.h"
 #include "stats.h"
+#include "hw_interface.h"
+#include "qos.h"
 
 //#define GWDDEBUG
 
@@ -41,6 +43,28 @@ u8_t 	overall_lanmac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 static libgwdonu_special_frame_handler_t g_onu_pkt_handler = NULL;
 static libgwdonu_out_hw_version g_onu_out_if_hwver_get = NULL;
 static libgwdonu_syslog_heandler_t g_onu_syslog_handler = NULL;
+
+//opl_dump_data(pkt,len,16);
+void GwDumpPkt(char *pkt,int len)
+{
+	char *pucBuf=NULL;
+	unsigned int index=0;
+	printf("\r\n-----------GwDumpPkt ------------\r\n",len);
+	pucBuf = (char *)pkt;
+	for(index = 0; index < len; index++)
+	{
+		if((index != 0) && (index%16 == 0))
+		{
+			printf("\r\n%02x ",(UINT8)pucBuf[index]);
+		}
+		else
+		{
+			printf("%02x ",(UINT8)pucBuf[index]);
+		}
+	}
+	printf("\r\n\n");
+}
+
 
 extern int OamFrameSend(u8_t *pucFrame, u16_t usFrmLen);
 
@@ -308,8 +332,9 @@ gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
 	pstHdr = (host_outbound_hdr_t *)(&aucPkt[0]);
 	if(portid == GW_PON_PORT_ID)
 	{
-		pstHdr->eport = 1;
-		pstHdr->icos = 7;
+		pstHdr->reserved = 0x00;
+		pstHdr->eport = 0x01;
+		pstHdr->icos = 0x07;
 		vosMemCpy(&aucPkt[1], buf, len);
 
 		iStatus = eopl_host_send(aucPkt, len+1);
@@ -324,26 +349,30 @@ gw_status gwdonu_port_send(gw_int32 portid, gw_uint8 *buf, gw_uint32 len)
 	}
 	else	if((portid == GW_UNI_PORT_ID1)||(portid == GW_UNI_PORT_ID2)||(portid == GW_UNI_PORT_ID3)||(portid == GW_UNI_PORT_ID4))
 	{
-//			iStatus = eopl_send_to_down_link_atheros((portid -1), 0,0,buf,len);
+//			iStatus = eopl_send_to_down_link((portid -1), 0,IGMP_PKT_TYPE,buf,len);
+			iStatus = eopl_send_to_down_link(portid, 0,IGMP_PKT_TYPE,buf,len);
 //			iStatus = eopl_send_to_down_link_atheros((portid -1), 0,2,buf,len);
-
+#if 0
 			pstHdr->eport = 0;
 			pstHdr->icos = 7;
 
 			vosMemCpy(&aucPkt[1], buf, len);
 
 			iStatus = eopl_host_send(aucPkt, len+1);
-#ifdef GWDDEBUG
+//#ifdef GWDDEBUG
 			printf("gwdonu_port_send portid is %d,and status is %d..\r\n",portid,iStatus);
-#endif
+//#endif
 			//		if(0 != iStatus)
 	//		{
         /*OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "send error!\n");*/
 	//				return iStatus;
+#endif
+//			GwDumpPkt(buf,len);
+//			printf("gwdonu_port_send portid is %d,and status is %d..\r\n",portid,iStatus);
     }
 	else
 	{
-//		printf("gwdonu_port_send other GW_UNI_PORT_ID...\r\n");
+//		printf("gwdonu_port_send other GW_UNI_PORT_ID %d...\r\n",portid);
 	}
 	return GW_OK;
 
@@ -973,10 +1002,58 @@ gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 
 }
 
 
-gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * mac)
+gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * gw_mac)
 {
 #if 1
+	int ret = GW_ERROR ;
+	char destMac[18];
+	char digitalMac[6];
+	UINT32 auiPortlist[4];     //4 is port num  this array is used for the function
+//	GwDumpPkt(gw_mac,6);
+//printf("gwdonu_onu_static_mac_add...gw_port is %d\r\n");
+	if(NULL == gw_mac)
+		return GW_ERROR;
+	memset(destMac,0,18);
+	memset(digitalMac,0,6);
+
+	/*-----cann't configure multicast mac -------*/
+	if(((vosMacCharToDigit(gw_mac[1]))%2)==1)
+	{
+		printf("\nerror:cann't configure multicast mac\n");
+		return GW_ERROR;
+	}
+		auiPortlist[0] = 0;
+		ret = odmFdbMacPortAdd(1,auiPortlist, gw_mac, 0);
+
+	return ret;
+#endif
+#if 0
+	char className[] = "loopbackPkt";
+	UINT8 *mac_a = "00:0f:e9:04:8E:DF";
+	unsigned char ret = -1;
+
+	printf("1mac_a is %s\r\n",mac_a);
+	ret = odmCreateClass(className);
+  switch (ret)
+    {
+        case QOS_OK:
+            break;
+        case QOS_CLS_EXIST_CHECK_ERROR:
+            printf("error:Class name is existed!\r\n");
+        default :
+        			return GW_ERROR;
+            break;
+    }
+  printf("2mac_a is %s\r\n",mac_a);
+  ret = odmCfgClassDestMac(className,mac_a,CLASS_ADD);
+  ret = odmCfgClassTranfAct(className,SENDTOCPU,CLASS_ADD);
+  ret = odmInstallClassEntry(className, BOTH_STREAM_, NULL);
+#endif
+
+#if 0
+#if 0
 	fal_fdb_entry_t entry;
+	UINT8	hwAddr[6];
 
 	if(NULL == mac)
 	{
@@ -993,6 +1070,136 @@ gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * mac)
 	entry.cross_pt_state = 1;
 
 	shiva_fdb_add(0, &entry);
+
+	vosHWAddrGet("eth3", &hwAddr[0]);
+	aos_mem_zero(&entry, sizeof(fal_fdb_entry_t));
+	aos_mem_copy((void *)entry.addr.uc, hwAddr, 6);
+	entry.static_en = 1;
+	entry.dacmd = FAL_MAC_FRWRD;
+	entry.port.map = 0x1;
+	entry.portmap_en = 1;
+
+	shiva_fdb_add(0, &entry);
+#else
+
+	#define USER_RESERVED_MAC0_32 (0x3030*4)
+	#define USER_RESERVED_MAC0_16 (0x3031*4)
+	#define USER_RESERVED_MAC1_32 (0x3032*4)
+	#define USER_RESERVED_MAC1_16 (0x3033*4)
+	#define USER_RESERVED_MAC_CTRL (0x303D*4)
+
+	OPL_STATUS iStatus=OPL_OK;
+	UINT32 uiRegVal = 0;
+	iStatus = oplRegRead(USER_RESERVED_MAC0_32, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC0 32 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC0_16, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC0 16 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC1_32, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC1 32 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC1_16, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC1 16 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC_CTRL, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC_CTRL ==========0x%x\r\n",uiRegVal);
+
+	printf("!!!!!!!!!!!!!!!!!!!!before\r\n");
+
+
+	uiRegVal = 0xe9aabbcc;
+	iStatus = oplRegWrite(USER_RESERVED_MAC1_32, uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========write error\r\n");
+	}
+	uiRegVal = 0x0f;
+	iStatus = oplRegWrite(USER_RESERVED_MAC1_16, uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========write error\r\n");
+	}
+
+	iStatus = oplRegRead(USER_RESERVED_MAC_CTRL, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	uiRegVal &= ~0xf;
+	uiRegVal |= 0x4;
+	iStatus = oplRegWrite(USER_RESERVED_MAC_CTRL, uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========write error\r\n");
+	}
+	printf("!!!!!!!!!!!!!!!!!!!!after\r\n");
+
+	iStatus = oplRegRead(USER_RESERVED_MAC0_32, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC0 32 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC0_16, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC0 16 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC1_32, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC1 32 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC1_16, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC1 16 ==========0x%x\r\n",uiRegVal);
+	iStatus = oplRegRead(USER_RESERVED_MAC_CTRL, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+			printf("USER_RESERVED_MAC ==========read error\r\n");
+	}
+	printf("USER_RESERVED_MAC_CTRL ==========0x%x\r\n",uiRegVal);
+
+#endif
+#endif
+#if 0
+	int iStatus=-1;
+	int i=0;
+	UINT32 uiRegVal = 0;
+printf("\n");
+	for(i=0x6000;i<0x6087;i++)
+	{
+	iStatus = oplRegRead(i*4, &uiRegVal);
+	if (OPL_OK != iStatus)
+	{
+		printf("0x%x = -1    ",i);
+	}
+	printf("0x%x = 0x%x    ",i,uiRegVal);
+	if(i%8==0)
+		printf("\n");
+	}
 #endif
 	return GW_OK;
 }
@@ -1237,7 +1444,7 @@ gw_status gwdonu_port_loop_event_post(gw_uint32 status)
 		return GW_ERROR;
 }
 
-int  gwdonu_special_pkt_handler(void *pkt,int len)
+int  gwdonu_special_pkt_handler_pon(void *pkt,int len)
 {
 	gw_uint8 buff[1600]={0};
 	host_inbound_hdr_t *pstInHeader_t = NULL;
@@ -1252,7 +1459,7 @@ int  gwdonu_special_pkt_handler(void *pkt,int len)
 	pstInHeader_t = (host_inbound_hdr_t *)pkt;
 	ucPort_t = (char)pstInHeader_t->iport;
 
-	gwlib_sendPktToQueue((gw_uint8 *)pkt+4, len-4, ucPort_t);
+//	gwlib_sendPktToQueue((gw_uint8 *)pkt+4, len-4, ucPort_t);
 
 	//gw_debug_printf("\r\nOUI:%02x %02x %02x\r\n", buff[18], buff[19], buff[20]);
 	if(g_onu_pkt_handler)
@@ -1266,7 +1473,35 @@ int  gwdonu_special_pkt_handler(void *pkt,int len)
    return GW_ERROR;
 	}
 }
+int  gwdonu_special_pkt_handler_fe(void *pkt,int len)
+{
+	gw_uint8 buff[1600]={0};
+	ATHEROS_HEADER_FRAME_t *pstInHeader_t = NULL;
+	char ucPort_t;
 
+	if(len>1600)
+	{
+		return GW_ERROR;
+	}
+  memcpy(buff, pkt,12);
+
+	pstInHeader_t = (ATHEROS_HEADER_FRAME_t *)pkt;
+	ucPort_t = (char)pstInHeader_t->portNum;
+	memcpy(buff+12,pkt+14,len-14);
+//	gwlib_sendPktToQueue((gw_uint8 *)pkt+4, len-4, ucPort_t);
+
+	//gw_debug_printf("\r\nOUI:%02x %02x %02x\r\n", buff[18], buff[19], buff[20]);
+	if(g_onu_pkt_handler)
+	{
+		(*g_onu_pkt_handler)((gw_int8*)buff, len-2, ucPort_t);
+			return GW_OK;
+	}
+	else
+	{
+		printf("gwdonu_special_pkt_handler  g_onu_pkt_handler is not registered..\r\n");
+   return GW_ERROR;
+	}
+}
 gw_status gwdonu_register_special_pkt_handler( libgwdonu_special_frame_handler_t phandler)
 {
 	g_onu_pkt_handler = phandler;

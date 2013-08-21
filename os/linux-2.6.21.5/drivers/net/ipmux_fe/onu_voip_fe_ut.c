@@ -1195,6 +1195,7 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
             }
             else if ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x06))
             {
+            	printk("in onu_voip_fe_ut 0806\r\n");
               struct in_device *ipout=devtmp->ip_ptr;
               u32 iptmp, ipin;
               u8 iptmp1,iptmp2,iptmp3,iptmp4;

@@ -675,7 +675,7 @@ void eopl_oam_pdu_process(u16_t framelen)
 	p_info = (oam_info_tlv_t *)(p_byte+sizeof(struct oampdu_hdr));
 	pstRmtInfo = (oam_info_tlv_t *)(p_byte+sizeof(struct oampdu_hdr)+sizeof(oam_info_tlv_t));
 
-
+//	dumpPktAccordCondition(p_byte,in_data_len,22,0x37);
 #if 1
 	/************* Here may have question should get olt mac by ctc oui ********/
 	if((p_hdr->src[0]==0x0)&&(p_hdr->src[1]==0x0c)&&(p_hdr->src[2]==0xd5))
@@ -2377,8 +2377,28 @@ gwdonu_im_if_t g_onu_im_ifs = {
 #endif
 
 
+void dumpPktAccordCondition(char *pkt,int len,int which_byte,char character)
+{
+	int uiIdx=0;
+	char *pucFrmTmp=pkt;
 
-
+	if(which_byte <= len)
+	{
+		if(*(pucFrmTmp+which_byte)==character)
+		{
+			printf("========== Accord condition pkt ===========");
+			for(uiIdx=0; uiIdx<len; uiIdx++)
+			{
+				if(0 == uiIdx%16)
+				{
+					printf("\n0x%08x\t", uiIdx);
+				}
+				printf(" 0x%02x", *pucFrmTmp++);
+			}
+			printf("\n--------------------------------------\n");
+		}
+	}
+}
 
 
 
