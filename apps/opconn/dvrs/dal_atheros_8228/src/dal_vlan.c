@@ -63,7 +63,7 @@ OPL_STATUS dalSetLocalSwitch(UINT8 portId, UINT8  enable)
 		            shiva_portvlan_member_add(0, atherosPort, i);
 		       }		
 		}
-
+//		shiva_port_arp_leaky_set(0, atherosPort, 1);
 		/* added by cylan for bug3027 */
 		/* add the force_port_vlan_en=0 for the port not isolation */
 		shiva_port_force_portvlan_set(0, atherosPort, 0);
@@ -101,10 +101,12 @@ OPL_STATUS dalSetLocalSwitch(UINT8 portId, UINT8  enable)
 
 		/* added by cylan for bug3027 */
 		/* add the force_port_vlan_en=1 for the port isolation */
-		shiva_port_force_portvlan_set(0, atherosPort, 1);
-
+//shiva_uc_leaky_mode_set(0,atherosPort,0);
+//printf("uc leaky mode 0\r\n");
+		shiva_port_arp_leaky_set(0, atherosPort, 0);
+		shiva_port_uc_leaky_set(0,atherosPort,0);
 		/* add portvlan member = UNI + Mac6 */
-		shiva_portvlan_member_add(0, atherosPort, 6);
+//		shiva_portvlan_member_add(0, atherosPort, 6);
 		//shiva_portvlan_member_add(0, 6, atherosPort);
 
               /* deleted by cylan for bug3027 */

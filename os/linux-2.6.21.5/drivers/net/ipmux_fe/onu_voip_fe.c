@@ -1078,7 +1078,7 @@ static int dma_rx_receive(struct net_device *ndev, int budget)
       else   /**when use dma1 as fe interface**/
       {
     	  dprintk_rx("444-----------------dmaflg =%d\n", dmaflg );
-#if 1
+#if 0
     	int i=0;
     	if((((unsigned char *)dma_buf)[0] == 0x0)&&	(((unsigned char *)dma_buf)[1] == 0x0f)&&
     			(((unsigned char *)dma_buf)[2] == 0xe9))
@@ -1146,7 +1146,7 @@ if((((unsigned char *)dma_buf)[offset0] == 0x0)&&	(((unsigned char *)dma_buf)[of
 				(gSysVoiceVlan[i].VoipTaggedValid==1) && 
 				(gSysVoiceVlan[i].VoiceVlanId==vlan_tag->bfVoiceVlan))
             {
-				dprintk_rx("index=%d, vlan_tag=%x\n", i, 
+				dprintk_rx("index=%d, vlan_tag=%x\n", i,
 					gSysVoiceVlan[i].VoiceVlanId);
               devnownum = i;
               goto process_pon_data;
@@ -1234,18 +1234,19 @@ if((((unsigned char *)dma_buf)[offset0] == 0x0)&&	(((unsigned char *)dma_buf)[of
       }
       
       offset = offset0 + offset1 + offset2;
-      
+
       skip_cnt = 0;
       for (i=devendnum-1; i>=devstartnum; i--)
       {
         devtmp = onundevs[i];
+        /* Deleted by zhangjj as tag arp cannot send to cpu 2013-8-28
         if ((with_vlan) && (i!=devnownum) && (0xF!=devnownum))
         {
           devtmp = onundevs[i-1];
           skip_cnt++;
           continue;
         }
-        
+        */
         dprintk_rx("dev name=%s\n", devtmp->name);
         if (devtmp)
         {

@@ -366,7 +366,7 @@ int main(int argc,char *argv[])
         printf("done\r\n");
     }
 
-	printf("Led start run...\n");
+	//printf("Led start run...\n");
 	
 
 #ifdef OPL_COM_UART1

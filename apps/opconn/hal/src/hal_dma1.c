@@ -133,7 +133,7 @@ gwdonu_special_pkt_handler_fe(&g_acDma1RecvBuf[0],g_acDma1RecvLen);
 
             if (!vosMemCmp(&g_acDma1RecvBuf[0], stpMac, 6))
             {
-            	printf("halDma1Thread stpMac is matched..\r\n");
+ //           	printf("halDma1Thread stpMac is matched..\r\n");
                 pktType = STP_PKT_TYPE;
                 g_acDma1DispatchLen = g_acDma1RecvLen - 2;
                 if (withTag)
@@ -149,7 +149,7 @@ gwdonu_special_pkt_handler_fe(&g_acDma1RecvBuf[0],g_acDma1RecvLen);
             }
             else if (!vosMemCmp(&g_acDma1RecvBuf[0], igmpMac, 3))
             {
-            	printf("halDma1Thread igmpMac is matched..\r\n");
+//            	printf("halDma1Thread igmpMac is matched..\r\n");
 			    pktType = IGMP_PKT_TYPE;
 
                 /* add inbound header for hacking AR8306/AR8228 to sync 88E6045/88E6046/88E6097 */

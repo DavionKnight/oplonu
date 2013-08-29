@@ -1604,7 +1604,8 @@ STATUS cliCmdProductDateSet(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 	int ret=0;
 
 	strcpy(section,PRODCUT_INFO_SECTION);
-	vosSprintf(date_value, "%d-%d-%d",pstPt[1].u,pstPt[3].u,pstPt[5].u);
+
+	vosSprintf(date_value, "%d-%02d-%02d",pstPt[1].u,pstPt[3].u,pstPt[5].u);
 
 	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
 	{

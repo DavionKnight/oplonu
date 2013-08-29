@@ -9,6 +9,9 @@ then
 			echo "====================="
 			echo "======= Done ========"
 			echo "====================="
+			cp build/opvos.bin /tftpboot/
+			echo ""
+			echo "=== cp build/opvos.bin /tftpboot/  !!==="
 		else
 			echo "====================="
 			echo "======= Error ======="
