@@ -85,7 +85,6 @@ static void halDma1Thread(void)
 #if 0
 
 #else
-//	GwDumpPkt(pkt+4,len-4);
 gwdonu_special_pkt_handler_fe(&g_acDma1RecvBuf[0],g_acDma1RecvLen);
 #endif
             /* begin added by jiangmingli for host debug */
