@@ -2376,7 +2376,7 @@ gwdonu_im_if_t g_onu_im_ifs = {
 };
 #endif
 
-
+#if 0
 void dumpPktAccordCondition(char *pkt,int len,int which_byte,char character)
 {
 	int uiIdx=0;
@@ -2400,7 +2400,7 @@ void dumpPktAccordCondition(char *pkt,int len,int which_byte,char character)
 	}
 }
 
-
+#endif
 
 
 

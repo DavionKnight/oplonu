@@ -45,6 +45,7 @@ static libgwdonu_out_hw_version g_onu_out_if_hwver_get = NULL;
 static libgwdonu_syslog_heandler_t g_onu_syslog_handler = NULL;
 
 //opl_dump_data(pkt,len,16);
+#if 0
 void GwDumpPkt(char *pkt,int len)
 {
 	char *pucBuf=NULL;
@@ -64,7 +65,7 @@ void GwDumpPkt(char *pkt,int len)
 	}
 	printf("\r\n\n");
 }
-
+#endif
 
 extern int OamFrameSend(u8_t *pucFrame, u16_t usFrmLen);
 
@@ -1017,12 +1018,13 @@ gw_status gwdonu_fdb_mgt_mac_set(gw_uint8 * gw_mac)
 	memset(digitalMac,0,6);
 
 	/*-----cann't configure multicast mac -------*/
-	if(((vosMacCharToDigit(gw_mac[1]))%2)==1)
+	if((gw_mac[0]&0x1)==1)
 	{
 		printf("\nerror:cann't configure multicast mac\n");
 		return GW_ERROR;
 	}
 		auiPortlist[0] = 0;
+		ret = odmFdbMacDel(gw_mac, 0);
 		ret = odmFdbMacPortAdd(1,auiPortlist, gw_mac, 0);
 
 	return ret;

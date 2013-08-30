@@ -293,5 +293,4 @@ typedef struct onu_system_information_total
 	unsigned char	valid_flag;						/* 1 */ /* Total: 360 */
 }ONU_SYS_INFO_TOTAL;
 int  gwdonu_special_pkt_handler_fe(void *pkt,int len);
-void GwDumpPkt(char *pkt,int len);
 #endif /* GWDONUIF_H_ */

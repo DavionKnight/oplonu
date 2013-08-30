@@ -1172,7 +1172,6 @@ process_pon_data:
       /* Processing PON related data first */
       if (((char *)dma_buf+offset0)[0] == 0x01)   /**pkt from pon **/
       {
-    	  printk("aaaaaaaa22\r\n");
         el_appdma_t *p_s_appdma = NULL;
         
         if ((p_s_appdma=getdmabufaddress(dmaflg)) != NULL)
@@ -1267,7 +1266,6 @@ process_pon_data:
             }
             else if ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x06))
             {
-            	printk("in onu_respin_fe_rf400 0080\r\n");
               struct in_device *ipout=devtmp->ip_ptr;
               struct in_ifaddr *iplist;
               u32 iptmp, ipin;

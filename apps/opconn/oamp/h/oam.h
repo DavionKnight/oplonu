@@ -1551,6 +1551,5 @@ extern int oamMsqDestroy(void);
 extern int oamMsqSend(void *msgBuf, unsigned int msgsz);
 extern unsigned int oamMsqReceive(void *msgBuf, unsigned int msgsz);
 #endif
-void dumpPktAccordCondition(char *pkt,int len,int which_byte,char character);
 //export oam_sate_t oams;
 #endif /* __OAM_H__ */

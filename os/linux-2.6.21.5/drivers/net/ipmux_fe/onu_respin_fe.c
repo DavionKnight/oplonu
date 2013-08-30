@@ -26,8 +26,6 @@
 #include <linux/platform_device.h>
 //#include <linux/autoconf.h>
 
-#define ADD_0800_0080
-
 #ifdef CONFIG_ARCH_ONU
 #include <asm/mach-onu/onu_reg.h>
 #include <asm/mach-onu/onu_irq.h>
@@ -1122,7 +1120,6 @@ process_pon_data:
       /* Processing PON related data first */
       if (((char *)dma_buf+offset0)[0] == 0x01)   /**pkt from pon **/
       {
-    	  printk("aaaaaaaa11\r\n");
         el_appdma_t *p_s_appdma = NULL;
         
         if ((p_s_appdma=getdmabufaddress(dmaflg)) != NULL)
@@ -1177,12 +1174,8 @@ process_pon_data:
             struct in_ifaddr *iplist;
             u32 iptmp, masktmp, ipin;
             
-#ifdef ADD_0800_0080
             if ((((u8 *)dma_buf)[12+offset]==0x08) && (((u8 *)dma_buf)[13+offset]==0x00)
             		&& (!((((u8 *)dma_buf)[14+offset]==0x00) && (((u8 *)dma_buf)[15+offset]==0x80))))
-#else
-            if ((((u8 *)dma_buf)[12+offset]==0x08) && (((u8 *)dma_buf)[13+offset]==0x00))
-#endif
             {
               if (((((u8 *)dma_buf)[34+offset] == 0x00) &&
                 (((u8 *)dma_buf)[35+offset] == 0x43)) || 
@@ -1215,13 +1208,9 @@ process_pon_data:
                 }
               }
             }
-#ifdef ADD_0800_0080
             else if ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x06)
             		|| ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x00)
             				&& (((u8 *)dma_buf)[14+offset] == 0x00) && (((u8 *)dma_buf)[15+offset] == 0x80)))
-#else
-            else if ((((u8 *)dma_buf)[12+offset] == 0x08) && (((u8 *)dma_buf)[13+offset] == 0x06))
-#endif
             {
             	printk("in onu_respin_fe 0806\r\n");
               struct in_device *ipout=devtmp->ip_ptr;
