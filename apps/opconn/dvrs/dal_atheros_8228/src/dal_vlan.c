@@ -67,7 +67,8 @@ OPL_STATUS dalSetLocalSwitch(UINT8 portId, UINT8  enable)
 		/* added by cylan for bug3027 */
 		/* add the force_port_vlan_en=0 for the port not isolation */
 		shiva_port_force_portvlan_set(0, atherosPort, 0);
-
+		shiva_port_arp_leaky_set(0, atherosPort, 1);
+		shiva_port_uc_leaky_set(0,atherosPort,1);
               /* deleted by cylan for bug3027 */
 		/* add port to special vlan */
 		/*switch(atherosPort)
@@ -101,6 +102,8 @@ OPL_STATUS dalSetLocalSwitch(UINT8 portId, UINT8  enable)
 
 		/* added by cylan for bug3027 */
 		/* add the force_port_vlan_en=1 for the port isolation */
+		shiva_port_force_portvlan_set(0,atherosPort,1);
+
 //shiva_uc_leaky_mode_set(0,atherosPort,0);
 //printf("uc leaky mode 0\r\n");
 		shiva_port_arp_leaky_set(0, atherosPort, 0);
