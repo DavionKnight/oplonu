@@ -408,7 +408,7 @@ gw_status gwdonu_port_admin_status_get(gw_int32 portid, gwd_port_admin_t *status
 
 	if(ret == OPL_OK)
 	{
-		*status = lst-1;
+		*status = lst;
 	}
 
 	return (ret == OPL_OK)?GW_OK:GW_ERROR;
