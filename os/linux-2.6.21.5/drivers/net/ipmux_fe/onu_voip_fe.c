@@ -1195,7 +1195,7 @@ if((((unsigned char *)dma_buf)[offset0] == 0x0)&&	(((unsigned char *)dma_buf)[of
 #if 0
 		if (((char *)dma_buf+offset0)[0] == 0x01)   /**pkt from pon **/
 #else   /*------ send pkt OAM RCP and LoopBack PKT(from PON and UNI) to app modified by KnightDavion 2013-8-14 ------*/
-    if (((((unsigned char *)dma_buf)[offset0+12] == 0x88)&&(((unsigned char *)dma_buf)[offset0+13] == 0x09))||
+    if ((((char *)dma_buf+offset0)[0] == 0x01) ||((((unsigned char *)dma_buf)[offset0+12] == 0x88)&&(((unsigned char *)dma_buf)[offset0+13] == 0x09))||
     		((((unsigned char *)dma_buf)[offset0+offset1+12] == 0x08)&&	(((unsigned char *)dma_buf)[offset0+offset1+13] == 0x0)&&
     		(((unsigned char *)dma_buf)[offset0+offset1+14] == 0x0)&&(((unsigned char *)dma_buf)[offset0+offset1+15] == 0x80))||
     		((((unsigned char *)dma_buf)[offset0+offset1+12+4] == 0x08)&&	(((unsigned char *)dma_buf)[offset0+offset1+13+4] == 0x0)&&
