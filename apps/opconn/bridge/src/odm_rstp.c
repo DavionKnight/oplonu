@@ -1109,6 +1109,7 @@ STATUS odmRstpInit(void)
 	iExist = vosConfigModuleIsExisted(CFGFILE_RSTP);
 	if (0 != iExist)
 	{
+#if 0   /*-set rstp default as disable Modified by zhangjj 2013-9-23-*/
         odmRstpPktHandleModeSet(0); /* set to enable */
         #if defined(ONU_4PORT_AR8306)||defined(ONU_4PORT_AR8228)||defined(ONU_4PORT_AR8327)
         iRet = odmRstpEnable(OPL_TRUE);
@@ -1121,6 +1122,13 @@ STATUS odmRstpInit(void)
 
         odmRstpPortEnable(0x0000000F, OPL_TRUE);
         #endif
+#else
+		/* all ports disable rstp */
+		odmRstpPortEnable(0x0000000F, OPL_FALSE);
+
+		/* bridge disable rstp */
+		iRet = odmRstpEnable(OPL_FALSE);
+#endif
 		return NO_ERROR;
 	}
 
