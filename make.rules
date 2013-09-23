@@ -302,6 +302,8 @@ install:
 	cd $(TARGETDIR)/busybox/busybox-1.15.2/;make install;cp -rfP $(TARGETDIR)/busybox/busybox-1.15.2/_install/* $(KERNEL_DIR)/linux-2.6.21.5/root/
 	@echo "=== Preparing pppoe "
 	@echo "=== Preparing modules"
+	@mkdir -p $(KERNEL_DIR)/modules/obj/linux-2.6
+	@mkdir -p $(KERNEL_DIR)/modules/obj/linux-2.4
 	@cd $(KERNEL_DIR)/modules/build;make clean;make
 	@cp $(KERNEL_DIR)/modules/opl_cpuif/opl_cpuif.ko $(KERNEL_DIR)/linux-2.6.21.5/root/modules/
 	@cp $(KERNEL_DIR)/modules/opl_reg/opl_reg_mmap.ko $(KERNEL_DIR)/linux-2.6.21.5/root/modules/
