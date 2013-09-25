@@ -1,1 +1,0 @@
-cmd_/home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.ko /home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.o /home/fengzhishang/oplonu/os/modules/opl_minte/opl_minte.mod.o

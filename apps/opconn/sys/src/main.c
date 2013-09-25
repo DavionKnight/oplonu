@@ -391,7 +391,6 @@ int main(int argc,char *argv[])
             printf("done\r\n");
         }
     }
-
 #if defined(ONU_4PORT_AR8306) || defined(ONU_4PORT_AR8228)|| defined(ONU_4PORT_AR8327)
     printf("Init DMA1 task ... ");
     if(OK != halDma1ThreadInit())

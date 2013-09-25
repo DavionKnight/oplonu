@@ -1,1 +1,0 @@
-cmd_/home/fengzhishang/oplonu/os/modules/opl_cs1/opl_cs1_mmap.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/fengzhishang/oplonu/os/modules/opl_cs1/opl_cs1_mmap.ko /home/fengzhishang/oplonu/os/modules/opl_cs1/opl_cs1_mmap.o /home/fengzhishang/oplonu/os/modules/opl_cs1/opl_cs1_mmap.mod.o

@@ -1,1 +1,0 @@
-cmd_/home/fengzhishang/oplonu/os/modules/opl_uptm_intr/uptm_intr.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/fengzhishang/oplonu/os/modules/opl_uptm_intr/uptm_intr.ko /home/fengzhishang/oplonu/os/modules/opl_uptm_intr/uptm_intr.o /home/fengzhishang/oplonu/os/modules/opl_uptm_intr/uptm_intr.mod.o

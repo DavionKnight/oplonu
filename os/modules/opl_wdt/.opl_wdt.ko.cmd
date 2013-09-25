@@ -1,1 +1,0 @@
-cmd_/home/fengzhishang/oplonu/os/modules/opl_wdt/opl_wdt.ko := mips-linux-uclibc-ld  -m elf32btsmip -r -o /home/fengzhishang/oplonu/os/modules/opl_wdt/opl_wdt.ko /home/fengzhishang/oplonu/os/modules/opl_wdt/opl_wdt.o /home/fengzhishang/oplonu/os/modules/opl_wdt/opl_wdt.mod.o

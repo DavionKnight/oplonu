@@ -58,7 +58,7 @@ extern UINT8 customerTpid[2];
 extern void odmStpRcvBpdu(unsigned char ucPortid, unsigned short usVlanid, void *pkt, unsigned short len);
 extern int odmMulticastIgmpMsgHandler_MultiPort(
   UINT8 portNum,UINT16 vlan,UINT8 withTag,UINT8 *payLoad,UINT16 len, uint8 *raw_pkt);
-
+extern int gwdonu_special_pkt_handler_fe(void *pkt,int len);
 static void halDma1Thread(void)
 {
     int i;

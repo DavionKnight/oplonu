@@ -1757,6 +1757,50 @@ gw_status gwdonu_syslog_register_heandler(libgwdonu_syslog_heandler_t handler)
 	return GW_OK;
 }
 
+gw_status gwdonu_vfile_open(gw_uint8 * fname, gw_int32 mode, gw_int32 * fd, gw_uint8 ** pv)
+{
+	gw_int32 lfd = 0, ret = -1, flags = 0;
+	gw_uint8 name[80] = "/cfg/defconf";
+	if(fname )
+		strcpy((char*)name, (const char*)fname);
+
+	if(mode == 1)
+		flags = O_RDONLY;
+	else
+		flags = O_CREAT|O_RDWR;
+
+	lfd = open((const char*)name, flags, 0777);
+
+
+	if(lfd >= 0)
+	{
+		*fd = lfd;
+		ret = 1;
+	}
+
+	*pv = NULL;
+
+	return ret;
+}
+gw_status gwdonu_vfile_close(void *data)
+{
+	gw_int32 fd =	*(gw_int32*)data;
+	close(fd);
+	return 0;
+}
+gw_status gwdonu_qos_vlan_queue_map_t(gw_int32 count, gw_qos_vlan_queue_data_t * data)
+{
+	return GW_OK;
+}
+gw_status gwdonu_config_write_to_flash_t()
+{
+	gw_int32 ret = GW_OK;
+
+    cliTextConfigSave();
+    vosConfigSave(NULL);
+
+	return ret;
+}
 
 gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_onu_llid_get,
@@ -1817,6 +1861,13 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_olt_mac_get,
 		gwdonu_ver_get,
 		gwdonu_syslog_register_heandler,
+
+		gwdonu_vfile_open,
+		gwdonu_vfile_close,
+
+		gwdonu_qos_vlan_queue_map_t,
+		gwdonu_config_write_to_flash_t,
+
 
 } ;
 
