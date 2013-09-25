@@ -40,6 +40,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include "gw_types.h"
 #include "gwdonuif.h"
 #include "oam.h"
 

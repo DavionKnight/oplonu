@@ -26,7 +26,7 @@ MODIFICATION DETAILS
 #include "hal.h"
 #include "version.h"
 #include "zte.h"
-#include "gwdonuif.h"
+#include "gw_types.h"
 #include "product_info.h"
 
 #define MODULE MOD_OAM

@@ -35,7 +35,6 @@
 #include <opl_host.h>
 #include <unistd.h>
 #include "odm_port.h"
-#include "gwdonuif.h"
 
 extern void wait_for_host_test_interrupt(void);
 extern int get_ipmux_el_rx_buf_data(char *pbuf, int* plen);

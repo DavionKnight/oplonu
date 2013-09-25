@@ -36,7 +36,6 @@
 #include "rstp_in.h"
 #include "rstp_bpdu.h"
 #include "vos.h"
-#include "gwdonuif.h"
 
 hostCntS hostCnt = {0,0,0,0,0,0};
 
