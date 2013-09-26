@@ -355,15 +355,14 @@ void cliPrintVersion(ENV_t *pstEnv, int nVerbose)
   }
   else {
     vosPrintf(pstEnv->nWriteFd,
-      "Software version: V%dR%02dB%03d \r\n"
-      "Revision: %s\r\n"
-      "Build time: %s, %s\r\n",
+      "Software version: V%dR%02dB%03d (Build time: %s, %s)\r\n"
+      "Revision: %s\r\n",
       MAJOR_VERSION,
       MINOR_VERSION,
       BUILD_NUMBER,
-      product_rev,
       build_time,
-      build_date);
+      build_date,
+      product_rev);
   }
 }
 #endif
