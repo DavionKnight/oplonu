@@ -2794,7 +2794,7 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 	}
 
 	dalSoftArlMacFlush(portId);
-//printf("vlan mode is %d...\n",mode);
+
 	switch(mode)
 	{
 		case VLAN_TRANSPARENT:
@@ -2837,9 +2837,6 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			/* clone and prop */
 			shiva_port_vlan_propagation_set(0, atherosPort, FAL_VLAN_PROPAGATION_CLONE);
 
-			/* added by cylan for bug3027*/
-			dalToTransparentModeHandle(portId);
-//printf("after handle...\n");
 			/* get GE's pcvid and set it to portId's pcvid */
 			shiva_port_default_cvid_get(0, 6, &vid);
 			shiva_port_default_cvid_set(0, atherosPort, vid);
@@ -2852,9 +2849,12 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 
 			/* add this port to GE port based vlan member */	
 			shiva_portvlan_member_add(0, 6, atherosPort);
-			
+
             dal_vtt_info[atherosPort].vlanMode = VLAN_TRANSPARENT;
             dal_vtt_info[atherosPort].defaultVlanTag = 0xFFF;
+
+			/* Modified by zhangjj for bug18619*/
+			dalToTransparentModeHandle(portId);
 
 			break;
 		case VLAN_TAG:
@@ -2978,9 +2978,6 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			
 			break;
 		case VLAN_TRUNK:
-
-//			while(flag != 0)/*--- add atheros port 0 portvlan mode(Trunk) Modified by zhangjj 2013-7-30 ---*/
-//			{											/*----- Solve the bug :if dot1q enabled ICMP to CPU unreached----*/
 			iStatus = shiva_port_1qmode_set(0,atherosPort,FAL_1Q_SECURE);//has changed by zhangjj
 			if(OPL_OK != iStatus)
 			{
@@ -3045,9 +3042,7 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			{
 				return OPL_ERROR;
 			}
-	
-			/* delete this port from GE port based vlan member */	
-			shiva_portvlan_member_del(0, 6, atherosPort);
+
 #else
 
 //			shiva_port_default_cvid_get(0, 6, &vid);
@@ -3076,31 +3071,13 @@ OPL_STATUS dalPortVlanModeSet(UINT8 portId,UINT32 mode)
 			{
 				return OPL_ERROR;
 			}
+#endif
 
 			/* delete this port from GE port based vlan member */	
-//			shiva_portvlan_member_del(0, 6, atherosPort);
-//				}
-			/* add this port to GE port based vlan member */	
-//			shiva_port_default_cvid_get(0, atherosPort, &vid);
-//			printf("vid is %d*******\n",vid);
-//			if(1==vid)
-				shiva_portvlan_member_del(0, 6, atherosPort);
-//			else
-//				shiva_portvlan_member_del(0, 6, atherosPort);				
- //           dal_vtt_info[atherosPort].vlanMode = VLAN_TRUNK;
- //           dal_vtt_info[atherosPort].defaultVlanTag = 0xFFF;
-#endif
+			shiva_portvlan_member_del(0, 6, atherosPort);
 
 			/* added by cylan for bug3027*/
 			dalToTrunkModeHandle(portId);
-//			if(atherosPort)
-	//			atherosPort = 0;
-//			else
-//			{
-//				flag = 0;
-//				atherosPort = port;
-//			}
-//			}
 			break;
 		case VLAN_AGGREGATION:
 			dalArlMacPortLockCpuEn(portId, TRUE);
