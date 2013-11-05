@@ -749,6 +749,28 @@ gw_status gwdonu_port_pvid_get(gw_int32 portid, gw_int16 *vlanid)
 	return ret;
 }
 
+gw_int32 gwdonu_port_mirror_stat_get(gw_int32 unit,gw_int32* mode)
+{
+
+}
+gw_int32 gwdonu_port_mirror_stat_set(gw_int32 unit,gw_int32 mode)
+{
+}
+
+gw_int32 gwdonu_port_ingress_mirror_set(gw_int32 unit,gw_int32 port,gw_int32 stat_val)
+{
+}
+
+gw_int32 gwdonu_port_egress_mirror_set(gw_int32 unit,gw_int32 port,gw_int32 stat_val)
+{
+}
+
+gw_int32 gwdonu_port_mirror_to_port_set(gw_int32 port,gw_int32 portmap)
+{
+}
+
+
+
 
 gw_status gwdonu_vlan_entry_getnext(gw_uint32 index, gw_uint16 *vlanid, gw_uint32 *tag_portlist, gw_uint32 *untag_portlist)
 {
@@ -1757,7 +1779,7 @@ gw_status gwdonu_syslog_register_heandler(libgwdonu_syslog_heandler_t handler)
 	return GW_OK;
 }
 
-gw_status gwdonu_vfile_open(gw_uint8 * fname, gw_int32 mode, gw_int32 * fd, gw_uint8 ** pv)
+gw_int32 gwdonu_vfile_open(gw_uint8 * fname, gw_int32 mode, gw_int32 * fd, gw_uint8 ** pv)
 {
 	gw_int32 lfd = 0, ret = -1, flags = 0;
 	gw_uint8 name[80] = "/cfg/defconf";
@@ -1782,13 +1804,13 @@ gw_status gwdonu_vfile_open(gw_uint8 * fname, gw_int32 mode, gw_int32 * fd, gw_u
 
 	return ret;
 }
-gw_status gwdonu_vfile_close(void *data)
+gw_int32 gwdonu_vfile_close(void *data)
 {
 	gw_int32 fd =	*(gw_int32*)data;
 	close(fd);
 	return 0;
 }
-gw_status gwdonu_qos_vlan_queue_map_t(gw_int32 count, gw_qos_vlan_queue_data_t * data)
+gw_int32 gwdonu_qos_vlan_queue_map_t(gw_int32 count, gw_qos_vlan_queue_data_t * data)
 {
 	return GW_OK;
 }
@@ -1800,6 +1822,28 @@ gw_status gwdonu_config_write_to_flash_t()
     vosConfigSave(NULL);
 
 	return ret;
+}
+extern const char * build_date;
+extern const char * build_time;
+
+gw_int32 gwdonu_version_build_time_get(gw_int8* buildtime)
+{
+	sprintf(buildtime,"%s %s",build_date,build_time);
+	return GW_OK;
+}
+
+gw_int32 gwdonu_cpld_write_register(gw_uint32 reg,gw_uint32 date)
+{
+//		return GW_ERROR;
+}
+
+gw_int32 gwdonu_cpld_read_register(gw_uint32 reg,gw_uint8 *date)
+{
+	//	return GW_ERROR;
+}
+gw_int32 gwdonu_poe_port_operation_set(gw_int32 port,gw_int32 stat)
+{
+//	return GW_ERROR;
 }
 
 gwdonu_im_if_t g_onu_im_ifs = {
@@ -1821,6 +1865,12 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_port_isolate_set,
 		gwdonu_port_statistic_get,
 		gwdonu_port_pvid_get,
+		gwdonu_port_mirror_stat_get,
+		gwdonu_port_mirror_stat_set,
+		gwdonu_port_ingress_mirror_set,
+		gwdonu_port_egress_mirror_set,
+		gwdonu_port_mirror_to_port_set,
+
 
 		gwdonu_vlan_entry_getnext,
 		gwdonu_vlan_entry_get,
@@ -1867,8 +1917,11 @@ gwdonu_im_if_t g_onu_im_ifs = {
 
 		gwdonu_qos_vlan_queue_map_t,
 		gwdonu_config_write_to_flash_t,
+		gwdonu_version_build_time_get,
 
-
+		gwdonu_cpld_read_register,
+		gwdonu_cpld_write_register,
+		gwdonu_poe_port_operation_set
 } ;
 
 

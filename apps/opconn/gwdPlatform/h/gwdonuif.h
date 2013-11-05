@@ -203,6 +203,18 @@ typedef gw_int32 (*libgwdonu_qos_vlan_queue_map_t)(gw_int32 count, gw_qos_vlan_q
 
 typedef gw_int32 (*libgwdonu_config_write_to_flash_t)();
 
+typedef gw_int32 (*libgwdonu_port_mirror_stat_get_t)(gw_int32 unit,gw_int32*mode);
+typedef gw_int32 (*libgwdonu_port_mirror_stat_set_t)(gw_int32 unit,gw_int32 mode);
+typedef gw_int32 (*libgwdonu_port_ingress_mirror_set_t)(gw_int32 unit,gw_int32 port,gw_int32 stat_val);
+typedef gw_int32 (*libgwdonu_port_egress_mirror_set_t)(gw_int32 unit,gw_int32 port,gw_int32 stat_val);
+typedef gw_int32 (*libgwdonu_port_mirror_to_port_set_t)(gw_int32 port,gw_int32 portmap);
+typedef gw_int32 (*libgwdonu_version_build_time_get_t)(gw_int8 *buildtime);
+
+typedef gw_int32 (*libgwdonu_cpld_register_write)(gw_uint32 reg,gw_uint32 date);
+typedef gw_int32 (*libgwdonu_cpld_register_read)(gw_uint32 reg,gw_uint8 * date);
+
+typedef gw_int32 (*libgwdonu_poe_port_operation_set)(gw_int32 port,gw_int32 stat);
+
 typedef struct gwdonu_im_if_s{
 
 	libgwdonu_onu_llid_get_t onullidget;
@@ -223,7 +235,12 @@ typedef struct gwdonu_im_if_s{
 	libgwdonu_port_isolate_set_t		portisolateset;
 	libgwdonu_port_statistic_get_t	portstatget;
 	libgwdonu_port_pvid_get_t		portpvidget;
-
+    libgwdonu_port_mirror_stat_get_t portmirrorstatget;
+    libgwdonu_port_mirror_stat_set_t portmirrorstatset;
+    libgwdonu_port_ingress_mirror_set_t portingressmirrorset;
+	libgwdonu_port_egress_mirror_set_t portegressmirrorset;
+    libgwdonu_port_mirror_to_port_set_t mirrortoportset;
+    
 	libgwdonu_vlan_entry_getnext_t		vlanentrygetnext;
 	libgwdonu_vlan_entry_get_t		vlanentryget;
 	libgwdonu_fdb_entry_get_t		fdbentryget;
@@ -255,7 +272,6 @@ typedef struct gwdonu_im_if_s{
 #ifndef CYG_LINUX
 	libgwdonu_onu_reset onureset;
 #endif
-
 	libgwdonu_onu_set_loopalm_led startloopled;
 	libgwdonu_onu_set_loopalm_led stoploopled;
 
@@ -269,6 +285,12 @@ typedef struct gwdonu_im_if_s{
 
 	libgwdonu_qos_vlan_queue_map_t qosvlanqueuemap;
 	libgwdonu_config_write_to_flash_t wrflash;
+    libgwdonu_version_build_time_get_t vertimeget;
+
+	libgwdonu_cpld_register_read	cpldread;
+    libgwdonu_cpld_register_write cpldwrite;
+    libgwdonu_poe_port_operation_set poeportoperation;
+
 
 }gwdonu_im_if_t;
 
