@@ -37,6 +37,14 @@ int cpldWrite(int offset,unsigned char setData)
 return 1;
 }
 
+char get_serialcard_status()
+{
+	unsigned char card_available;
+
+	cpldRead(CS1_SRIALCARD_STATUS,&card_available);
+	return card_available&0x1;
+}
+
 void voip_POTS1_led_on()
 {
 	char led_status;

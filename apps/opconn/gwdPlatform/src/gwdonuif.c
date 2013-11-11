@@ -37,9 +37,14 @@
 #include "qos.h"
 #include "mc_control.h"
 #include "odm_vlan.h"
+#include "run_led.h"
 
 //#define GWDDEBUG
 //add from gwdonu/oam.h
+
+#define DEVICE_TYPE_GT872_A			0x0031
+#define DEVICE_TYPE_GT873_A			0x0032
+
 typedef struct onu_system_information_total
 {
 	unsigned short 	product_serial;					/* 2 */
@@ -1872,7 +1877,17 @@ gw_status gwdonu_multicast_transmission_get(gw_uint8 *en)
 	*en = mulconfig?0:1;
 	return GW_OK;
 }
+gw_status gwdonu_real_product_type_get(char *st)
+{
+	unsigned char cardstatus;
+	cardstatus = get_serialcard_status();
+	if(0x1 == cardstatus)
+		*st = DEVICE_TYPE_GT872_A;
+	else
+		*st = DEVICE_TYPE_GT873_A;
 
+	return GW_OK;
+}
 
 gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_onu_llid_get,
@@ -1951,7 +1966,8 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_cpld_write_register,
 		gwdonu_poe_port_operation_set,
 		gwdonu_multicast_transmission_set,
-		gwdonu_multicast_transmission_get
+		gwdonu_multicast_transmission_get,
+		gwdonu_real_product_type_get
 } ;
 
 

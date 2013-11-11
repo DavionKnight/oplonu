@@ -9,6 +9,7 @@ void powerStatus_check();
 int cpldRead(int offset,unsigned char *setData);
 int cpldWrite(int offset,unsigned char setData);
 int SetAlarmEnable(int enable);
+char get_serialcard_status();
 extern int loopdetect_en;
 
 
