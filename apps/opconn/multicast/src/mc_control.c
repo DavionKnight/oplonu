@@ -2617,6 +2617,12 @@ OPL_STATUS mcInitFromConfigFile()
     CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
     CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mcControlBlock.mcRecvEn);
 
+  /*add by zhangjj for igmp disable(translate) 2013-11-4*/
+  mcControlBlock.mcRecvEn = 0;
+  vosConfigUInt32Set(CFGFILE_MULTICAST, CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
+      CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mcControlBlock.mcRecvEn);
+  /*end*/
+
   if(mcControlBlock.mcRecvEn) {
     dalMulticastEnable();
   }

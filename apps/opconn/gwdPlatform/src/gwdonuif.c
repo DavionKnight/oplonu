@@ -35,6 +35,8 @@
 #include "stats.h"
 #include "hw_interface.h"
 #include "qos.h"
+#include "mc_control.h"
+#include "odm_vlan.h"
 
 //#define GWDDEBUG
 //add from gwdonu/oam.h
@@ -570,36 +572,38 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 	return (ret == OPL_OK)?GW_OK:GW_ERROR;
 }
 
-
 gw_status gwdonu_port_isolate_get(gw_int32 portid, gw_int32 *en)
 {
-#ifdef GWDDEBUG
-	printf("in gwdonu_port_isolate_get fuction ,this function is not defined .......\r\n");
-#endif
-	return 0;
+    gw_uint32 localswitchflag;
+
+	if(NULL == en)
+		return GW_ERROR;
+
+    /* default local switch disable */
+    localswitchflag = vosConfigUInt32Get(VLAN_CONFIG_NAME,
+        LOCAL_SWITCH_SEC, LOCAL_SWITCH_KEY, 0);
+    *en = (0x1e == localswitchflag)?1:0;
+	return GW_OK;
 }
 
 
 gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
 {
-//	printf("in gwdonu_port_isolate_set fuction ,this function is not defined .......\r\n");
   int ret = 0;
   int i = 0;
 
-  if((portid>0)&&(portid<5))
-	  ret = odmSetLocalSwitch(portid,en);
-  else if(0xff == portid)
-	  {
-		  for(i=1;i<5;i++)
-			  {
-				  ret = odmSetLocalSwitch(i,en);
-				  if(GW_OK != ret)
-					  return ret;
-			  }
-	  }
+  if(0xff == portid)
+  {
+	for(i=1;i<=4;i++)
+	{
+	  ret = odmSetLocalSwitch(i,en);
+	  if(GW_OK != ret)
+		  return GW_ERROR;
+	}
+  }
   else
 	  return GW_ERROR;
-	return ret;
+  return GW_OK;
 }
 
 
@@ -1828,7 +1832,7 @@ extern const char * build_time;
 
 gw_int32 gwdonu_version_build_time_get(gw_int8* buildtime)
 {
-	sprintf(buildtime,"%s %s",build_date,build_time);
+	sprintf(buildtime,"%s %s",build_time,build_date);
 	return GW_OK;
 }
 
@@ -1845,6 +1849,30 @@ gw_int32 gwdonu_poe_port_operation_set(gw_int32 port,gw_int32 stat)
 {
 //	return GW_ERROR;
 }
+
+gw_status gwdonu_multicast_transmission_set(gw_uint8 en)
+{
+	gw_uint32 mulconfig;
+	if(en)
+		dalMulticastDisable();
+	else
+		dalMulticastEnable();
+
+	mulconfig = en?0:1;
+	  vosConfigUInt32Set(CFGFILE_MULTICAST, CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
+	      CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mulconfig);
+	return GW_OK;
+}
+gw_status gwdonu_multicast_transmission_get(gw_uint8 *en)
+{
+	gw_uint32 mulconfig = 0;
+	mulconfig = vosConfigUInt32Get(CFGFILE_MULTICAST,
+	    CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
+	    CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mulconfig);
+	*en = mulconfig?0:1;
+	return GW_OK;
+}
+
 
 gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_onu_llid_get,
@@ -1921,7 +1949,9 @@ gwdonu_im_if_t g_onu_im_ifs = {
 
 		gwdonu_cpld_read_register,
 		gwdonu_cpld_write_register,
-		gwdonu_poe_port_operation_set
+		gwdonu_poe_port_operation_set,
+		gwdonu_multicast_transmission_set,
+		gwdonu_multicast_transmission_get
 } ;
 
 
