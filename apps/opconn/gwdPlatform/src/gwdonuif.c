@@ -1855,26 +1855,40 @@ gw_int32 gwdonu_poe_port_operation_set(gw_int32 port,gw_int32 stat)
 //	return GW_ERROR;
 }
 
-gw_status gwdonu_multicast_transmission_set(gw_uint8 en)
+gw_status gwdonu_multicast_mode_set(mc_mode_t mode)
 {
-	gw_uint32 mulconfig;
-	if(en)
-		dalMulticastDisable();
-	else
-		dalMulticastEnable();
+	gw_uint32 mulconfig = 0 ,ret = 0;
 
-	mulconfig = en?0:1;
-	  vosConfigUInt32Set(CFGFILE_MULTICAST, CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
+	if((MC_SNOOPING <= mode) && (mode <=MC_PROXY))
+	{
+		ret = dalMulticastEnable();
+		ret += odmMulticastSwitchSet(mode);
+		mulconfig = 1;
+	}
+	else if(MC_DISABLE == mode)
+	{
+		ret = dalMulticastDisable();
+		mulconfig = 0;
+	}
+	else
+		printf("multicast mode set error\r\n");
+	if(!ret)
+	vosConfigUInt32Set(CFGFILE_MULTICAST, CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
 	      CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mulconfig);
 	return GW_OK;
 }
-gw_status gwdonu_multicast_transmission_get(gw_uint8 *en)
+gw_status gwdonu_multicast_mode_get(mc_mode_t *mode)
 {
-	gw_uint32 mulconfig = 0;
+	gw_uint32 mulconfig = MC_DISABLE;
 	mulconfig = vosConfigUInt32Get(CFGFILE_MULTICAST,
 	    CFGSECTION_MULTICAST_IGMP_MANAGEMENT,
 	    CFGKEY_MULTICAST_IGMP_MANAGEMENT_IGMP_MODE, mulconfig);
-	*en = mulconfig?0:1;
+	if(mulconfig)
+	{
+		*mode = odmMulticastSwitchGet();
+	}
+	else
+		*mode = MC_DISABLE;
 	return GW_OK;
 }
 gw_status gwdonu_real_product_type_get(char *st)
@@ -1965,8 +1979,8 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_cpld_read_register,
 		gwdonu_cpld_write_register,
 		gwdonu_poe_port_operation_set,
-		gwdonu_multicast_transmission_set,
-		gwdonu_multicast_transmission_get,
+		gwdonu_multicast_mode_set,
+		gwdonu_multicast_mode_get,
 		gwdonu_real_product_type_get
 } ;
 

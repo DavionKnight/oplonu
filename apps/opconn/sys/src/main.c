@@ -221,7 +221,7 @@ int main(int argc,char *argv[])
 
     /* Init PON MAC ID */
     odmPonMacIdInit();
-
+    run_led();         //cs1 init
     printf("Init HAL ... ");
     if(NO_ERROR != halInit())			//oam in it  note by zhangjj 2013-2-27
     {
@@ -423,7 +423,6 @@ int main(int argc,char *argv[])
 reg_gwdonu_im_interfaces(&g_onu_im_ifs,sizeof(g_onu_im_ifs));
 plat_init();
 
-run_led();         //cs1 init
 //ret =init_main();		//cs2 init
 //if(ret !=-1)
 ts_init();			//terminal server init
