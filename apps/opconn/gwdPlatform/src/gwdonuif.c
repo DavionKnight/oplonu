@@ -601,7 +601,7 @@ gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
   {
 	for(i=1;i<=4;i++)
 	{
-	  ret = odmSetLocalSwitch(i,en);
+	  ret = odmSetLocalSwitch(i,(en?0:1));
 	  if(GW_OK != ret)
 		  return GW_ERROR;
 	}
