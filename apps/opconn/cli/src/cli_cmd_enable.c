@@ -1720,7 +1720,7 @@ STATUS cliCmdLedAlarmEnable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 }
 STATUS cliCmdLedAlarmDisable(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
-	test_led_flag =2;
+	test_led_flag =0;
 	return OK;
 }
 STATUS cliCmdDisplayOpm(ENV_t *pstEnv, PARA_TABLE_t *pstPt)

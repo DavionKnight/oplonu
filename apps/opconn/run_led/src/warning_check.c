@@ -25,16 +25,16 @@ void warning_check()
 		led_status = (led_status | 0x02);	//warning_led off
 	cpldWrite(CS1_RUN_LED,led_status);
 }
-void alarm_led_enable(int test_led_flag)
+void alarm_led_enable(int test_flag)
 {
 	char led_status;
 
 	cpldRead(CS1_RUN_LED,&led_status);
-	if(1 == test_led_flag)								//warning_led on
+	if(1 == test_flag)								//warning_led on
 	{
 		led_status &= 0xfd;
 	}
-	else if(2 == test_led_flag)
+	else if(0 == test_flag)
 	{
 		led_status |= 0x02;
 	}

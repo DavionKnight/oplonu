@@ -194,38 +194,32 @@ count++;
 //printf("count is %d\n",count);
 
 // test_led_flag != 0 , the command line is testing the arm led now,so stop warning_check
-if(0 == test_led_flag)
-	warning_check();
-else
-{
-	alarm_led_enable(test_led_flag);
-	count2++;
-}
-
-//if test led enabled , after 5s  the test will return to disable and go on warning_check function
-if(count2 >= 50)
-{
-	test_led_flag=0;
-	count2 = 0;
-}
-	powerStatus_check();
-
-if(count >= 5)					//every 500ms
-{
-	cpldRead(CS1_RUN_LED,&uData);
-	
-	if(0 == (uData & 0x01))
+	if(0 == test_led_flag)
 	{
-		uData = 0x01|uData;
+		warning_check();
 	}
 	else
 	{
-		uData = 0xfe & uData;
+		alarm_led_enable(test_led_flag);
 	}
-	cpldWrite(CS1_RUN_LED,uData);
-	count=0;
-}
 
+	powerStatus_check();
+
+	if(count >= 5)
+	{
+		cpldRead(CS1_RUN_LED,&uData);
+
+		if(0 == (uData & 0x01))
+		{
+			uData = 0x01|uData;
+		}
+		else
+		{
+			uData = 0xfe & uData;
+		}
+		cpldWrite(CS1_RUN_LED,uData);
+		count = 0;
+	}
 //	signal(SIGALRM,led_change_status);
 }
 
