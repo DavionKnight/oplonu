@@ -51,8 +51,13 @@ static struct platform_device onu_fe_device = {
 /*----------------flash information---------------------*/
 #define FLASH_SIZE   0x800000 //8MB
 #define U_BOOT_SIZE  0x40000  //256KB
+#if 0    //modified by zhangjj the true size is 128K and 640K
 #define U_BOOT_ENV   0x10000 //64KB
 #define OS_CFG       0x10000  //64KB
+#else
+#define U_BOOT_ENV   0x20000 //128KB
+#define OS_CFG       0xa0000  //640KB
+#endif
 #define OS_SIZE      (FLASH_SIZE-U_BOOT_SIZE-U_BOOT_ENV-OS_CFG)/2  
 
 static struct resource flash_resources[] = {
