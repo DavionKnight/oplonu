@@ -1100,7 +1100,6 @@ if((*(pucFrmTmp+6)==0x0)&&(*(pucFrmTmp+7)==0x0f))
 #endif
 #endif
 					else {
-						OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "\nOAM_CODE_ORG_SPEC\n");
 #if defined(OAM_SUPPORT_REG_CALLBACK)
 	                    if (oam_private_entry != NULL &&
 	                        (!memcmp(oam_private_oui,(u8_t*)p_info,3)))                       

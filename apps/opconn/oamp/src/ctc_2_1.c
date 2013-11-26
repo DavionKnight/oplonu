@@ -12232,27 +12232,6 @@ OPL_STATUS eopl_ctc_load_new_img(void)
 	ucBootOption = 1;
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Receive Active Image PDU!\n");
 
-    bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
-    if (FLASH_BOOT_OS2_FLAG == bootFlag)
-    {
-		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
-//								printf("FLASH_BOOT_FLAG_NORMAL9999999999999\n");
-		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
-    }
-    else {
-		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
-//								printf("FLASH_BOOT_FLAG_NORMALAAAAAAAAAAA\n");
-		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
-    }
-	
-    /* for FLASH_BOOT_FLAG_UPGRADE, we use FLASH_BOOT_OS2_FLAG to indicate
-       that the os upgrade by OAM
-    */
-	OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_UPGRADE to FLASH_BOOT_OS2_FLAG!\n");
-//	OP_DEBUG(DEBUG_LEVEL_INFO, "IN   LOAD   NEW  IMAGE  !!!!!!!!\n");
-//						printf("FLASH_BOOT_FLAG_NORMALBBBBBBBB\n");
-    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS2_FLAG);
-
 	ucAck = 0;
 
 	memset(out_data, 0, OAM_MAXIMUM_PDU_SIZE);
@@ -12293,6 +12272,25 @@ OPL_STATUS eopl_ctc_load_new_img(void)
 	OamFrameSend(out_data, usPktLen);
 	OAMDBG(("Send Activate Image Response message!\n"));
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Send Activate Image Response PDU!\n");
+
+
+    bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
+    if (FLASH_BOOT_OS2_FLAG == bootFlag)
+    {
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
+    }
+    else {
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
+    }
+
+    /* for FLASH_BOOT_FLAG_UPGRADE, we use FLASH_BOOT_OS2_FLAG to indicate
+       that the os upgrade by OAM
+    */
+	OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_UPGRADE to FLASH_BOOT_OS2_FLAG!\n");
+    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS2_FLAG);
+
 
 	/* reboot device */
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Call odmSysReset() to reboot system!\n");
@@ -12415,23 +12413,14 @@ OPL_STATUS eopl_ctc_commit_new_img(void)
 	/* commit new image as primary bootable image*/
 
     bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
-	printf("bootFlag is %c\n",bootFlag);
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
-//								printf("FLASH_BOOT_FLAG_NORMALCCCCCCC\n");
-//		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS2_FLAG);
-//		printf("KKKKKKKKKKKKKKK\n");
-									printf("FLASH_BOOT_FLAG_NORMALEEEEEEEEE\n");
-    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
-
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
     }
     else {
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
-//								printf("FLASH_BOOT_FLAG_NORMALDDDDDDDDDDD\n");
-//		vosConfigBootFlagSet(FLASH_BOOT_FLAG_NORMAL, FLASH_BOOT_OS1_FLAG);
-//								printf("FLASH_BOOT_FLAG_NORMALEEEEEEEEE\n");
-    vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
     }
 	ucAck = 0;
 
@@ -12516,7 +12505,6 @@ OPL_STATUS eopl_ctc_commit_handler(u8_t *pucData)
 
 	usOpcode = *((u16_t *)pucIn);
 	pucIn += sizeof(u16_t);
-printf("come in commit handler\n");
 	switch(usOpcode)
 	{
 		case TFTP_COMMIT_IMG_REQ:
