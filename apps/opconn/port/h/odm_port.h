@@ -34,6 +34,7 @@ Author                Date              Description of Changes
 #define 	ODM_MAX_NUM_OF_TRUNK_VLAN	8
 
 #define 	ODM_START_PORT_NUN 		    1
+#define 	ODM_GE_PORT					6   //add by zhangjj 2013-11-25
 #define     ODM_MAX_GRUP_NUM_PER_PORT   64
 
 #define     ODM_DEF_VLAN_NUM_START      1

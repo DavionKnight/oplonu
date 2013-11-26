@@ -60,7 +60,7 @@ extern unsigned int bOnePortLooptimer[NUMBER_OF_PORTS];
 
 UINT32 odmPortRangeCheck(UINT32 portId)
 {
-	if(ODM_START_PORT_NUN > portId || ODM_NUM_OF_PORTS < portId)
+	if(ODM_START_PORT_NUN > portId || ODM_GE_PORT < portId)
 	{
 		return PORT_INVALID;
 	}else
