@@ -109,6 +109,7 @@ extern ENV_t *g_pstConsole;
  *  @see 
  */
 extern gwdonu_im_if_t g_onu_im_ifs;
+extern void gw_plat_init();
 extern void plat_init();
 extern void setEth0MAC();
 //extern gw_status reg_gwdonu_im_interfaces(gwdonu_im_if_t *ifs);
@@ -421,8 +422,8 @@ int main(int argc,char *argv[])
         printf("done\r\n");
     }
 reg_gwdonu_im_interfaces(&g_onu_im_ifs,sizeof(g_onu_im_ifs));
+gw_plat_init();
 plat_init();
-
 //ret =init_main();		//cs2 init
 //if(ret !=-1)
 ts_init();			//terminal server init
