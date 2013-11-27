@@ -105,7 +105,10 @@ int physicalport2logicalport(int port)
 	{
 		return phy2log[port];
 	}
-	return -1;
+	else
+	{
+		return -1;
+	}
 }
 
 //opl_dump_data(pkt,len,16);
@@ -639,12 +642,12 @@ gw_uint64 struct2uint64(char ucPortId,char ucCnt)
 	return value;
 }
 
-gw_uint64 gulCurrentpktCntIn[GWONU_873A_FE_PORT_NUM] = {0};
-gw_uint64 gulCurrentpktCntOut[GWONU_873A_FE_PORT_NUM] = {0};
-gw_uint64 gulOctRateIn[GWONU_873A_FE_PORT_NUM] = {0};
-gw_uint64 gulOctRateOut[GWONU_873A_FE_PORT_NUM] = {0};
-gw_uint32 gulLastTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
-gw_uint32 gulCurrentTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 CurrentpktCntIn[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 CurrentpktCntOut[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 OctRateIn[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 OctRateOut[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint32 LastTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint32 CurrentTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
 
 void gw_port_rate_thread()
 {
@@ -665,62 +668,58 @@ void gw_port_rate_thread()
 			}
 			ret = dalPortStateGet(logical_port,&status_t);
 
-			if(OPL_OK != ret)
-			{
-				continue;
-			}
 			if(status_t)
 			{
-				Rxtotalbytes = struct2uint64(logical_port,15) + struct2uint64(logical_port,16);
-				Txtotalbytes = struct2uint64(logical_port,31);
+				stats_getArx8306(port);
+				Rxtotalbytes = struct2uint64(port,15) + struct2uint64(port,16);
+				Txtotalbytes = struct2uint64(port,31);
 				gettimeofday(&tv, NULL);
-				gulCurrentTick4PortMon[port]=tv.tv_sec*100 + tv.tv_usec/10000;
+				CurrentTick4PortMon[port]=tv.tv_sec*100 + tv.tv_usec/10000;
 
-				if (gulCurrentTick4PortMon[port] > gulLastTick4PortMon[port])
-					{
-			    		ulIntervalTick = gulCurrentTick4PortMon[port] - gulLastTick4PortMon[port];
+				if (CurrentTick4PortMon[port] > LastTick4PortMon[port])
+				{
+					ulIntervalTick = CurrentTick4PortMon[port] - LastTick4PortMon[port];
 
-					}
+				}
 			    else
-			    	{
-			    		ulIntervalTick = 0xFFFFFFFF - (gulLastTick4PortMon[port] - gulCurrentTick4PortMon[port]);
+				{
+					ulIntervalTick = 0xFFFFFFFF - (LastTick4PortMon[port] - CurrentTick4PortMon[port]);
 
-			    	}
-
-				if (Rxtotalbytes >= gulCurrentpktCntIn[port] )
+				}
+				if (Rxtotalbytes >= CurrentpktCntIn[port] )
 				{
 
-					fRate = (gw_float)((Rxtotalbytes - gulCurrentpktCntIn[port]))/(gw_float)ulIntervalTick*100;
+					fRate = (gw_float)((Rxtotalbytes - CurrentpktCntIn[port]))/(gw_float)ulIntervalTick*100;
 				}
 				else
 				{
-					fRate = (gw_float)((0xFFFFFFFF - (gulCurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
+					fRate = (gw_float)((0xFFFFFFFF - (CurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
 				}
 
-				gulCurrentpktCntIn[port] = Rxtotalbytes;
+				CurrentpktCntIn[port] = Rxtotalbytes;
 
-				gulOctRateIn[port] = (gw_uint64)fRate;
+				OctRateIn[port] = (gw_uint64)fRate;
 
-				if ( Txtotalbytes >= gulCurrentpktCntOut[port] )
+				if ( Txtotalbytes >= CurrentpktCntOut[port] )
 				{
-					fRate = (gw_float)((Txtotalbytes - gulCurrentpktCntOut[port]))/(gw_float)ulIntervalTick*100;
+					fRate = (gw_float)((Txtotalbytes - CurrentpktCntOut[port]))/(gw_float)ulIntervalTick*100;
 				}
 				else
 				{
-					fRate = (gw_float)((0xFFFFFFFF - (gulCurrentpktCntOut[port] - Txtotalbytes)))/(gw_float)ulIntervalTick*1000;
+					fRate = (gw_float)((0xFFFFFFFF - (CurrentpktCntOut[port] - Txtotalbytes)))/(gw_float)ulIntervalTick*1000;
 				}
-				gulCurrentpktCntOut[port] = Txtotalbytes;
-				gulOctRateOut[port] = (gw_uint64)fRate;
-				gulLastTick4PortMon[port] = gulCurrentTick4PortMon[port];
+				CurrentpktCntOut[port] = Txtotalbytes;
+				OctRateOut[port] = (gw_uint64)fRate;
+				LastTick4PortMon[port] = CurrentTick4PortMon[port];
 			}
 			else
 			{
-				gulCurrentpktCntOut[port]= 0;
-				gulCurrentpktCntIn[port] = 0;
-				gulOctRateOut[port] = 0;
-				gulOctRateIn[port] = 0;
-				gulCurrentTick4PortMon[port] = 0;
-				gulLastTick4PortMon[port] = 0;
+				CurrentpktCntOut[port]= 0;
+				CurrentpktCntIn[port] = 0;
+				OctRateOut[port] = 0;
+				OctRateIn[port] = 0;
+				CurrentTick4PortMon[port] = 0;
+				LastTick4PortMon[port] = 0;
 			}
 		}
 		vosUSleep(500000);
@@ -741,8 +740,8 @@ gw_status gwdonu_port_statistic_get(gw_int32 ucPortId, gw_int8 * data, gw_int32 
 	stats_getArx8306(ucPortId);
 	gw_onu_port_counter_t * pd = (gw_onu_port_counter_t*) data;
 
-	pd->rxrate = gulOctRateIn[ucPortId-1];
-	pd->txrate = gulOctRateOut[ucPortId-1];
+	pd->rxrate = OctRateIn[ucPortId];
+	pd->txrate = OctRateOut[ucPortId];
 	pd->counter.RxFramesOk = struct2uint64(ucPortId,7)+struct2uint64(ucPortId,8)+struct2uint64(ucPortId,9)+struct2uint64(ucPortId,10)+struct2uint64(ucPortId,11)+struct2uint64(ucPortId,12);			//RxGoodByte
 	pd->counter.RxUnicasts = 0;
 	pd->counter.RxMulticasts = struct2uint64(ucPortId,2);			//RxMulti
