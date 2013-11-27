@@ -38,9 +38,14 @@
 #include "mc_control.h"
 #include "odm_vlan.h"
 #include "run_led.h"
+#include "hal_stats.h"
+#include "vos_thread.h"
+#include "plat_config.h"
+#include "vos_time.h"
 
 //#define GWDDEBUG
 //add from gwdonu/oam.h
+#define GWONU_873A_FE_PORT_NUM 4
 
 #define DEVICE_TYPE_GT872_A			0x0031
 #define DEVICE_TYPE_GT873_A			0x0032
@@ -92,6 +97,16 @@ u8_t 	overall_lanmac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 static libgwdonu_special_frame_handler_t g_onu_pkt_handler = NULL;
 static libgwdonu_out_hw_version g_onu_out_if_hwver_get = NULL;
 static libgwdonu_syslog_heandler_t g_onu_syslog_handler = NULL;
+
+int physicalport2logicalport(int port)
+{
+	int phy2log[7] = {1,2,3,4,5,6,7};
+	if((port >= 0)&&(port <= 6))
+	{
+		return phy2log[port];
+	}
+	return -1;
+}
 
 //opl_dump_data(pkt,len,16);
 #if 0
@@ -611,7 +626,6 @@ gw_status gwdonu_port_isolate_set(gw_int32 portid, gw_int32 en)
   return GW_OK;
 }
 
-
 #define CNT_SW_AR8306	39
 extern OPL_CNT_t g_astCntSwhPort[SWITCH_PORT_NUM][CNT_SW_AR8306];
 gw_uint64 struct2uint64(char ucPortId,char ucCnt)
@@ -625,75 +639,111 @@ gw_uint64 struct2uint64(char ucPortId,char ucCnt)
 	return value;
 }
 
+gw_uint64 gulCurrentpktCntIn[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 gulCurrentpktCntOut[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 gulOctRateIn[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint64 gulOctRateOut[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint32 gulLastTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
+gw_uint32 gulCurrentTick4PortMon[GWONU_873A_FE_PORT_NUM] = {0};
+
+void gw_port_rate_thread()
+{
+	unsigned char logical_port =0, port= 0, status_t =-1, ret =-1;
+	struct timeval tv = {0};
+	gw_uint64 ulIntervalTick = 0 ,Rxtotalbytes =0 ,Txtotalbytes =0;
+	gw_float fRate =0;
+	gw_onu_port_counter_t * pd;
+
+	while(1)
+	{
+		for(port =0;port<GWONU_873A_FE_PORT_NUM; port ++)
+		{
+			logical_port = physicalport2logicalport(port);
+			if(-1 == logical_port)
+			{
+				continue;
+			}
+			ret = dalPortStateGet(logical_port,&status_t);
+
+			if(OPL_OK != ret)
+			{
+				continue;
+			}
+			if(status_t)
+			{
+				Rxtotalbytes = struct2uint64(logical_port,15) + struct2uint64(logical_port,16);
+				Txtotalbytes = struct2uint64(logical_port,31);
+				gettimeofday(&tv, NULL);
+				gulCurrentTick4PortMon[port]=tv.tv_sec*100 + tv.tv_usec/10000;
+
+				if (gulCurrentTick4PortMon[port] > gulLastTick4PortMon[port])
+					{
+			    		ulIntervalTick = gulCurrentTick4PortMon[port] - gulLastTick4PortMon[port];
+
+					}
+			    else
+			    	{
+			    		ulIntervalTick = 0xFFFFFFFF - (gulLastTick4PortMon[port] - gulCurrentTick4PortMon[port]);
+
+			    	}
+
+				if (Rxtotalbytes >= gulCurrentpktCntIn[port] )
+				{
+
+					fRate = (gw_float)((Rxtotalbytes - gulCurrentpktCntIn[port]))/(gw_float)ulIntervalTick*100;
+				}
+				else
+				{
+					fRate = (gw_float)((0xFFFFFFFF - (gulCurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
+				}
+
+				gulCurrentpktCntIn[port] = Rxtotalbytes;
+
+				gulOctRateIn[port] = (gw_uint64)fRate;
+
+				if ( Txtotalbytes >= gulCurrentpktCntOut[port] )
+				{
+					fRate = (gw_float)((Txtotalbytes - gulCurrentpktCntOut[port]))/(gw_float)ulIntervalTick*100;
+				}
+				else
+				{
+					fRate = (gw_float)((0xFFFFFFFF - (gulCurrentpktCntOut[port] - Txtotalbytes)))/(gw_float)ulIntervalTick*1000;
+				}
+				gulCurrentpktCntOut[port] = Txtotalbytes;
+				gulOctRateOut[port] = (gw_uint64)fRate;
+				gulLastTick4PortMon[port] = gulCurrentTick4PortMon[port];
+			}
+			else
+			{
+				gulCurrentpktCntOut[port]= 0;
+				gulCurrentpktCntIn[port] = 0;
+				gulOctRateOut[port] = 0;
+				gulOctRateIn[port] = 0;
+				gulCurrentTick4PortMon[port] = 0;
+				gulLastTick4PortMon[port] = 0;
+			}
+		}
+		vosUSleep(500000);
+	}
+}
+
+
+
+
 gw_status gwdonu_port_statistic_get(gw_int32 ucPortId, gw_int8 * data, gw_int32 * len)
 {
-#if 0
-	fal_mib_info_t mib_info;
-	gw_onu_port_counter_t * pd = (gw_onu_port_counter_t*) data;
 
-	shiva_get_mib_info(0, portid, &mib_info);
-	pd->rxrate = mib_info.RxGoodByte_hi<<32 + mib_info.RxGoodByte_lo;
-	pd->txrate = mib_info.TxByte_hi<<32 + mib_info.TxByte_lo;
-	pd->counter.RxFramesOk = 0;
-	pd->counter.RxUnicasts = 0;
-	pd->counter.RxMulticasts = mib_info.RxMulti;
-	pd->counter.RxBroadcasts = mib_info.RxBroad;
-	pd->counter.Rx64Octets = 0;
-	pd->counter.Rx127Octets = 0;
-	pd->counter.Rx255Octets = 0;
-	pd->counter.Rx511Octets = 0;
-	pd->counter.Rx1023Octets = 0;
-	pd->counter.RxMaxOctets = mib_info.RxMaxByte;
-	pd->counter.RxJumboOctets = 0;
-	pd->counter.RxUndersize = 0;
-	pd->counter.RxOversize = 0;
-	pd->counter.RxFragments = mib_info.RxFragment;
-	pd->counter.RxJabber = 0;
-	pd->counter.RxFCSErrors = mib_info.RxFcsErr;
-	pd->counter.RxDiscards = mib_info.Filtered;
-	pd->counter.RxAlignErrors = mib_info.RxAllignErr;
-	pd->counter.RxIntMACErrors = 0;
-	pd->counter.RxPppoes = 0;
-	pd->counter.RxQueueFull = 0;
-	pd->counter.RxPause = mib_info.RxPause;
-	pd->counter.RxOctetsOkMsb = 0;
-	pd->counter.RxOctetsOKLsb = 0;
-	pd->counter.RxError = 0;
-	pd->counter.TxFramesOk = 0;
-	pd->counter.TxUnicasts = 0;
-	pd->counter.TxMulticasts = mib_info.TxMulti;
-	pd->counter.TxBroadcasts = mib_info.TxBroad;
-	pd->counter.Tx64Octets = 0;
-	pd->counter.Tx127Octets = 0;
-	pd->counter.Tx255Octets = 0;
-	pd->counter.Tx511Octets = 0;
-	pd->counter.Tx1023Octets = 0;
-	pd->counter.TxMaxOctets = mib_info.TxMaxByte;
-	pd->counter.TxJumboOctets = 0;
-	pd->counter.TxDeferred = mib_info.TxDefer;
-	pd->counter.TxTooLongFrames = mib_info.TxOverSize;
-	pd->counter.TxCarrierErrFrames = 0;
-	pd->counter.TxSqeErrFrames = 0;
-	pd->counter.TxSingleCollisions = mib_info.TxSingalCol;
-	pd->counter.TxMultipleCollisions = mib_info.TxMultiCol;
-	pd->counter.TxExcessiveCollisions = 0;
-	pd->counter.TxLateCollisions = mib_info.TxLateCol;
-	pd->counter.TxMacErrFrames = 0;
-	pd->counter.TxQueueFull = 0;
-	pd->counter.TxPause = mib_info.TxPause;
-	pd->counter.TxOctetsOk = 0;
-	pd->counter.TxError = 0;
-#else
 	/************* This is four FE ONU **************/
 	if((ucPortId>4)||(ucPortId<1))
 		return GW_ERROR;
 	ucPortId--;
+
 	stats_getArx8306(ucPortId);
 	gw_onu_port_counter_t * pd = (gw_onu_port_counter_t*) data;
 
-	pd->rxrate = 0;
-	pd->txrate = 0;
-	pd->counter.RxFramesOk = struct2uint64(ucPortId,15);			//RxGoodByte
+	pd->rxrate = gulOctRateIn[ucPortId-1];
+	pd->txrate = gulOctRateOut[ucPortId-1];
+	pd->counter.RxFramesOk = struct2uint64(ucPortId,7)+struct2uint64(ucPortId,8)+struct2uint64(ucPortId,9)+struct2uint64(ucPortId,10)+struct2uint64(ucPortId,11)+struct2uint64(ucPortId,12);			//RxGoodByte
 	pd->counter.RxUnicasts = 0;
 	pd->counter.RxMulticasts = struct2uint64(ucPortId,2);			//RxMulti
 	pd->counter.RxBroadcasts = struct2uint64(ucPortId,0);			//RxBroad
@@ -716,9 +766,9 @@ gw_status gwdonu_port_statistic_get(gw_int32 ucPortId, gw_int8 * data, gw_int32 
 	pd->counter.RxQueueFull = 0;
 	pd->counter.RxPause = struct2uint64(ucPortId,1);
 	pd->counter.RxOctetsOkMsb = 0;
-	pd->counter.RxOctetsOKLsb = 0;
+	pd->counter.RxOctetsOKLsb = struct2uint64(ucPortId,15);
 	pd->counter.RxError = struct2uint64(ucPortId,16);			//RxBadByte
-	pd->counter.TxFramesOk = struct2uint64(ucPortId,31);			//TxByte
+	pd->counter.TxFramesOk = struct2uint64(ucPortId,23)+struct2uint64(ucPortId,24)+struct2uint64(ucPortId,25)+struct2uint64(ucPortId,26)+struct2uint64(ucPortId,27)+struct2uint64(ucPortId,28);			//TxByte
 	pd->counter.TxUnicasts = 0;
 	pd->counter.TxMulticasts = struct2uint64(ucPortId,21);			//TxMulti
 	pd->counter.TxBroadcasts = struct2uint64(ucPortId,19);			//TxBroad
@@ -740,13 +790,30 @@ gw_status gwdonu_port_statistic_get(gw_int32 ucPortId, gw_int8 * data, gw_int32 
 	pd->counter.TxMacErrFrames = 0;
 	pd->counter.TxQueueFull = 0;
 	pd->counter.TxPause = struct2uint64(ucPortId,20);			//TxPause
-	pd->counter.TxOctetsOk = 0;
+	pd->counter.TxOctetsOk = struct2uint64(ucPortId,31);
 	pd->counter.TxError = 0;
 
-#endif
 	return GW_OK;
 }
+gw_status gwdonu_port_statistic_clear(gw_int32 portid)
+{
+	HAL_STATS_POLL_t	stStatsPoll = {0,0,0,0};
+	OPL_API_DATA_t		stApiData = {0,0,NULL,NULL};
 
+	if(portid>4 ||portid<0)
+	{
+		return GW_ERROR;
+	}
+	stStatsPoll.iModule = CNT_SWITCH;
+	stStatsPoll.usStart = portid;
+	stStatsPoll.usNum = 1;
+	stApiData.apiId = HAL_API_STATS_CLR;
+	stApiData.param = (void *)&stStatsPoll;
+    stApiData.length = sizeof(HAL_STATS_POLL_t);
+
+	halAppApiCallSync(&stApiData);
+	return GW_OK;
+}
 
 gw_status gwdonu_port_pvid_get(gw_int32 portid, gw_int16 *vlanid)
 {
@@ -1921,6 +1988,7 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_port_isolate_get,
 		gwdonu_port_isolate_set,
 		gwdonu_port_statistic_get,
+		gwdonu_port_statistic_clear,
 		gwdonu_port_pvid_get,
 		gwdonu_port_mirror_stat_get,
 		gwdonu_port_mirror_stat_set,
@@ -1983,6 +2051,22 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_multicast_mode_get,
 		gwdonu_real_product_type_get
 } ;
+
+
+void gw_plat_init()
+{
+	VOS_THREAD_t port_rate_thread_id=NULL;
+
+	port_rate_thread_id  = vosThreadCreate(
+		"port rate",
+		PORT_RATE_STATE_STACKSIZE,
+		PORT_RATE_STATE_THREAD_PRIORITY,
+            (FUNCPTR)gw_port_rate_thread,
+            (void *)0);
+}
+
+
+
 
 
 

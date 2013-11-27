@@ -9,14 +9,13 @@
 #define GWDONUIF_H_
 
 
-#define version_len 100
-
 typedef enum {
     MC_SNOOPING,
     MC_MANUAL,
     MC_PROXY,
     MC_DISABLE
-} mc_mode_t;
+}mc_mode_t;
+#define VERSION_LEN 100
 typedef enum{
     GWD_ETH_PORT_LOOP_ALARM=1,
     GWD_ETH_PORT_LOOP_ALARM_CLEAR,
@@ -166,6 +165,7 @@ typedef gw_status (*libgwdonu_port_mode_set_t)(gw_int32 portid, gw_int32 spd, gw
 typedef gw_status (*libgwdonu_port_isolate_get_t)(gw_int32 portid, gw_int32 *en);
 typedef gw_status (*libgwdonu_port_isolate_set_t)(gw_int32 portid, gw_int32 en);
 typedef gw_status (*libgwdonu_port_statistic_get_t)(gw_int32 portid, gw_int8 * data, gw_int32 * len);
+typedef gw_status (*libgwdonu_port_statistic_clear_t)(gw_int32 portid);
 typedef gw_status (*libgwdonu_port_pvid_get_t)(gw_int32 portid, gw_int16 *vlanid);
 
 typedef gw_status (*libgwdonu_vlan_entry_getnext_t)(gw_uint32 index, gw_uint16 *vlanid, gw_uint32 *tag_portlist, gw_uint32 *untag_portlist);
@@ -217,7 +217,7 @@ typedef gw_int32 (*libgwdonu_port_mirror_stat_set_t)(gw_int32 unit,gw_int32 mode
 typedef gw_int32 (*libgwdonu_port_ingress_mirror_set_t)(gw_int32 unit,gw_int32 port,gw_int32 stat_val);
 typedef gw_int32 (*libgwdonu_port_egress_mirror_set_t)(gw_int32 unit,gw_int32 port,gw_int32 stat_val);
 typedef gw_int32 (*libgwdonu_port_mirror_to_port_set_t)(gw_int32 port,gw_int32 portmap);
-typedef gw_int32 (*libgwdonu_version_build_time_get_t)(gw_int8 buildtime[version_len]);
+typedef gw_int32 (*libgwdonu_version_build_time_get_t)(gw_int8 buildtime[VERSION_LEN]);
 
 typedef gw_int32 (*libgwdonu_cpld_register_write)(gw_uint32 reg,gw_uint32 date);
 typedef gw_int32 (*libgwdonu_cpld_register_read)(gw_uint32 reg,gw_uint8 * date);
@@ -247,6 +247,7 @@ typedef struct gwdonu_im_if_s{
 	libgwdonu_port_isolate_get_t		portisolateget;
 	libgwdonu_port_isolate_set_t		portisolateset;
 	libgwdonu_port_statistic_get_t	portstatget;
+	libgwdonu_port_statistic_clear_t	portstatclear;
 	libgwdonu_port_pvid_get_t		portpvidget;
     libgwdonu_port_mirror_stat_get_t portmirrorstatget;
     libgwdonu_port_mirror_stat_set_t portmirrorstatset;
