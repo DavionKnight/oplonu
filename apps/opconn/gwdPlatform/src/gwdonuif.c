@@ -655,7 +655,7 @@ void gw_port_rate_thread()
 	struct timeval tv = {0};
 	gw_uint64 ulIntervalTick = 0 ,Rxtotalbytes =0 ,Txtotalbytes =0;
 	gw_float fRate =0;
-	gw_onu_port_counter_t * pd;
+	gw_onu_port_counter_t * pd = NULL;
 
 	while(1)
 	{
@@ -683,7 +683,7 @@ void gw_port_rate_thread()
 				}
 			    else
 				{
-					ulIntervalTick = 0xFFFFFFFF - (LastTick4PortMon[port] - CurrentTick4PortMon[port]);
+					ulIntervalTick = (0xFFFFFFFF*100 + 0xFFFFFFFF/10000) - (LastTick4PortMon[port] - CurrentTick4PortMon[port]);
 
 				}
 				if (Rxtotalbytes >= CurrentpktCntIn[port] )
@@ -693,7 +693,7 @@ void gw_port_rate_thread()
 				}
 				else
 				{
-					fRate = (gw_float)((0xFFFFFFFF - (CurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
+					fRate = (gw_float)((0xFFFFFFFFFFFFFFFF - (CurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
 				}
 
 				CurrentpktCntIn[port] = Rxtotalbytes;
