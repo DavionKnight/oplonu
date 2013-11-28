@@ -683,7 +683,7 @@ void gw_port_rate_thread()
 				}
 			    else
 				{
-					ulIntervalTick = (0xFFFFFFFF*100 + 0xFFFFFFFF/10000) - (LastTick4PortMon[port] - CurrentTick4PortMon[port]);
+					ulIntervalTick = (24*60*60*100) - (LastTick4PortMon[port] - CurrentTick4PortMon[port]);
 
 				}
 				if (Rxtotalbytes >= CurrentpktCntIn[port] )
@@ -693,7 +693,7 @@ void gw_port_rate_thread()
 				}
 				else
 				{
-					fRate = (gw_float)((0xFFFFFFFFFFFFFFFF - (CurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*1000;
+					fRate = (gw_float)((0xFFFFFFFFFFFFFFFF - (CurrentpktCntIn[port] - Rxtotalbytes)))/(gw_float)ulIntervalTick*100;
 				}
 
 				CurrentpktCntIn[port] = Rxtotalbytes;
@@ -706,7 +706,7 @@ void gw_port_rate_thread()
 				}
 				else
 				{
-					fRate = (gw_float)((0xFFFFFFFF - (CurrentpktCntOut[port] - Txtotalbytes)))/(gw_float)ulIntervalTick*1000;
+					fRate = (gw_float)((0xFFFFFFFF - (CurrentpktCntOut[port] - Txtotalbytes)))/(gw_float)ulIntervalTick*100;
 				}
 				CurrentpktCntOut[port] = Txtotalbytes;
 				OctRateOut[port] = (gw_uint64)fRate;
@@ -722,7 +722,7 @@ void gw_port_rate_thread()
 				LastTick4PortMon[port] = 0;
 			}
 		}
-		vosUSleep(500000);
+		vosUSleep(1000000);
 	}
 }
 
