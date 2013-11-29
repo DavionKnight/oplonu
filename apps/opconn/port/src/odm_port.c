@@ -1667,7 +1667,7 @@ UINT32 odmPortVlanModeGet(UINT32 portId,UINT32 *vlanMode)
         return ERR_NULL_POINTER;
     }
 	vosSprintf(portSectionBuff,CFG_PORT_SECTION,portId);
-	*vlanMode = vosConfigUInt32Get(CFG_PORT_CFG,portSectionBuff,CFG_PORT_VLAN_MODE,ODM_VLAN_TRANSPARENT);
+	*vlanMode = vosConfigUInt32Get(CFG_PORT_CFG,portSectionBuff,CFG_PORT_VLAN_MODE,ODM_VLAN_TRUNK);
 	return OK;
 }
 
