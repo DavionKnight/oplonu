@@ -10120,9 +10120,9 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			if(ret != OPL_OK)
 				goto response;
 		}
-		ret = odmPortVlanModeSet(ODM_GE_PORT,OAM_CTC_VLAN_TRANSPARENT); //add by zhangjj 2013-11-25
-		if(ret != OPL_OK)
-				goto response;
+//		ret = odmPortVlanModeSet(ODM_GE_PORT,OAM_CTC_VLAN_TRANSPARENT); //add by zhangjj 2013-11-25
+//		if(ret != OPL_OK)
+//				goto response;
 	}
 	else if(OAM_CTC_VLAN_TAG == p_vlan->mode)
 	{
@@ -10512,11 +10512,11 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 //printf("in odmPortDefaultVlanSet  default_vlan is %d...\n",default_vlan);
 //end
 
-            ret = odmPortDefaultVlanSet(ODM_GE_PORT, default_vlan);//add by zhangjj 2013-11-25 set GE port pvid
-			if (OPL_OK != ret)
-			{
-				goto response;
-			}
+//           ret = odmPortDefaultVlanSet(ODM_GE_PORT, default_vlan);//add by zhangjj 2013-11-25 set GE port pvid
+//			if (OPL_OK != ret)
+//			{
+//				goto response;
+//			}
 			
             ret = odmPortDefaultVlanSet(portS, default_vlan);
 			if (OPL_OK != ret)
@@ -10531,11 +10531,11 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			{
 				goto response;
 			}
-			ret = odmPortVlanModeSet(ODM_GE_PORT, OAM_CTC_VLAN_TRUNK);//add by zhangjj 2013-11-25 set GE port in/egress rule
-			if (OPL_OK != ret)									//GE port peel off the tag the FE port add by port vlan
-			{
-				goto response;
-			}
+//			ret = odmPortVlanModeSet(ODM_GE_PORT, OAM_CTC_VLAN_TRUNK);//add by zhangjj 2013-11-25 set GE port in/egress rule
+//			if (OPL_OK != ret)									//GE port peel off the tag the FE port add by port vlan
+//			{
+//				goto response;
+//			}
 			/* clear old vlan trunk entries */
 			OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "[ %s ]: odmPortVlanTrunkEntryClear(%d)\n", __FUNCTION__, portS);
 			ret = odmPortVlanTrunkEntryClear(portS);
