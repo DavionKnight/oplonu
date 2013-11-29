@@ -1080,25 +1080,25 @@ int portmaptrans(int portmap)
 	switch(portmap)
 	{
 	case 0x01:
-		result = 0;
+		result = 0x10;
 		break;
 	case 0x02:
-		result = 1;
+		result = 0x1;
 		break;
 	case 0x04:
-		result = 2;
+		result = 0x2;
 		break;
 	case 0x08:
-		result = 3;
+		result = 0x4;
 		break;
 	case 0x10:
-		result = 4;
+		result = 0x08;
 		break;
 	case 0x20:
-		result = 5;
+		result = 0x20;
 		break;
 	case 0x40:
-		result = 6;
+		result = 0x20;
 		break;
 	default:
 		printf("portmap error...\r\n");
