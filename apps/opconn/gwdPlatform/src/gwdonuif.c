@@ -1418,40 +1418,46 @@ gw_status gwdonu_set_mac(gw_uint8 *mac)
 {
 //	printf("in gwdonu_set_mac fuction ,this function is not defined .......\r\n");
   UINT32  retVal = OK;
-  UINT8   macId[6];
-
+  UINT8   macId[20] = {0};
+  UINT8   macStr[50] = {0};
 	char section[20];
 	int ret=0;
 
 	strcpy(section,"Product Information");
 
-    retVal = string2mac(mac,macId); 			//string mac have ':' so need to be translated
-    if(OK != retVal)
-    {
-        return ERR_INVALID_PARAMETERS;
-    }
+//    retVal = string2mac(mac,macId); 			//string mac have ':' so need to be translated
+//    if(OK != retVal)
+//    {
+//       return ERR_INVALID_PARAMETERS;
+//    }
+	//printf("%02x:%02x:%02x:%02x:%02x:%02x\r\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	vosSprintf(macId,"%02x:%02x:%02x:%02x:%02x:%02x",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	vosSprintf(macStr,"%s%s","ifconfig eth0 hw ether ",macId);
+	//printf("%s\r\n",macStr);
+     if(0==system(macStr))
+     {
+		if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
+		{
+			ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
+		}
+		if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"LAN MAC",macId)) != 0)
+		{
+				printf("save error\n");
+			    return ERROR;
+		}
+ //   cliTextConfigSave();
+    		vosConfigSave(NULL);
+     	}
+	 else
+	 {
+	 	printf("error ! Please change another unused macid !\r\n");
+	 }
 
-    retVal = odmPonMacIdSet(macId);
-
-    if(OK != retVal)
-    	{
-     printf("set mac error\r\n");
-        		return ERROR;
-    	}
-	if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
-	{
-		ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
-	}
-	if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"PON MAC",mac)) != 0)
-	{
-			printf("save error\n");
-		    return ERROR;
-	}
 
     cliTextConfigSave();
     vosConfigSave(NULL);
 
-	return 0;
+	return GW_OK;
 
 }
 
