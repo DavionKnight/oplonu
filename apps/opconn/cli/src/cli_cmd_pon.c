@@ -315,6 +315,8 @@ STATUS cliCmdLanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 	 {
 	 	printf("error ! Please change another unused macid !\r\n");
 	 }
+
+     return OK;
 }
 STATUS cliCmdWanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {

@@ -1040,7 +1040,7 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 	{Build_version,1,Build version}",
 
 	"{Major_version,CLI_UINT,1,9,1},\
-	{Release_version,CLI_UINT,1,9,1},\
+	{Release_version,CLI_UINT,0,9,1},\
 	{Build_version,CLI_UINT,1,9,1}",
     
 
