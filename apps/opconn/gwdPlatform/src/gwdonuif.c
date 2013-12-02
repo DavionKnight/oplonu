@@ -605,7 +605,7 @@ gw_status gwdonu_port_isolate_get(gw_int32 portid, gw_int32 *en)
     /* default local switch disable */
     localswitchflag = vosConfigUInt32Get(VLAN_CONFIG_NAME,
         LOCAL_SWITCH_SEC, LOCAL_SWITCH_KEY, 0);
-    *en = (0x1e == localswitchflag)?1:0;
+    *en = (0x1e == localswitchflag)?0:1;
 	return GW_OK;
 }
 
