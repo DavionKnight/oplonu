@@ -3,6 +3,8 @@
 
 extern unsigned int test_led_flag;
 
+
+char BoardReset();
 static void led_change_status();
 void run_led();
 void powerStatus_check();

@@ -1582,7 +1582,11 @@ void OamTimerThread(void)
 		{
 			g_stLinkLost.iFlag = 0;
 			OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "oam timeout.\n");
+		#if 0  //modified by zhangjj 2013.12.2 for bug 19285
 			OamInit();
+		#else
+			BoardReset();
+		#endif
 		}
 		/*if(1 == g_stStatsTimer.iFlag)
 		{
@@ -1646,7 +1650,11 @@ void TimerUnit(int signal)
 {
 	g_stLinkLost.uiCnt++;
 	/*g_stPduSend.uiCnt++;*/
+#if 0  //modified by zhangjj 2013.12.2 for bug 19285
 	if(1000 == g_stLinkLost.uiCnt)
+#else
+	if(100 == g_stLinkLost.uiCnt)
+#endif
 	{
 		/*OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "\ntimeout.\n");*/
 		g_stLinkLost.uiCnt = 0;

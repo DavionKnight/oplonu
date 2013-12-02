@@ -10,6 +10,7 @@
 #include "opl_regmmap.h"
 #include "run_led.h"
 #include "warning_check.h"
+#include "vos_time.h"
 
 unsigned int count=0,count2=0;
 unsigned int test_led_flag=0;
@@ -35,6 +36,18 @@ int cpldWrite(int offset,unsigned char setData)
 	//*(volatile unsigned char*)(opl_uart_base+offset*2+1) = setData;
 
 return 1;
+}
+
+char BoardReset()
+{
+	char uData;
+
+	cpldRead(CS1_RESET_REG,&uData);
+	cpldWrite(CS1_RESET_REG, (uData & 0xfe));
+      vosSleep(1);;
+	cpldWrite(CS1_RESET_REG,(uData | 0x01));
+
+	return OK;
 }
 
 char get_serialcard_status()
