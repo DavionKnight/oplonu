@@ -36,6 +36,7 @@ MODIFICATION DETAILS
 #include "dal_lib.h"
 #include "zte.h"
 #include "oam_alarm.h"
+#include "run_led.h"
 
 #define MODULE MOD_OAM
 extern u8_t alarm_out_data[OAM_MAXIMUM_PDU_SIZE+4];
@@ -12275,6 +12276,7 @@ OPL_STATUS eopl_ctc_load_new_img(void)
 
 
     bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
+
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
@@ -12291,10 +12293,13 @@ OPL_STATUS eopl_ctc_load_new_img(void)
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_UPGRADE to FLASH_BOOT_OS2_FLAG!\n");
     vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS2_FLAG);
 
-
 	/* reboot device */
 	OP_DEBUG(DEBUG_LEVEL_INFO, "Call odmSysReset() to reboot system!\n");
+#if 0
 	odmSysReset();
+#else
+	BoardReset();
+#endif
 	OAMDBG(("reboot\n"));
 
 	return iStatus;
@@ -12365,7 +12370,12 @@ OPL_STATUS eopl_ctc_active_req_handler(u8_t *pucData)
 	switch(ucFlag)
 	{
 		case LOAD_NEW_IMG:
+#if 0
 			eopl_ctc_load_new_img();
+#else
+			vosThreadCreate("tLoad", OP_VOS_THREAD_STKSZ, 45,
+					(void *)eopl_ctc_load_new_img, NULL);
+#endif
 			break;
 
 		default:
@@ -12375,7 +12385,7 @@ OPL_STATUS eopl_ctc_active_req_handler(u8_t *pucData)
 
 	return iStatus;
 }
-
+OPL_STATUS eopl_ctc_commit_new_img(void);
 OPL_STATUS eopl_ctc_commit_req_handler(u8_t *pucData)
 {
 	OPL_STATUS	iStatus=OPL_OK;
@@ -12389,7 +12399,12 @@ OPL_STATUS eopl_ctc_commit_req_handler(u8_t *pucData)
 	switch(ucFlag)
 	{
 		case COMMIT_NEW_IMG:
+#if 0
 			eopl_ctc_commit_new_img();
+#else
+			vosThreadCreate("tCommit", OP_VOS_THREAD_STKSZ, 45,
+					(void *)eopl_ctc_commit_new_img, NULL);
+#endif
 			break;
 
 		default:
@@ -12400,18 +12415,9 @@ OPL_STATUS eopl_ctc_commit_req_handler(u8_t *pucData)
 	return iStatus;
 }
 
-
-OPL_STATUS eopl_ctc_commit_new_img(void)
+void eopl_set_commit_new_img_flag()
 {
-	OPL_STATUS	iStatus=OPL_OK;
-	u8_t *pucPkt;
-	ctc_tftp_header_t *pusTftpHdr;
-	u16_t usPktLen;
-	u8_t ucAck, bootFlag;
-	u32_t uiLlid;
-
-	/* commit new image as primary bootable image*/
-
+	u8_t  bootFlag = 0;
     bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
     if (FLASH_BOOT_OS2_FLAG == bootFlag)
     {
@@ -12422,6 +12428,17 @@ OPL_STATUS eopl_ctc_commit_new_img(void)
 		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
 		vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
     }
+}
+
+OPL_STATUS eopl_ctc_commit_new_img(void)
+{
+	OPL_STATUS	iStatus=OPL_OK;
+	u8_t *pucPkt;
+	ctc_tftp_header_t *pusTftpHdr;
+	u16_t usPktLen;
+	u8_t ucAck, bootFlag;
+	u32_t uiLlid;
+
 	ucAck = 0;
 
 send_rsp_msg:
@@ -12459,6 +12476,22 @@ send_rsp_msg:
 
 	OamFrameSend(out_data, usPktLen);
 	OAMDBG(("Send Activate Image Response message!\n"));
+	/* commit new image as primary bootable image*/
+#if 0
+    bootFlag = vosConfigBootFlagGet(FLASH_BOOT_FLAG_NORMAL);
+    if (FLASH_BOOT_OS2_FLAG == bootFlag)
+    {
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS2_FLAG!\n");
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
+    }
+    else {
+		OP_DEBUG(DEBUG_LEVEL_INFO, "Set FLASH_BOOT_FLAG_NORMAL option to FLASH_BOOT_OS1_FLAG!\n");
+		vosConfigBootFlagSet(FLASH_BOOT_FLAG_UPGRADE, FLASH_BOOT_OS1_FLAG);
+    }
+#else
+	vosThreadCreate("tWriteFlash", OP_VOS_THREAD_STKSZ, 45,
+			(void *)eopl_set_commit_new_img_flag, NULL);
+#endif
 
 	return iStatus;
 }

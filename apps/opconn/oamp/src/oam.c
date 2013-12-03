@@ -1650,7 +1650,7 @@ void TimerUnit(int signal)
 {
 	g_stLinkLost.uiCnt++;
 	/*g_stPduSend.uiCnt++;*/
-#if 0  //modified by zhangjj 2013.12.2 for bug 19285
+#if 1  //modified by zhangjj 2013.12.2 for bug 19285
 	if(1000 == g_stLinkLost.uiCnt)
 #else
 	if(100 == g_stLinkLost.uiCnt)
