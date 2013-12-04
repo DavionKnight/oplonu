@@ -1515,7 +1515,7 @@ void LinkLostHandler (int signal_number)
 		return;
 	}
 }
-
+extern oam_lost_link_flag;
 void OamTimerThread(void)
 {
 	int iStatus=EOPL_OK;
@@ -1585,7 +1585,14 @@ void OamTimerThread(void)
 		#if 0  //modified by zhangjj 2013.12.2 for bug 19285
 			OamInit();
 		#else
-			BoardReset();
+			if(!oam_lost_link_flag)
+			{
+				OamInit();
+			}
+			else
+			{
+				BoardReset();
+			}
 		#endif
 		}
 		/*if(1 == g_stStatsTimer.iFlag)

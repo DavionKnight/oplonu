@@ -137,7 +137,15 @@ void powerStatus_check()
 		}
 	}
 }
+unsigned char ponLightcheck()
+{
+	unsigned char light_status = 0;
 
+	cpldRead(CS1_LIGHT_SIGNAL,&light_status);
+
+	return light_status;
+}
+unsigned char oam_lost_link_flag = 0;
 static void led_change_status()
 {
 
@@ -201,7 +209,7 @@ else
 	printf("cmd error\n\n");
 }
 #endif
-	unsigned char uData;
+	unsigned char uData = 0, light_status = 0;
 
 count++;
 //printf("count is %d\n",count);
@@ -216,6 +224,11 @@ count++;
 		alarm_led_enable(test_led_flag);
 	}
 
+	light_status = ponlightcheck();
+	if(1 == light_status)  //if pon light exist and oam lost ONu reboot if pon light exist ,ONU keep alive
+	{
+		oam_lost_link_flag = 1;
+	}
 	powerStatus_check();
 
 	if(count >= 5)
