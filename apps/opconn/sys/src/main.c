@@ -218,7 +218,7 @@ int main(int argc,char *argv[])
 	
 //
 //  init eth0 by configuration
-	setEth0MAC();
+//	setEth0MAC();
 
     /* Init PON MAC ID */
     odmPonMacIdInit();
@@ -422,12 +422,12 @@ int main(int argc,char *argv[])
         printf("done\r\n");
     }
 reg_gwdonu_im_interfaces(&g_onu_im_ifs,sizeof(g_onu_im_ifs));
-gw_plat_init();
+
 plat_init();
 //ret =init_main();		//cs2 init
 //if(ret !=-1)
 ts_init();			//terminal server init
-	
+gw_plat_init();
 
 	/* respin version config */
 	if (IS_ONU_RESPIN)

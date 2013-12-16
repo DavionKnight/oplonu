@@ -1384,7 +1384,7 @@ UINT32 odmPonMpcpFsmHoldoverTimeGet(UINT32 *holdTime)
 
 	return retVal;
 }
-
+/*
 void setEth0MAC()
 {
 	UINT8 macaddr[6]="";
@@ -1417,7 +1417,7 @@ void setEth0MAC()
 	}
 
 }
-
+*/
 /*******************************************************************************
 * odmPonMacIdInit
 *

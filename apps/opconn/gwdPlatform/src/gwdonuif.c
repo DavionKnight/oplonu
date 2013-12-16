@@ -92,7 +92,6 @@ typedef struct onu_system_information_total
 	unsigned char	valid_flag;						/* 1 */ /* Total: 360 */
 }ONU_SYS_INFO_TOTAL;
 
-u8_t 	overall_lanmac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 
 static libgwdonu_special_frame_handler_t g_onu_pkt_handler = NULL;
 static libgwdonu_out_hw_version g_onu_out_if_hwver_get = NULL;
@@ -2057,10 +2056,110 @@ gwdonu_im_if_t g_onu_im_ifs = {
 		gwdonu_real_product_type_get
 } ;
 
+#if 1
 
+/*
+3个mac
+
+			PON			LAN					WAN
+
+NAME		pon mac		lan1 lan2 lan3		wan1 wan2 wan3
+
+其中lan1 wan1分别为上行和下行的管理MAC
+lan2 lan3， wan2 wan3 分别为上行和下行 voip的media，signal MAC
+命令行为 interface lan/wan  admin/media/signal
+
+pon mac 单独一个mac
+lan mac 现如今没有voip，暂时3个lan mac设为与product config中lan mac相同
+不允许3个lan mac不同
+wan mac同lan mac
+ */
+extern const char *g_acIfEthNameStr[INTERFACE_MAX*INTERFACE_MODE_MAX];
+void Synchronize_ProductMac_SystemMac()
+{
+		UINT8 pdtMacAddr[6] = {0}, oldMacAddr[6] = {0};
+		int	ret = 0, ucIfMode = 0;
+		char	*pdtMac = NULL, *sysMac = NULL;
+		char 	IfSectionBuff[32] = {0};
+		char	index = 0;
+		char	ucIf = 0;
+		char	macStr[50]={0};
+vosSleep(2);
+		pdtMac = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"LAN MAC","00:00:00:00:00:00");
+		vosStrToMac(pdtMac,pdtMacAddr);
+
+		if(memcmp(pdtMac,"00:00:00:00:00:00",MAC_LENGTH))
+		{
+			ucIf = INTERFACE_LAN;
+			for(ucIfMode =0; ucIfMode < INTERFACE_MODE_MAX; ucIfMode++)
+			{
+				index = ucIf * INTERFACE_MODE_MAX + ucIfMode;
+				vosSprintf(IfSectionBuff, "If%d", index);
+				sysMac = vosConfigValueGet("/cfg/system.conf",IfSectionBuff,"MAC Address","00:00:00:00:00:00");
+				if(!memcmp(sysMac,"00:00:00:00:00:00",17))
+				{
+					vosHWAddrGet(g_acIfEthNameStr[index],&oldMacAddr[0]);
+				}
+				else
+				{
+					vosStrToMac(sysMac,oldMacAddr);
+				}
+				/*We use eth3 for telnet pty eth4 for WAN */
+				vosSprintf(macStr,"ifconfig %s hw ether %s",g_acIfEthNameStr[index],pdtMac);
+				ret = vosSystem(macStr);
+				if(0 == ret)
+				{
+					/*Save LAN Mac in System Configuration File*/
+				  vosConfigValueSet("/cfg/system.conf",IfSectionBuff,"MAC Address",pdtMac);
+				  dalArlMgmtMacRdt2Cpu(oldMacAddr, pdtMacAddr);
+				}
+				else
+			   {
+				   printf("invalid hw-addr\r\n");
+			   }
+			}
+		}
+		pdtMac = vosConfigValueGet(PRODUCT_CFG_FILE,PRODCUT_INFO_SECTION,"WAN MAC","00:00:00:00:00:00");
+		vosStrToMac(pdtMac,pdtMacAddr);
+		if(memcmp(pdtMac,"00:00:00:00:00:00",MAC_LENGTH))
+		{
+			ucIf = INTERFACE_WAN;
+			for(ucIfMode =0; ucIfMode < INTERFACE_MODE_MAX; ucIfMode++)
+			{
+				index = ucIf * INTERFACE_MODE_MAX + ucIfMode;
+				vosSprintf(IfSectionBuff, "If%d", index);
+				sysMac = vosConfigValueGet("/cfg/system.conf",IfSectionBuff,"MAC Address","00:00:00:00:00:00");
+				if(!memcmp(sysMac,"00:00:00:00:00:00",17))
+				{
+					vosHWAddrGet(g_acIfEthNameStr[index],&oldMacAddr[0]);
+				}
+				else
+				{
+					vosStrToMac(sysMac,oldMacAddr);
+				}
+				/*We use eth3 for telnet pty eth4 for WAN */
+				vosSprintf(macStr,"ifconfig %s hw ether %s",g_acIfEthNameStr[index],pdtMac);
+				ret = vosSystem(macStr);
+				if(0 == ret)
+				{
+					/*Save WAN Mac in System Configuration File*/
+				  vosConfigValueSet("/cfg/system.conf",IfSectionBuff,"MAC Address",pdtMac);
+				}
+				else
+			   {
+				   printf("invalid hw-addr\r\n");
+			   }
+			}
+
+		}
+
+}
+#endif
 void gw_plat_init()
 {
 	VOS_THREAD_t port_rate_thread_id=NULL;
+
+	Synchronize_ProductMac_SystemMac();
 
 	port_rate_thread_id  = vosThreadCreate(
 		"port rate",

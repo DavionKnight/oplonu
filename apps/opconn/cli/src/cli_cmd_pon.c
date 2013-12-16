@@ -33,6 +33,8 @@
 #include "product_info.h"
 #include "odm_pon.h"
 #include "oam.h"
+#include "defs.h"
+#include "dal_mac.h"
 
 STATUS cliCmdOnuMpcpHoldoverContrlSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {
@@ -285,20 +287,59 @@ STATUS cliCmdPonMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 	
 	return OK;
 }
-extern overall_lanmac;
+
+extern const char *g_acIfEthNameStr[INTERFACE_MAX*INTERFACE_MODE_MAX];
 STATUS cliCmdLanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {
 	char section[20];
 	int ret=0;
 	char macStr[50]={0};
+	char oldMacId[6] = {0};
+	char   MacId[6] = {0};
+	char ucIf = INTERFACE_LAN;
+	char index = 0;
+   char 	IfSectionBuff[32] = {0};
+   char ucIfMode = 0;
 	
 	strcpy(section,"Product Information");
 
-//	strncpy(overall_lanmac,psPara[0].p,6);
+	if(strlen("00:00:00:00:00:00") !=strlen(psPara[0].p))
+	{
+		printf("The length of MAC is error\r\n");
+		//return ERROR;
+	}
+	vosStrToMac(psPara[0].p,MacId);
 
-	vosSprintf(macStr,"%s%s","ifconfig eth0 hw ether ",psPara[0].p);
-     if(0==system(macStr))
-     {
+   for (ucIfMode =0; ucIfMode < INTERFACE_MODE_MAX; ucIfMode++)
+    {
+		index = ucIf * INTERFACE_MODE_MAX + ucIfMode;
+		vosHWAddrGet(g_acIfEthNameStr[index],&oldMacId[0]);
+		printf("aaa\r\n");
+		if((memcmp(MacId,oldMacId,MAC_LENGTH))&&(memcmp("00:00:00:00:00:00",psPara[0].p,17)))
+		{
+			vosSprintf(macStr,"ifconfig %s hw ether %s",g_acIfEthNameStr[index],psPara[0].p);
+#if 0
+			if(0 != vosSystem(macStr))
+			{
+				return ERROR;
+			}
+#else
+			ret = vosSystem(macStr);
+//			printf("ret is %d\r\n",ret);
+#endif
+
+			if(0 == ret)
+			{
+				/*Save Lan Mac in System Configuration File*/
+				vosSprintf(IfSectionBuff, "If%d", index);
+				vosConfigValueSet("/cfg/system.conf",IfSectionBuff,"MAC Address",psPara[0].p);
+			}
+
+		}
+    }
+   if(0 == ret)
+	{
+		/*Save Lan Mac in Product Configuration File*/
 		if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
 		{
 			ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
@@ -306,37 +347,58 @@ STATUS cliCmdLanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 		if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"LAN MAC",psPara[0].p)) != 0)
 		{
 				printf("save error\n");
-			    return ERROR;
+				return ERROR;
 		}
- //   cliTextConfigSave();
-    		vosConfigSave(NULL);
-     	}
-	 else
-	 {
-	 	printf("error ! Please change another unused macid !\r\n");
-	 }
-
-     return OK;
+		printf("MacId is %x %x %x %x %x %x\r\n",MacId[0],MacId[1],MacId[2],MacId[3],MacId[4],MacId[5]);
+	  dalArlMgmtMacRdt2Cpu(oldMacId, MacId);
+	  vosConfigSave(NULL);
+	}
+   else
+   {
+	   printf("invalid hw-addr\r\n");
+   }
+ return OK;
 }
 STATUS cliCmdWanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 {
 	char section[20];
 	int ret=0;
 	char macStr[50]={0};
+	char ucIf = INTERFACE_WAN;
+	char oldMacId[6] = {0};
+	char index = 0;
+   char 	IfSectionBuff[32] = {0};
+	char   MacId[6] = {0};
+	char ucIfMode = 0;
 
 	strcpy(section,"Product Information");
-	vosStrToMac(psPara[0].p,overall_lanmac);
 
+	if(strlen("00:00:00:00:00:00") !=strlen(psPara[0].p))
+	{
+		printf("The length of MAC is error\r\n");
+		//return ERROR;
+	}
+	vosStrToMac(psPara[0].p,MacId);
 
-	vosSprintf(macStr,"%s%s","ifconfig eth3 hw ether ",psPara[0].p);
-	ret = system(macStr);
-	printf("ret is %d\r\n",ret);
-     if(0==ret)
-     {
-		vosMemSet(macStr,0,50);
-		vosSprintf(macStr,"%s%s","ifconfig eth4 hw ether ",psPara[0].p);
-     		system(macStr);
-	 
+   for (ucIfMode =0; ucIfMode < INTERFACE_MODE_MAX; ucIfMode++)
+	{
+		index = ucIf * INTERFACE_MODE_MAX + ucIfMode;
+		vosHWAddrGet(g_acIfEthNameStr[index],&oldMacId[0]);
+		if((memcmp(MacId,oldMacId,MAC_LENGTH))&&(memcmp("00:00:00:00:00:00",psPara[0].p,17)))
+		{
+			/*We use eth3 for telnet pty eth4 for WAN */
+			vosSprintf(macStr,"ifconfig %s hw ether %s",g_acIfEthNameStr[index],psPara[0].p);
+			ret = vosSystem(macStr);
+			if(0 == ret)
+			{
+				/*Save WAN Mac in System Configuration File*/
+				vosSprintf(IfSectionBuff, "If%d", index);
+			  vosConfigValueSet("/cfg/system.conf",IfSectionBuff,"MAC Address",psPara[0].p);
+			}
+		}
+	}
+   if(0 == ret)
+	{
 		if(vosConfigSectionIsExisted(PRODUCT_CFG_FILE,section))
 		{
 			ret = vosConfigSectionCreate(PRODUCT_CFG_FILE,section);
@@ -344,15 +406,17 @@ STATUS cliCmdWanMacIdSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 		if ((ret = vosConfigValueSet(PRODUCT_CFG_FILE,section,"WAN MAC",psPara[0].p)) != 0)
 		{
 				printf("save error\n");
-			    return ERROR;
+				return ERROR;
 		}
- //   cliTextConfigSave();
+
 		vosConfigSave(NULL);
-     	}
-	 else
-	 {
-	 	printf("error ! Please change a legal macid !\r\n");
-	 }
+	}
+   else
+   {
+	   printf("invalid hw-addr\r\n");
+   }
+	return OK;
+
 }
 STATUS cliCmdPonDbaAgentAllParaSet(ENV_t *pstEnv, PARA_TABLE_t *psPara)
 
