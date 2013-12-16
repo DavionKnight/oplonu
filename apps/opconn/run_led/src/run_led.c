@@ -224,7 +224,7 @@ count++;
 		alarm_led_enable(test_led_flag);
 	}
 
-	light_status = ponlightcheck();
+	light_status = ponLightcheck();
 	if(1 == light_status)  //if pon light exist and oam lost ONu reboot if pon light exist ,ONU keep alive
 	{
 		oam_lost_link_flag = 1;

@@ -1347,11 +1347,11 @@ printf("\n");
 
 gw_status gwdonu_atu_learn_get(gw_int32 portid, gw_int32 *en)
 {
-	a_bool_t *enable;
-	shiva_fdb_port_learn_get(0,portid,enable);
-	if((*enable == A_FALSE)||(*enable == A_TRUE))
+	char enable;
+	shiva_fdb_port_learn_get(0,1,&enable);
+	if((enable == 0)||(enable == 1))
 	{
-		*en = *enable;
+		*en = enable;
 		return GW_OK;
 	}
 #ifdef GWDDEBUG
@@ -1370,7 +1370,7 @@ gw_status gwdonu_atu_learn_set(gw_int32 portid, gw_int32 en)
 	{
 		if((en == A_FALSE)||(en == A_TRUE))
 		{
-		ulRet = shiva_fdb_port_learn_set(0, portid, en);
+		ulRet = dalArlLearnEnSet(en);
 	  if (GW_OK != ulRet)
 		{
 		 printf("gwdonu_atu_learn_set error!The ulRet is %d\r\n",ulRet);
