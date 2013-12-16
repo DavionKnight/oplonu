@@ -336,7 +336,7 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
-
+#if 0
     printf("Init ODM RSTP task ... ");
     if(OK != odmRstpInit())
     {
@@ -346,7 +346,7 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
-
+#endif
     printf("Init ODM port storm configuration ... ");
     if(NO_ERROR != odmPortStormCfgInit())
     {

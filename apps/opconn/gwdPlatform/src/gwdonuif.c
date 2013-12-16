@@ -487,7 +487,7 @@ gw_status gwdonu_port_admin_status_get(gw_int32 portid, gwd_port_admin_t *status
 gw_status gwdonu_port_admin_status_set(gw_int32 portid, gwd_port_admin_t status)
 {
 //	printf("in portadminset fuction ,this function is not defined .......\r\n");
-	return(dalPhyAdminControlSet(portid,status+1));
+	return(dalPhyAdminControlSet(portid,status));
 }
 
 
