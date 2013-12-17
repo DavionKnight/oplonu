@@ -1354,8 +1354,11 @@ printf("\n");
 
 gw_status gwdonu_atu_learn_get(gw_int32 portid, gw_int32 *en)
 {
-	char enable;
-	shiva_fdb_port_learn_get(0,1,&enable);
+#if 0
+	char enable = 0;
+	//dalArlLearnEnGet(&enable);
+	dalArlSoftLearnEnGet(&enable);
+	printf("enable is %d\r\n",enable);
 	if((enable == 0)||(enable == 1))
 	{
 		*en = enable;
@@ -1363,6 +1366,21 @@ gw_status gwdonu_atu_learn_get(gw_int32 portid, gw_int32 *en)
 	}
 #ifdef GWDDEBUG
 	printf("gwdonu_atu_learn_get error the enable is %d\r\n",enable);
+#endif
+#else
+	UINT8 	portSectionBuff[255] = {0};
+	if(odmPortRangeCheck(portid))
+	{
+		return PORT_INVALID;
+	}
+	if(NULL == en)
+	{
+		return ERROR;
+	}
+	vosSprintf(portSectionBuff,CFG_PORT_SECTION,portid);
+	/* modified by zgan - 2009/05/20, default learning change to enabled */
+ 	*en = vosConfigUInt32Get(CFG_PORT_CFG,portSectionBuff,CFG_PORT_LEARNING,TRUE);
+	return OK;
 #endif
 	return GW_ERROR;
 
@@ -1377,16 +1395,19 @@ gw_status gwdonu_atu_learn_set(gw_int32 portid, gw_int32 en)
 	{
 		if((en == A_FALSE)||(en == A_TRUE))
 		{
-		ulRet = dalArlLearnEnSet(en);
-	  if (GW_OK != ulRet)
-		{
-		 printf("gwdonu_atu_learn_set error!The ulRet is %d\r\n",ulRet);
-			return GW_ERROR;
-		}
-	  return GW_OK;
+			ulRet = odmPortLearningEnableSet(portid,en);
+			printf("enable is %d\r\nulRet is %d\r\n",en,ulRet);
+			if (GW_OK != ulRet)
+			{
+			 printf("gwdonu_atu_learn_set error!The ulRet is %d\r\n",ulRet);
+				return GW_ERROR;
+			}
+			return GW_OK;
 		}
 		else
+		{
 			printf("gwdonu_atu_learn_set error,because en is not bool,en is %d\r\n",en);
+		}
 	}
 return GW_ERROR;
 }
