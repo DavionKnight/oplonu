@@ -486,8 +486,15 @@ gw_status gwdonu_port_admin_status_get(gw_int32 portid, gwd_port_admin_t *status
  	 else is ERROR		*/
 gw_status gwdonu_port_admin_status_set(gw_int32 portid, gwd_port_admin_t status)
 {
+	char ret =-1;
 //	printf("in portadminset fuction ,this function is not defined .......\r\n");
-	return(dalPhyAdminControlSet(portid,status));
+	if(OPL_OK == (ret = dalPhyAdminControlSet(portid,status)));
+	{
+		unsigned char 	portSectionBuff[255] = {0};
+		vosSprintf(portSectionBuff, CFG_PORT_SECTION, portid);
+		vosConfigUInt32Set(CFG_PORT_CFG,portSectionBuff,CFG_PORT_ADMIN_STATUS,status);
+	}
+	return ret;
 }
 
 
