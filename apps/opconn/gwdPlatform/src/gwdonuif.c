@@ -30,6 +30,7 @@
 #include "fal_portvlan.h"
 #include "fal_fdb.h"
 #include "fal_mib.h"
+#include "fal_rate.h"
 #include "run_led.h"
 #include "version.h"
 #include "stats.h"
@@ -1375,7 +1376,7 @@ gw_status gwdonu_atu_learn_get(gw_int32 portid, gw_int32 *en)
 	}
 	if(NULL == en)
 	{
-		return ERROR;
+		return GW_ERROR;
 	}
 	vosSprintf(portSectionBuff,CFG_PORT_SECTION,portid);
 	/* modified by zgan - 2009/05/20, default learning change to enabled */
@@ -1741,37 +1742,38 @@ gw_status gwdonu_onu_broadcast_speed_limit_set(gw_uint32 gw_port,gwd_sw_port_inr
 
 	if(PORT_INGRESS_LIMIT_UC == gw_mode)
 	{
-		stormType = 0; 	//unicast
+		stormType = FAL_UNICAST_STORM; 	//unicast
 	}
 	else if(PORT_INGRESS_LIMIT_BC == gw_mode)
 	{
-		stormType = 2;		//broadcast
+		stormType = FAL_BROADCAST_STORM;		//broadcast
 	}
 	else
 	{
-		stormType = 1;           //multicast
+		printf("pkt mode is error\r\n");
 	}
-	retVal = odmStormCtrlFrameSet(gw_port, stormType, 1);
-	if(retVal != OK)
-	{
-		printf("\r\nset storm frame failed.\r\n");
-		return retVal;
-	}
+
 	if(64 == gw_rate)
 	{
 		opl_rate = 1;  //1KPPS = 1000 * 64 =64K
+		retVal = odmStormCtrlRateSet(gw_port, opl_rate);
+	//	printf("opl_rate is %d\r\n",opl_rate);
+		if(retVal != OK)
+		{
+			printf("\r\nset storm  rate failed.\r\n");
+			return GW_ERROR;
+		}
 	}
-	else
+	else       //disable storm ctrl
 	{
-		opl_rate = 11; //1024KPP
+		retVal = odmStormCtrlFrameSet(gw_port, stormType, 0);
+		if(retVal != OK)
+		{
+			printf("\r\nset storm frame failed.\r\n");
+			return GW_ERROR;
+		}
 	}
-	retVal = odmStormCtrlRateSet(gw_port, opl_rate);
-//	printf("opl_rate is %d\r\n",opl_rate);
-	if(retVal != OK)
-	{
-		printf("\r\nset storm  rate failed.\r\n");
-		return retVal;
-	}
+
 #endif
 
 	return GW_OK;
