@@ -149,6 +149,12 @@ sw_error_t	atheros_init()
 
     /* cpu port should be set to fallback to support igmp,rstp */
     shiva_port_1qmode_set(0, 0, FAL_1Q_FALLBACK);
+#if 0
+//	shiva_port_egvlanmode_set(0, 0, FAL_EG_UNMODIFIED);
+    shiva_port_invlan_mode_set(0, 0, FAL_INVLAN_ADMIT_ALL);
+    shiva_port_force_default_vid_set(0, 0, 0);
+//    shiva_port_arp_leaky_set(0, 0, 1);
+#endif
 
 	/* GE port ingress fallback */
 	shiva_port_1qmode_set(0, 6, FAL_1Q_FALLBACK);

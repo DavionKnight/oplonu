@@ -2330,6 +2330,15 @@ UINT32 odmPortCfgInit(void)
     HAL_API_FDB_MAC_LIMIT_S     stMacLimit;
 	VoiceVlan_t SysVoiceVlan;
 
+#if 0
+        stData.apiId = HAL_API_PORT_VLAN_MODE_SET;
+        stData.length = sizeof(HAL_PORT_VLAN_CFG_t);
+        halPortVlanCfg.portId = 0;
+        halPortVlanCfg.vlanMode = ODM_VLAN_TRANSPARENT;
+        stData.param = (void *)&halPortVlanCfg;
+        retVal = halAppApiCallSync(&stData);
+#endif
+
     for(portId = ODM_START_PORT_NUN; portId <= ODM_NUM_OF_PORTS; portId++)
     {
     	vosMemSet(&portSectionBuff[0], 0, 255);
@@ -2442,9 +2451,8 @@ UINT32 odmPortCfgInit(void)
             stData.length = sizeof(stPara);
             halAppApiCallSync(&stData);
         }
-		
         odmPortVlanModeGet(portId,&vlanMode);
-
+#if 0
         stData.apiId = HAL_API_PORT_VLAN_MODE_SET;
         stData.length = sizeof(HAL_PORT_VLAN_CFG_t);
         halPortVlanCfg.portId = portId;
@@ -2455,6 +2463,11 @@ UINT32 odmPortCfgInit(void)
 		{
 			printf("\r\n Fail to set port vlan mode[%d]!\n", vlanMode);
 		}
+#else
+		odmPortVlanModeSet(portId, vlanMode);
+//		if(ret != OPL_OK)
+	//		goto response;
+#endif
 
 #if defined(ONU_1PORT)
         if (ODM_VLAN_TRANSPARENT != vlanMode)
