@@ -81,7 +81,19 @@ STATUS cliCmdOrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
     
     return halAppApiCallSync(&stApiData);
 }
-
+STATUS cliCmdGWDcpldOrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	unsigned char uData = 0;
+	if(0 == cpld_register_read(pstPt[0].u,&uData))
+	{
+        vosPrintf(pstEnv->nWriteFd,"Gwdcpld register %d value is 0x%x\r\n",pstPt[0].u,uData);
+	}
+	else
+	{
+		vosPrintf(pstEnv->nWriteFd,"Please input corrected register num");
+	}
+	return OK;
+}
 STATUS cliCmdOwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
     OPL_API_DATA_t stApiData;

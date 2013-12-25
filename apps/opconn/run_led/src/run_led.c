@@ -271,6 +271,20 @@ void run_led()
 		}
 	}
 }
+
+unsigned char cpld_register_read(unsigned char regAddr,unsigned char *uData)
+{
+	if((regAddr>=0x0)&&(regAddr<=0x0E))
+	{
+		cpldRead(regAddr,uData);
+	}
+	else
+	{
+		return -1;
+	}
+	return 0;
+}
+
 /*
 int main()
 {
