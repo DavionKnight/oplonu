@@ -137,15 +137,29 @@ void powerStatus_check()
 		}
 	}
 }
-unsigned char ponLightcheck()
+unsigned char pon_register_check()
 {
 	unsigned char light_status = 0;
 
-	cpldRead(CS1_LIGHT_SIGNAL,&light_status);
-
-	return light_status;
+	cpld_register_read(CS1_LIGHT_SIGNAL,&light_status);
+	if((0x1 == light_status&0x4)||(0x8 == light_status&0x8))
+	{
+		return 0;
+	}
+	else
+	{
+		if((0x0 == light_status&0x1)&&(0x0 == light_status&0x2))
+		{
+			return 0;
+		}
+		else
+		{
+			return -1;
+		}
+	}
 }
-unsigned char oam_lost_link_flag = 0;
+
+static unsigned char boardresetcount = 1;
 static void led_change_status()
 {
 
@@ -211,7 +225,7 @@ else
 #endif
 	unsigned char uData = 0, light_status = 0;
 
-count++;
+	count++;
 //printf("count is %d\n",count);
 
 // test_led_flag != 0 , the command line is testing the arm led now,so stop warning_check
@@ -224,10 +238,17 @@ count++;
 		alarm_led_enable(test_led_flag);
 	}
 
-	light_status = ponLightcheck();
-	if(1 == light_status)  //if pon light exist and oam lost ONu reboot if pon light exist ,ONU keep alive
+	light_status = pon_register_check();
+	if(0 != light_status)  //if  oam lost
 	{
-		oam_lost_link_flag = 1;
+		if(boardresetcount++>50)  //if exception keep above 5(s), reboot
+		{
+			BoardReset();
+		}
+	}
+	else
+	{
+		boardresetcount = 1;
 	}
 	powerStatus_check();
 
