@@ -1115,11 +1115,12 @@ int portmaptrans(int portmap)
 gw_status gwdonu_fdb_entry_getnext(gw_uint32 vid, gw_uint8 * macaddr, gw_uint32 *nextvid, gw_uint8 *nextmac, gw_uint32 * eg_portlist,gw_uint32* statics)
 {
 	fal_fdb_entry_t entry;
+	unsigned char NULLMAC[6]={0};
 	static a_uint32_t  iterator = 0;
 	int rv;
 	int ret;
 
-	if(0 == vid)
+	if((0 == vid) && (!memcmp(macaddr,NULLMAC,6)))
 		iterator = 0;
 
 	rv = shiva_fdb_iterate(0, &iterator, &entry);
