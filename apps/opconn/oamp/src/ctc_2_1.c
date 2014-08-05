@@ -10523,7 +10523,12 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			if (OPL_OK != ret)
 			{
 				goto response;
-			}				
+			}
+            ret = odmPortDefaultVlanSet(6, 1);
+			if (OPL_OK != ret)
+			{
+				printf("odmPortDefaultVlanSet error\r\n");
+			}
 			
 			/* set vlan mode */
 			OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "[ %s ]: odmPortVlanModeSet(%d, OAM_CTC_VLAN_TRUNK)\n", __FUNCTION__, portS);
@@ -10557,6 +10562,11 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 				if (OPL_OK != ret)
 				{
 					goto response;
+				}
+				ret = odmPortVlanTrunkEntryAdd(6, vlanId);
+				if (OPL_OK != ret)
+				{
+					printf("odmPortVlanTrunkEntryAdd error\r\n");
 				}
 			}
 		}
@@ -12825,7 +12835,7 @@ int eopl_ctc_alarm_report(alarm_report_t *reportInfo)
 
 	//	p_ctc_alarm_entry->alarm_state = 0x00;
 	p_ctc_alarm_entry->timeStamp = 0;
-	/*��׼��ĺ�ȡ��*/
+	/*��׼��ĺ�ȡ��?*/
 	p_ctc_alarm_entry->alarm_state = reportInfo->alarmState;
 	g_usAlarmOutDataIdx += sizeof(ctc_alarm_entry_hdr_t);
 
