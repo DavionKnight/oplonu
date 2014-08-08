@@ -35,7 +35,6 @@ Author                Date              Description of Changes
 
 #define PORT_IS_OUT_OF_RANTE(portNum) 0
 
-void PortCfgInit();
 /*******************************************************************************
 * dalPortStateGet
 *

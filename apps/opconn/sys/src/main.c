@@ -233,7 +233,6 @@ int main(int argc,char *argv[])
     {
         printf("done\r\n");
     }
-//PortCfgInit();
     /* Init system default configuration */
     printf("Init ODM system configuration ... ");
     odmSysCfgInit();

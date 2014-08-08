@@ -27,27 +27,6 @@ Author                		Date              	Description of Changes
 #include <aos_types.h>
 #include "defs.h"
 
-
-
-void PortCfgInit()
-{
-	unsigned int i=0,ret=0;
-	UINT8 	portSectionBuff[255] = {0};
-
-	if(0 != (ret = vosConfigModuleIsExisted(CFG_PORT_CFG)))
-	{
-		for(i=1;i<=4;i++)
-		{
-			vosSprintf(portSectionBuff,CFG_PORT_SECTION,i);
-			odmPortDefaultVlanSet(i, 1);
-			vosConfigUInt32Set(CFG_PORT_CFG,portSectionBuff,CFG_PORT_VLAN_MODE,ODM_VLAN_TRUNK);
-		}
-	}
-	vosConfigSave(NULL);
-}
-
-
-
 extern VLAN_CONFI_INFO_t dal_vtt_info[];
 extern VTT_VLAN_8228_t	dal_vlan8228[];
 extern UINT16	dal_vlan_trunk_num[];
