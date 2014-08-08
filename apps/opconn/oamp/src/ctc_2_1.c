@@ -10121,9 +10121,9 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			if(ret != OPL_OK)
 				goto response;
 		}
-//		ret = odmPortVlanModeSet(ODM_GE_PORT,OAM_CTC_VLAN_TRANSPARENT); //add by zhangjj 2013-11-25
-//		if(ret != OPL_OK)
-//				goto response;
+		ret = odmPortVlanModeSet(ODM_GE_PORT,OAM_CTC_VLAN_TRANSPARENT); //add by zhangjj 2013-11-25 2014-8-8
+		if(ret != OPL_OK)
+				goto response;
 	}
 	else if(OAM_CTC_VLAN_TAG == p_vlan->mode)
 	{
@@ -10537,6 +10537,11 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			{
 				goto response;
 			}
+			ret = odmPortVlanModeSet(6, OAM_CTC_VLAN_TRUNK);
+			if (OPL_OK != ret)
+			{
+				goto response;
+			}
 //			ret = odmPortVlanModeSet(ODM_GE_PORT, OAM_CTC_VLAN_TRUNK);//add by zhangjj 2013-11-25 set GE port in/egress rule
 //			if (OPL_OK != ret)									//GE port peel off the tag the FE port add by port vlan
 //			{
@@ -10563,11 +10568,11 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 				{
 					goto response;
 				}
-				ret = odmPortVlanTrunkEntryAdd(6, vlanId);
-				if (OPL_OK != ret)
-				{
-					printf("odmPortVlanTrunkEntryAdd error\r\n");
-				}
+//				ret = odmPortVlanTrunkEntryAdd(6, vlanId);
+//				if (OPL_OK != ret)
+//				{
+//					printf("odmPortVlanTrunkEntryAdd error\r\n");
+//				}
 			}
 		}
 

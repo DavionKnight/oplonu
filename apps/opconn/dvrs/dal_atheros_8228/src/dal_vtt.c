@@ -24,7 +24,7 @@ Author                Date              Description of Changes
 #include "shiva_portvlan.h"
 #include "mc_control.h"
 
-VLAN_CONFI_INFO_t dal_vtt_info[NUM_OF_PORTS +1];
+VLAN_CONFI_INFO_t dal_vtt_info[7];
 UINT32 dalVttInitFinished = OPL_ZERO;
 VTT_RECORD_8228_t dal_vtt8228[DAL_VTT_8228_NUM];
 VTT_VLAN_8228_t	dal_vlan8228[4096];

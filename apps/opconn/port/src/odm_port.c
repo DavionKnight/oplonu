@@ -1642,15 +1642,6 @@ if(ODM_VLAN_TRANSPARENT==vlanMode)
         stData.param = (void *)&halPortVlanCfg;
         retVal = halAppApiCallSync(&stData);
 #endif
-#if 1/*----- Solve the bug :if dot1q enabled ICMP to CPU unreached----*/
-     /*-- add atheros port 0 portvlan mode(Trunk) Modified by zhangjj 2013-7-30 --*/
-        stData.apiId = HAL_API_PORT_VLAN_MODE_SET;
-        stData.length = sizeof(HAL_PORT_VLAN_CFG_t);
-        halPortVlanCfg.portId = 6;
-        halPortVlanCfg.vlanMode = vlanMode;
-        stData.param = (void *)&halPortVlanCfg;
-        retVal = halAppApiCallSync(&stData);
-#endif
         if(OK != retVal)
         {
             ODM_PORT_LOG_TRACE();		
@@ -2474,7 +2465,12 @@ UINT32 odmPortCfgInit(void)
 		}
 #else
 		odmPortVlanModeSet(portId, vlanMode);
-//		if(ret != OPL_OK)
+		odmPortVlanModeSet(6,vlanMode);
+		if(ODM_VLAN_TRUNK == vlanMode)
+		{
+			odmPortDefaultVlanSet(6,1);
+		}
+		//		if(ret != OPL_OK)
 	//		goto response;
 #endif
 
