@@ -12,6 +12,12 @@ MODIFICATION DETAILS
 #ifndef __OAM_H__
 #define __OAM_H__
 
+
+#define GT873_A 1
+#define GT872_A 2
+#define GT872_B 3
+#define PRODUCT_CLASS	GT872_B
+
 #define GWD_OAM
 
 #define FALSE	0

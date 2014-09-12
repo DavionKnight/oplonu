@@ -425,7 +425,9 @@ reg_gwdonu_im_interfaces(&g_onu_im_ifs,sizeof(g_onu_im_ifs));
 plat_init();
 //ret =init_main();		//cs2 init
 //if(ret !=-1)
+#if(PRODUCT_CLASS==GT873_A)
 ts_init();			//terminal server init
+#endif
 gw_plat_init();
 
 	/* respin version config */

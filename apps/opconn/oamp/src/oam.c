@@ -30,6 +30,7 @@ MODIFICATION DETAILS
 #include "product_info.h"
 #include "run_led.h"
 
+
 #define MODULE MOD_OAM
 oam_sate_t oams;
 
@@ -61,8 +62,15 @@ u8_t	oam_onu_vendor[4] = {0x47,0x57,0x44,0x4C};//GWDL
 #endif
 u8_t	oam_chip_vendor[2] = {0x45,0x30};
 //u8_t	oam_onu_model[4] = {0x32,0x30,0x30,0x39};
-u8_t	oam_onu_model[4] = {0x30,0x87,0x30,0x02};
-u8_t	oam_onu_model_GT872_A[4] = {0x30,0x87,0x20,0x01};//add GT872_A type by zhangjj 2013-11-12
+#if(PRODUCT_CLASS==GT873_A)
+u8_t	oam_onu_model[4] = {0x30,0x87,0x30,0x02};//GT873_A
+#elif(PRODUCT_CLASS==GT872_A)
+u8_t	oam_onu_model[4] = {0x30,0x87,0x20,0x01};//add GT872_A type by zhangjj 2013-11-12
+#elif(PRODUCT_CLASS==GT872_B)
+u8_t	oam_onu_model[4] = {0x30,0x87,0x20,0x02};//GT872_B by zhangjj 2014-9-11
+#else
+u8_t	oam_onu_model[4] = {0x30,0x87,0x30,0x02};//GT873_A
+#endif
 u8_t	oam_chip_model[2] = {0x67,0x52};
 u8_t	oam_chip_revision = 0xA0;
 u8_t	oam_chip_version[3] = {0x08, 0x03, 0x1B};
@@ -548,20 +556,6 @@ void eopl_oam_timer_process(void)
 	/* call hardware interface to tx oam pdu */
 }
 
-
- /*
-  *set product type GT872_A if there is no serial card
-  *zhangjj 2013-11-12
-  */
-void product_type_set()
-{
-	unsigned char cardstatus;
-	cardstatus = get_serialcard_status();
-	if(0x1 == cardstatus)
-		memcpy(oam_onu_model,oam_onu_model_GT872_A,4);
-}
-
-
 /*
   * Function:
   * eopl_oam_init
@@ -578,8 +572,6 @@ int OamInit(void)
 	int		iStatus=EOPL_OK;
 	bool_t	ucLinkStatus;
     UINT8   value;
-
-    product_type_set();
 
 /*
 	pthread_t iTimerThread;

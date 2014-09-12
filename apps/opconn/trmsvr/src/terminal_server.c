@@ -25,6 +25,10 @@
 #include "uart_default.h"
 #include "uart_driver8250.h"
 #include "vos_types.h"
+#include "oam.h"
+
+#if(PRODUCT_CLASS==GT873_A)
+
 cs_uint32 term_serv_dbg = 0;
 cs_uint32 old_port = 0;
 cs_uint32 serverfd = 0;
@@ -1499,7 +1503,6 @@ void ts_auto_create(void)
 }
 
 
-
 void ts_init(void)
 {
     cs_int32 ret = 0;
@@ -1602,7 +1605,7 @@ void ts_init(void)
     ts_thread_create();
      ts_auto_create();
 }
-
+#endif
 
 
 
