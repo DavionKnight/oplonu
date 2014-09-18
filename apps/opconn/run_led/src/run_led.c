@@ -284,7 +284,18 @@ unsigned char cpld_register_read(unsigned char regAddr,unsigned char *uData)
 	}
 	return 0;
 }
-
+unsigned char cpld_register_write(unsigned char regAddr,unsigned char uData)
+{
+	if((regAddr>=0x0)&&(regAddr<=0x0E))
+	{
+		cpldWrite(regAddr,uData);
+	}
+	else
+	{
+		return -1;
+	}
+	return 0;
+}
 /*
 int main()
 {

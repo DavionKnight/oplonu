@@ -94,6 +94,20 @@ STATUS cliCmdGWDcpldOrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 	}
 	return OK;
 }
+STATUS cliCmdGWDcpldOwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
+{
+	unsigned char uData = pstPt[1].u;
+
+	if(0 == cpld_register_write(pstPt[0].u,uData))
+	{
+        vosPrintf(pstEnv->nWriteFd,"Gwdcpld register %d value is 0x%x\r\n",pstPt[0].u,uData);
+	}
+	else
+	{
+		vosPrintf(pstEnv->nWriteFd,"Please input corrected register num");
+	}
+	return OK;
+}
 STATUS cliCmdOwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
     OPL_API_DATA_t stApiData;
@@ -1571,6 +1585,7 @@ STATUS cliCmdTsShow(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 #endif
 	return OK;
 }
+
 STATUS cliCmdTsSetip(ENV_t *pstEnv, PARA_TABLE_t *pstPt)
 {
 	char ip_set[30]={0};

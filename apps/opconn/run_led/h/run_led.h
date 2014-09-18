@@ -13,6 +13,7 @@ int cpldWrite(int offset,unsigned char setData);
 int SetAlarmEnable(int enable);
 char get_serialcard_status();
 unsigned char cpld_register_read(unsigned char regAddr,unsigned char *uData);
+unsigned char cpld_register_write(unsigned char regAddr,unsigned char uData);
 extern int loopdetect_en;
 
 

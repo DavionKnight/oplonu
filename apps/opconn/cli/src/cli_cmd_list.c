@@ -1212,6 +1212,27 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
     (FUNCPTR)cliCmdGWDcpldOrr
 },
 {
+    "gwdcpld owr addr value",
+
+    "{gwdcpld,0,GWD cpld},\
+     {owr,0,Write register},\
+     {addr,1,Input register address(0-14)},\
+	 {value,1,Input register value}",
+
+    "{addr,CLI_UINT,0,14,0},\
+	 {value,CLI_UINT,0,4294967295,0}",
+
+    CLI_MODE_SUPER,
+
+    CLI_NULL_SUB_MODE,
+
+	ACCESS_LEVEL_SUPER,
+
+    CLI_EXEC_FUNC,
+
+    (FUNCPTR)cliCmdGWDcpldOwr
+},
+{
     "owr addr value",
 
     "{owr,0,Write register},\

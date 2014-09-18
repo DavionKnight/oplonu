@@ -471,6 +471,7 @@ extern STATUS cliIntStatusShow(int fd);
 /**/
 extern STATUS cliCmdOrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdGWDcpldOrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
+extern STATUS cliCmdGWDcpldOwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdOwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdMrr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
 extern STATUS cliCmdMwr(ENV_t *pstEnv, PARA_TABLE_t *pstPt);
