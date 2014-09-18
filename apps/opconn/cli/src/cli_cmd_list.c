@@ -3,6 +3,7 @@
 *****************************************************************************/
 #include "cli.h"
 #include "cli_cmd_list.h"
+#include "oam.h"
 
 #if defined(ONU_1PORT)
 #define PORTLIST_HELP "Input port #1"
@@ -776,7 +777,7 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     (FUNCPTR)cliCmdPonCpu
 },
-
+#if(PRODUCT_CLASS==GT873_A)
 {
     "serial set port {serial_port} {baud_rate} {data_size} {stopbit} {parity_size}",
 
@@ -964,6 +965,7 @@ MODEL_INTF_INFO_t g_asCliCmdTable[]={
 
     (FUNCPTR)cliCmdTsSetip,
 },
+#endif
 {
     "telnet ip set {ip_msg}",
 
