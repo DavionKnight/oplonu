@@ -2189,5 +2189,16 @@ UINT32 odmOnuMtuGet(UINT32 *mtuSize)
 
     return OK;
 }
+//cpu control and select first pon port
+extern unsigned char cpld_register_write(unsigned char regAddr,unsigned char uData);
+void SinglePonPortInit()
+{
+	cpld_register_write(0xb,0x3);
+}
+
+
+
+
+
 
 

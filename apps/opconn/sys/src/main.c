@@ -428,6 +428,9 @@ plat_init();
 #if(PRODUCT_CLASS==GT873_A)
 ts_init();			//terminal server init
 #endif
+#if(PRODUCT_CLASS==GT872_B)
+SinglePonPortInit();
+#endif
 gw_plat_init();
 
 	/* respin version config */
