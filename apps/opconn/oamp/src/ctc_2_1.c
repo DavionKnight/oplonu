@@ -10529,7 +10529,7 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			{
 				printf("odmPortDefaultVlanSet error\r\n");
 			}
-			
+
 			/* set vlan mode */
 			OP_DEBUG(DEBUG_LEVEL_DEBUGGING, "[ %s ]: odmPortVlanModeSet(%d, OAM_CTC_VLAN_TRUNK)\n", __FUNCTION__, portS);
 			ret = odmPortVlanModeSet(portS, OAM_CTC_VLAN_TRUNK);
@@ -10537,10 +10537,15 @@ int eopl_set_onu_vlan(u8_t*  p_in)
 			{
 				goto response;
 			}
-			ret = odmPortVlanModeSet(6, OAM_CTC_VLAN_TRUNK);
-			if (OPL_OK != ret)
+			UINT32 vlanMode=0;
+			odmPortVlanModeGet(ODM_GE_PORT,&vlanMode);
+			if(OAM_CTC_VLAN_TRUNK != vlanMode)
 			{
-				goto response;
+				ret = odmPortVlanModeSet(ODM_GE_PORT, OAM_CTC_VLAN_TRUNK);
+				if (OPL_OK != ret)
+				{
+					printf("odmPortVlanModeSet error\r\n");
+				}
 			}
 //			ret = odmPortVlanModeSet(ODM_GE_PORT, OAM_CTC_VLAN_TRUNK);//add by zhangjj 2013-11-25 set GE port in/egress rule
 //			if (OPL_OK != ret)									//GE port peel off the tag the FE port add by port vlan
