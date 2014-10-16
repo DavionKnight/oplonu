@@ -1738,7 +1738,8 @@ gw_status gwdonu_onu_broadcast_speed_limit_set(gw_uint32 gw_port,gwd_sw_port_inr
     PORT_INGRESS_LIMIT_BC,
     PORT_INGRESS_LIMIT_UC
 #else
-	UINT32 retVal = -1, stormType = 0;
+
+    UINT32 retVal = -1, stormType = 0, ratelimiten = 0;
     UINT32 opl_rate = 11; 	//default max rate
 
 	if(PORT_INGRESS_LIMIT_UC == gw_mode)
@@ -1757,22 +1758,30 @@ gw_status gwdonu_onu_broadcast_speed_limit_set(gw_uint32 gw_port,gwd_sw_port_inr
 	if(64 == gw_rate)
 	{
 		opl_rate = 1;  //1KPPS = 1000 * 64 =64K
-		retVal = odmStormCtrlRateSet(gw_port, opl_rate);
-	//	printf("opl_rate is %d\r\n",opl_rate);
-		if(retVal != OK)
-		{
-			printf("\r\nset storm  rate failed.\r\n");
-			return GW_ERROR;
-		}
+		ratelimiten = 1;
 	}
-	else       //disable storm ctrl
+	else if(0 == gw_rate)      //disable storm ctrl
 	{
-		retVal = odmStormCtrlFrameSet(gw_port, stormType, 0);
-		if(retVal != OK)
-		{
-			printf("\r\nset storm frame failed.\r\n");
-			return GW_ERROR;
-		}
+		opl_rate = 11;
+		ratelimiten = 0;
+	}
+	else
+	{
+		printf("gw_rate is %d ,error\n",gw_rate);
+		return GW_ERROR;
+	}
+
+	retVal = odmStormCtrlFrameSet(gw_port, stormType, ratelimiten);
+	if(retVal != OK)
+	{
+		printf("\r\nset storm frame failed.\r\n");
+		return GW_ERROR;
+	}
+	retVal = odmStormCtrlRateSet(gw_port, opl_rate);
+	if(retVal != OK)
+	{
+		printf("\r\nset storm  rate failed.\r\n");
+		return GW_ERROR;
 	}
 
 #endif
