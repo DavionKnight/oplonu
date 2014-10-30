@@ -544,9 +544,9 @@ gw_status gwdonu_port_mode_get(gw_int32 portid, gw_int32 * auneg_en, gw_int32 *s
     							OPL_LOG_TRACE();
     						return OPL_ERR_INVALID_PARAMETERS;
     				}
-    			if(PHY_HALF_DUPLEX == dup)
+    			if(ODM_PORT_DUPLEX_HALF == dup)
     					*duplex = GWD_PORT_DUPLEX_HALF;
-    			else if(PHY_FULL_DUPLEX == dup)
+    			else if(ODM_PORT_DUPLEX_FULL == dup)
     					*duplex = GWD_PORT_DUPLEX_FULL;
     			else
     					*duplex = GWD_PORT_DUPLEX_AUNEG;
@@ -580,10 +580,10 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 		switch( duplex )
 		{
 			case GWD_PORT_DUPLEX_FULL:
-				duplex = PHY_FULL_DUPLEX;
+				duplex = ODM_PORT_DUPLEX_FULL;
 				break;
 			default:
-				duplex = PHY_HALF_DUPLEX;
+				duplex = ODM_PORT_DUPLEX_HALF;
 				break;
 		}
 
@@ -594,8 +594,8 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 	}
 	else
 	{
-		ret = dalPhyAutonegEnableSet(portid, 2);
-		ret |= dalPhyAutonegRestart(portid);
+		dalPhyAutonegEnableSet(portid, 2);
+		dalPhyAutonegRestart(portid);
 	}
 
 
