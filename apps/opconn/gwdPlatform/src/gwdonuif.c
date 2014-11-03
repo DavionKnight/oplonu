@@ -830,25 +830,128 @@ gw_status gwdonu_port_pvid_get(gw_int32 portid, gw_int16 *vlanid)
 //	printf("gwdonu_port_pvid_get Here May form ERROR!\r\n");
 	return ret;
 }
-
+#define OFF 0
+#define ON 1
+static unsigned int portArry[ODM_NUM_OF_PORTS + 1], monitorPortArry[ODM_NUM_OF_PORTS + 1];
+static char type = 0;
+static mirr_mode = OFF;
+static set_flag = 0;
 gw_int32 gwdonu_port_mirror_stat_get(gw_int32 unit,gw_int32* mode)
 {
-
+	*mode = mirr_mode;
+	return GW_OK;
 }
 gw_int32 gwdonu_port_mirror_stat_set(gw_int32 unit,gw_int32 mode)
 {
+    int iRet = 0;
+	 char *name = NULL;
+
+	 vosConfigSectionGetByIndex(CFG_MIRROR_CFG, 0, &name);
+//	 printf("name is %s\n",name);
+	 if(NULL != name)
+		 odmMirrorGroupClear(name);
+
+	 memset(portArry, 0, ODM_NUM_OF_PORTS + 1);
+	 memset(monitorPortArry, 0, ODM_NUM_OF_PORTS + 1);
+	 mirr_mode = OFF;
+	 set_flag = 0;
+	 if(ON == mode)
+	 {
+//		 type = ODM_MIRROR_BOTH;
+//		 memset(portArry,0x00,4*(ODM_NUM_OF_PORTS + 1));
+//		 memset(monitorPortArry,0x00,4*(ODM_NUM_OF_PORTS + 1));
+		 iRet = odmMirrorGroupNameSet("PortMirror");
+		 mirr_mode = ON;
+//		 printf("iRet is %d\n",iRet);
+	 }
+
+	 return iRet;
 }
 
-gw_int32 gwdonu_port_ingress_mirror_set(gw_int32 unit,gw_int32 port,gw_int32 stat_val)
+gw_int32 gwdonu_port_ingress_mirror_set(gw_int32 unit,gw_int32 phyport,gw_int32 stat_val)
 {
+	int port = 0;
+	port = phyport +1;
+	if((ODM_START_PORT_NUN > port)||(ODM_NUM_OF_PORTS < port))
+		return GW_ERROR;
+	if(0 != stat_val)
+	{
+		if(set_flag > 0)
+			type = ODM_MIRROR_BOTH;
+		else
+			type = ODM_MIRROR_INGRESS;
+		portArry[port] = 1;
+		set_flag ++;
+	}
+	else
+		gwdonu_port_mirror_stat_set(0, OFF);
+	return GW_OK;
 }
 
-gw_int32 gwdonu_port_egress_mirror_set(gw_int32 unit,gw_int32 port,gw_int32 stat_val)
+gw_int32 gwdonu_port_egress_mirror_set(gw_int32 unit,gw_int32 phyport,gw_int32 stat_val)
 {
+	int port = 0;
+	port = phyport +1;
+	if((ODM_START_PORT_NUN > port)||(ODM_NUM_OF_PORTS < port))
+		return GW_ERROR;
+	if(0 != stat_val)
+	{
+		if(set_flag > 0)
+			type = ODM_MIRROR_BOTH;
+		else
+			type = ODM_MIRROR_EGRESS;
+		portArry[port] = 1;
+		set_flag ++;
+	}
+	else
+		gwdonu_port_mirror_stat_set(0, OFF);
+	return GW_OK;
 }
 
 gw_int32 gwdonu_port_mirror_to_port_set(gw_int32 port,gw_int32 portmap)
 {
+	int portnum = 0;
+	 char *name = NULL;
+
+	 if(0 == portmap)
+	 {
+		 gwdonu_port_mirror_stat_set(0, OFF);
+	 }
+	 else
+	 {
+		 vosConfigSectionGetByIndex(CFG_MIRROR_CFG, 0, &name);
+		  //set mirror port
+		for(portnum = ODM_START_PORT_NUN; portnum <= ODM_NUM_OF_PORTS; portnum++)
+		{
+		  if(1 != portArry[portnum])
+			{
+				continue;
+			}
+		  if (odmMirrorPortSet(name,portnum,type,1) != NO_ERROR)
+			{
+				printf("Add mirroring port failed:! \r\n");
+				return ERROR;
+			}
+		}
+		//set monitor port
+//		printf("portmap is 0x%x\n",portmap);
+		for(portnum = ODM_START_PORT_NUN; portnum <= ODM_NUM_OF_PORTS; portnum++)
+		{
+			if(1 != ((portmap>>(portnum-1)) & 0x1))
+			{
+				continue;
+			}
+			if (odmMonitorPortSet(name, portnum, 1) != NO_ERROR)
+			{
+				printf("Add monitor port failed:! \r\n");
+				return ERROR;
+			}
+		}
+		memset(portArry, 0, ODM_NUM_OF_PORTS + 1);
+		memset(monitorPortArry, 0, ODM_NUM_OF_PORTS + 1);
+		set_flag = 0;
+	 }
+	 return GW_OK;
 }
 
 
