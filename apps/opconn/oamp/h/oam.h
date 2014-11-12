@@ -16,7 +16,7 @@ MODIFICATION DETAILS
 #define GT873_A 1
 #define GT872_A 2
 #define GT872_B 3
-#define PRODUCT_CLASS	GT872_B
+#define PRODUCT_CLASS	GT873_A
 
 #define GWD_OAM
 
