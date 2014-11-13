@@ -590,6 +590,9 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 		odmPortAutoEnableSet(portid,0);
 		odmPortSpeedSet(portid,spd);
 		odmPortDuplexSet(portid,duplex);
+		odmPortAdminSet(portid,0);
+		vosUSleep(10000);
+		odmPortAdminSet(portid,1);
 //		ret = dalPhyAutonegEnableSet(portid, 1);//disable auto neg
 //
 //		ret |= dalPortSpeedSet(portid, spd);
