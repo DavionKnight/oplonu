@@ -346,7 +346,6 @@ UINT32 odmPortAutoEnableSet(UINT32 portId,UINT32 adminStatus)
 
 		vosConfigUInt32Set(CFG_PORT_CFG,portSectionBuff,CFG_PORT_AUTO_NEG_ENABLE,adminStatus);
 	}
-
 	return OK;
 }
 
@@ -487,8 +486,9 @@ UINT32 odmPortDuplexSet(UINT32 portId,UINT32 duplex)
 
 	retVal = vosConfigKeyIsExisted(CFG_PORT_CFG,portSectionBuff,CFG_PORT_DUPLEX);
 	oldDuplex = vosConfigUInt32Get(CFG_PORT_CFG,portSectionBuff,CFG_PORT_DUPLEX,ODM_PORT_DUPLEX_FULL);
-
+#if 0
 	if((OK == retVal && oldDuplex != duplex)||(OK != retVal))
+#endif
 	{
 
 		stData.apiId = HAL_API_PORT_DUPLEX_SET;

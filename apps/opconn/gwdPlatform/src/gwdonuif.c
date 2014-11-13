@@ -587,15 +587,17 @@ gw_status gwdonu_port_mode_set(gw_int32 portid, gw_int32 spd, gw_int32 duplex)
 				break;
 		}
 
-		ret = dalPhyAutonegEnableSet(portid, 1);//disable auto neg
-
-		ret |= dalPortSpeedSet(portid, spd);
-		ret |= dalPortDuplexSet(portid, duplex);
+		odmPortAutoEnableSet(portid,0);
+		odmPortSpeedSet(portid,spd);
+		odmPortDuplexSet(portid,duplex);
+//		ret = dalPhyAutonegEnableSet(portid, 1);//disable auto neg
+//
+//		ret |= dalPortSpeedSet(portid, spd);
+//		ret |= dalPortDuplexSet(portid, duplex);
 	}
 	else
 	{
-		dalPhyAutonegEnableSet(portid, 2);
-		dalPhyAutonegRestart(portid);
+		odmPortAutoEnableSet(portid, 1);
 	}
 
 
