@@ -520,9 +520,7 @@ gw_status gwdonu_port_mode_get(gw_int32 portid, gw_int32 * auneg_en, gw_int32 *s
     UINT32 speed = 0,dup = 0,auneg = 0;
     INT32 halStatus = 0;
 
-    halStatus = odmPortSpeedGet(portid,&speed);
-    halStatus += odmPortAutoEnableGet(portid,&auneg);
-    halStatus += odmPortDuplexGet(portid,&dup);
+    halStatus = odmPortAutoEnableGet(portid,&auneg);
 
     //printf("halStatus is %d %d %d %d\n",halStatus,speed,auneg,dup);
 	if(0 == halStatus)
@@ -530,35 +528,38 @@ gw_status gwdonu_port_mode_get(gw_int32 portid, gw_int32 * auneg_en, gw_int32 *s
 		*auneg_en = auneg;
 		if(1 == auneg)
 		{
-			*spd = GWD_PORT_SPD_AUNEG;
-			*duplex = GWD_PORT_DUPLEX_AUNEG;
+			dalPortDuplexGet(portid,&dup);
+			dalPortSpeedGet(portid,&speed);
+
 		}
 		else
 		{
-			switch(speed)
-			{
-				case ODM_PORT_SPEED_10M:
-						*spd = GWD_PORT_SPD_10;
+		    halStatus += odmPortSpeedGet(portid,&speed);
+		    halStatus += odmPortDuplexGet(portid,&dup);
+		}
+		switch(speed)
+		{
+			case ODM_PORT_SPEED_10M:
+					*spd = GWD_PORT_SPD_10;
+				break;
+			case ODM_PORT_SPEED_100M:
+					*spd = GWD_PORT_SPD_100;
+				break;
+			case ODM_PORT_SPEED_1000M:
+					*spd = GWD_PORT_SPD_1000;
 					break;
-				case ODM_PORT_SPEED_100M:
-						*spd = GWD_PORT_SPD_100;
-					break;
-				case ODM_PORT_SPEED_1000M:
-						*spd = GWD_PORT_SPD_1000;
-						break;
-				default:
-						printf("Get speed error (%d)\n",speed);;
-					return GW_ERROR;
-			}
-			if(ODM_PORT_DUPLEX_HALF == dup)
-				*duplex = GWD_PORT_DUPLEX_HALF;
-			else if(ODM_PORT_DUPLEX_FULL == dup)
-				*duplex = GWD_PORT_DUPLEX_FULL;
-			else
-			{
-				printf("Get duplex error (%d)\n",dup);
+			default:
+					printf("Get speed error (%d)\n",speed);;
 				return GW_ERROR;
-			}
+		}
+		if(ODM_PORT_DUPLEX_HALF == dup)
+			*duplex = GWD_PORT_DUPLEX_HALF;
+		else if(ODM_PORT_DUPLEX_FULL == dup)
+			*duplex = GWD_PORT_DUPLEX_FULL;
+		else
+		{
+			printf("Get duplex error (%d)\n",dup);
+			return GW_ERROR;
 		}
 	}
 
