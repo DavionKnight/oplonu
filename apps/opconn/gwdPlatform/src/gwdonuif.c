@@ -46,6 +46,9 @@
 
 //#define GWDDEBUG
 //add from gwdonu/oam.h
+#define CPU_MIRROR_FE
+unsigned int g_CpuMirrortoFE = OPL_TRUE;
+
 #define GWONU_873A_FE_PORT_NUM 4
 
 #define DEVICE_TYPE_GT872_A			0x0031
@@ -1767,6 +1770,12 @@ int  gwdonu_special_pkt_handler_pon(void *pkt,int len)
 //	gwlib_sendPktToQueue((gw_uint8 *)pkt+4, len-4, ucPort_t);
 
 	//gw_debug_printf("\r\nOUI:%02x %02x %02x\r\n", buff[18], buff[19], buff[20]);
+#ifdef CPU_MIRROR_FE
+	if(OPL_TRUE == g_CpuMirrortoFE)
+	{
+		gwdonu_port_send(GW_UNI_PORT_ID1, (gw_int8*)buff, len-4);
+	}
+#endif
 	if(g_onu_pkt_handler)
 	{
 		(*g_onu_pkt_handler)((gw_int8*)buff, len-4, ucPort_t);
@@ -1788,7 +1797,7 @@ int  gwdonu_special_pkt_handler_fe(void *pkt,int len)
 	{
 		return GW_ERROR;
 	}
-  memcpy(buff, pkt,12);
+	memcpy(buff, pkt,12);
 
 	pstInHeader_t = (ATHEROS_HEADER_FRAME_t *)pkt;
 	ucPort_t = (char)pstInHeader_t->portNum;
@@ -1796,6 +1805,12 @@ int  gwdonu_special_pkt_handler_fe(void *pkt,int len)
 //	gwlib_sendPktToQueue((gw_uint8 *)pkt+4, len-4, ucPort_t);
 
 	//gw_debug_printf("\r\nOUI:%02x %02x %02x\r\n", buff[18], buff[19], buff[20]);
+#ifdef CPU_MIRROR_FE
+	if(OPL_TRUE == g_CpuMirrortoFE)
+	{
+		gwdonu_port_send(GW_UNI_PORT_ID1, (gw_int8*)buff, len-2);
+	}
+#endif
 	if(g_onu_pkt_handler)
 	{
 		(*g_onu_pkt_handler)((gw_int8*)buff, len-2, ucPort_t);

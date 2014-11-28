@@ -408,6 +408,7 @@ void eopl_pkt_process(void * pkt, UINT16 len)
 *
 * SEE ALSO:
 */
+extern unsigned int g_CpuMirrortoFE;
 INT16 eopl_host_send(void *pkt, UINT16 len)
 {
     INT16 sts;
@@ -418,6 +419,11 @@ INT16 eopl_host_send(void *pkt, UINT16 len)
 
     if (NULL == pkt || 0 == len)
         return -1;
+	if(OPL_TRUE == g_CpuMirrortoFE)
+	{
+		gwdonu_port_send(1, (unsigned char *)pkt+1, len);
+	}
+
     /* begin added by jiangmingli for host debug */
     if (OPL_TRUE == g_bHostDsDbgEn)
     {
