@@ -704,6 +704,7 @@ static int onu_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 		{
 			printk("dma not ready for send, head=%d, tail=%d, dev_id=%d, len=%d\n", 
 				index, fep->tx_tail, dev_id, length);
+			kernel_restart(NULL);
 		}
 		goto fail;
     }
