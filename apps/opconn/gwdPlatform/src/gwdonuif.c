@@ -2373,7 +2373,7 @@ void gw_plat_init()
 {
 	VOS_THREAD_t port_rate_thread_id=NULL;
 
-	Synchronize_ProductMac_SystemMac();
+//	Synchronize_ProductMac_SystemMac();
 
 	port_rate_thread_id  = vosThreadCreate(
 		"port rate",

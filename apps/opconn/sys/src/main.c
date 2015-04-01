@@ -236,6 +236,8 @@ int main(int argc,char *argv[])
     /* Init system default configuration */
     printf("Init ODM system configuration ... ");
     odmSysCfgInit();
+    extern void Synchronize_ProductMac_SystemMac();
+    Synchronize_ProductMac_SystemMac();
     printf("done\r\n");
 
     printf("Init ODM user configuration ... ");
