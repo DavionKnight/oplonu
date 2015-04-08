@@ -31,10 +31,10 @@
  
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 1
-#define BUILD_NUMBER 112
+#define BUILD_NUMBER 113
 #define MAJOR_VERSION_t "1"
 #define MINOR_VERSION_t "1"
-#define BUILD_NUMBER_t "112"
+#define BUILD_NUMBER_t "113"
 
 
 #if defined(ONU_1PORT_V1)
